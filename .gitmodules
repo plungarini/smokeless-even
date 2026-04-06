@@ -1,0 +1,6 @@
+[submodule "smokeless-even"]
+	path = smokeless-even
+	url = git@github.com:plungarini/smokeless-even.git
+[submodule "apps/smokeless"]
+	path = apps/smokeless
+	url = git@github.com:plungarini/smokeless-even.git

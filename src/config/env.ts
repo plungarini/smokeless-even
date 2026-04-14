@@ -1,5 +1,4 @@
 const required = [
-	'VITE_AUTH_BASE_URL',
 	'VITE_FIREBASE_API_KEY',
 	'VITE_FIREBASE_AUTH_DOMAIN',
 	'VITE_FIREBASE_PROJECT_ID',
@@ -11,7 +10,6 @@ const required = [
 export const missingClientEnv = required.filter((key) => !import.meta.env[key]);
 
 export const env = {
-	authBaseUrl: import.meta.env.VITE_AUTH_BASE_URL ?? '',
 	firebaseConfig: {
 		apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? '',
 		authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? '',

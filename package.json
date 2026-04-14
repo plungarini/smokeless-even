@@ -8,9 +8,7 @@
     "build": "tsc && vite build",
     "qr": "node ../../scripts/qr.mjs",
     "pack": "npm run build && evenhub pack app.json dist -o smokeless.ehpk",
-    "emulator": "npx evenhub-simulator http://localhost:5173/",
-    "server:dev": "npm --prefix server run dev",
-    "server:build": "npm --prefix server run build"
+    "emulator": "npx evenhub-simulator http://localhost:5173/"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

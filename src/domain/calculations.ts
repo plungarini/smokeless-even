@@ -86,6 +86,26 @@ export function computeSleepAwareInterval(entries: SmokeEntry[], now = new Date(
 	return totalWeight > 0 ? weightedTotal / totalWeight : null;
 }
 
+export function computeLongestCessation(entries: SmokeEntry[], now = new Date()): number | null {
+	const active = entries
+		.filter((entry) => !entry.deletedAt)
+		.slice()
+		.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+	if (active.length === 0) return null;
+
+	let longestGapMs = Math.max(0, now.getTime() - active[active.length - 1]!.timestamp.getTime());
+
+	for (let index = 1; index < active.length; index += 1) {
+		const gapMs = active[index]!.timestamp.getTime() - active[index - 1]!.timestamp.getTime();
+		if (gapMs > longestGapMs) {
+			longestGapMs = gapMs;
+		}
+	}
+
+	return longestGapMs;
+}
+
 export function computeDailyTarget(profile: UserProfile | null, now = new Date()): number | null {
 	if (!profile) return null;
 	if (profile.quitProgram === 'minimum') return null;

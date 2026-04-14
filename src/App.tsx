@@ -1,70 +1,30 @@
-import { AppShell, Badge, Button, Card, Loading, NavBar, ScreenHeader, SectionHeader, Toast } from 'even-toolkit/web';
-import type { NavItem } from 'even-toolkit/web';
+import { Card, Toast } from 'even-toolkit/web';
 import { startTransition, useEffect, useEffectEvent, useRef, useState } from 'react';
-import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
+import { EvenAppMethod, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
 import { AppGlasses } from './glasses/AppGlasses';
 import { setHudSnapshot } from './glasses/hud-store';
-import { computeDailyTarget, computeMoneySaved, computeSleepAwareInterval, computeWeightedDailyAverage, getHealthMilestone } from './domain/calculations';
-import type { EvenUserInfo, HistoryDayGroup, HudSnapshot, OnboardingDraft, QuitProgram, SmokeEntry, UserProfile } from './domain/types';
+import { computeDailyTarget, computeLongestCessation, computeMoneySaved, computeSleepAwareInterval, computeWeightedDailyAverage } from './domain/calculations';
+import type { AuthAccountInfo, EvenUserInfo, HistoryDayGroup, HudSnapshot, OnboardingDraft, SmokeEntry, UserProfile } from './domain/types';
 import { missingClientEnv } from './config/env';
 import { normalizeEvenUserInfo } from './lib/even';
-import { addDays, combineDateAndTime, currencyForCountry, formatCurrency, formatDayLabel, formatLongDate, formatMonthLabel, formatTime, formatTimerLabel, toDateInputValue, toDayKey, toMonthKey, toTimeInputValue } from './lib/time';
-import { ensureFirebaseSession } from './services/auth';
-import { addSmokeEntry, deleteAllUserData, exportSmokes, fetchDailyStats, fetchHistoryPage, fetchMonthlyStats, fetchRecentSmokes, fetchUserProfile, saveOnboarding, softDeleteSmokeEntry, subscribeToTodayCount, subscribeToUserProfile, type HistoryCursor, updateProgram, upsertEvenProfileFields } from './services/firestore';
+import { addDays, combineDateAndTime, currencyForCountry, formatDurationClock, formatTime, formatTimerClock, parseDayKey, toDateInputValue, toDayKey, toTimeInputValue } from './lib/time';
+import { ensureFirebaseSession, getCurrentAccountInfo, resolveGoogleLinkRedirect, startGoogleLinkRedirect } from './services/auth';
+import { addSmokeEntry, deleteAllUserData, ensureCanonicalUserData, exportSmokes, fetchAllSmokeEntries, fetchDailyStats, fetchHistoryPage, fetchMonthlyStats, mergeUserData, saveOnboarding, softDeleteSmokeEntry, subscribeToTodayCount, subscribeToUserProfile, type HistoryCursor, updateProgram, upsertAuthProviderFields } from './services/firestore';
+import { buildStatsSeries, getPeriodComparisonLabel, getSelectedPeriodTotal } from './features/smokeless/lib/stats-series';
+import { clearOnboardingDraft, createDefaultOnboardingDraft, loadSavedOnboarding, moveOnboardingDraft, saveOnboardingDraft } from './features/smokeless/lib/onboarding-draft';
+import { formatShortDate, getHistoryEntriesForDay, monthStart } from './features/smokeless/lib/history-calendar';
+import type { AppTab, StatsPeriod } from './features/smokeless/ui/types';
+import { AddSmokeModal } from './features/smokeless/ui/components/AddSmokeModal';
+import { BottomTabBar } from './features/smokeless/ui/components/BottomTabBar';
+import { FullScreenState } from './features/smokeless/ui/components/FullScreenState';
+import { PageHeader } from './features/smokeless/ui/components/PageHeader';
+import { HistoryPage } from './features/smokeless/ui/pages/HistoryPage';
+import { HomePage } from './features/smokeless/ui/pages/HomePage';
+import { OnboardingFlow } from './features/smokeless/ui/pages/OnboardingFlow';
+import { SettingsPage } from './features/smokeless/ui/pages/SettingsPage';
+import { StatsPage } from './features/smokeless/ui/pages/StatsPage';
 
-type AppTab = 'home' | 'stats' | 'history' | 'program';
-type StatsPeriod = 'day' | 'week' | 'month' | 'year';
 type BootState = 'booting' | 'blocked' | 'ready';
-
-const APP_TABS: NavItem[] = [
-	{ id: 'home', label: 'Home' },
-	{ id: 'stats', label: 'Stats' },
-	{ id: 'history', label: 'History' },
-	{ id: 'program', label: 'Program' },
-];
-
-const STATS_PERIODS: Array<{ id: StatsPeriod; label: string }> = [
-	{ id: 'day', label: 'Day' },
-	{ id: 'week', label: 'Week' },
-	{ id: 'month', label: 'Month' },
-	{ id: 'year', label: 'Year' },
-];
-
-function createDefaultOnboardingDraft(country: string): OnboardingDraft {
-	void country;
-	const defaultTargetDate = addDays(new Date(), 90);
-	return {
-		cigarettesPerDay: 20,
-		packPrice: 10,
-		cigarettesPerPack: 20,
-		quitProgram: 'minimum',
-		programTargetCigarettes: 0,
-		programTargetDate: toDateInputValue(defaultTargetDate),
-		step: 0,
-	};
-}
-
-function loadSavedOnboarding(uid: string, country: string): OnboardingDraft {
-	try {
-		const raw = localStorage.getItem(`smokeless:onboarding:${uid}`);
-		if (!raw) return createDefaultOnboardingDraft(country);
-		const parsed = JSON.parse(raw) as Partial<OnboardingDraft>;
-		return {
-			...createDefaultOnboardingDraft(country),
-			...parsed,
-		};
-	} catch {
-		return createDefaultOnboardingDraft(country);
-	}
-}
-
-function saveOnboardingDraft(uid: string, draft: OnboardingDraft): void {
-	localStorage.setItem(`smokeless:onboarding:${uid}`, JSON.stringify(draft));
-}
-
-function clearOnboardingDraft(uid: string): void {
-	localStorage.removeItem(`smokeless:onboarding:${uid}`);
-}
 
 function downloadJson(filename: string, payload: unknown): void {
 	const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -76,272 +36,41 @@ function downloadJson(filename: string, payload: unknown): void {
 	URL.revokeObjectURL(url);
 }
 
-function buildStatsSeries(period: StatsPeriod, dailyStats: Record<string, number>, monthlyStats: Record<string, number>, now: Date) {
-	if (period === 'day') {
-		return Array.from({ length: 14 }, (_, index) => {
-			const date = addDays(now, -(13 - index));
-			const key = toDayKey(date);
-			return {
-				key,
-				label: formatDayLabel(date).split(' ')[0],
-				count: dailyStats[key] ?? 0,
-				date,
-			};
-		});
-	}
-
-	if (period === 'week') {
-		return Array.from({ length: 8 }, (_, index) => {
-			const weekEnd = addDays(now, -(7 * (7 - index)));
-			const weekStart = addDays(weekEnd, -6);
-			let count = 0;
-			for (let cursor = 0; cursor < 7; cursor += 1) {
-				const dayKey = toDayKey(addDays(weekStart, cursor));
-				count += dailyStats[dayKey] ?? 0;
-			}
-			return {
-				key: `${toDayKey(weekStart)}:${toDayKey(weekEnd)}`,
-				label: `W${index + 1}`,
-				count,
-				date: weekEnd,
-			};
-		});
-	}
-
-	if (period === 'month') {
-		const start = new Date(now.getFullYear(), now.getMonth(), 1);
-		const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-		return Array.from({ length: daysInMonth }, (_, index) => {
-			const date = addDays(start, index);
-			const key = toDayKey(date);
-			return {
-				key,
-				label: String(date.getDate()),
-				count: dailyStats[key] ?? 0,
-				date,
-			};
-		});
-	}
-
-	return Array.from({ length: 12 }, (_, index) => {
-		const date = new Date(now.getFullYear(), now.getMonth() - (11 - index), 1);
-		const key = toMonthKey(date);
-		return {
-			key,
-			label: formatMonthLabel(date),
-			count: monthlyStats[key] ?? 0,
-			date,
-		};
-	});
-}
-
-function StatsChart({ items }: { items: Array<{ key: string; label: string; count: number }> }) {
-	const max = Math.max(...items.map((item) => item.count), 1);
-
-	return (
-		<div className="flex h-48 items-end gap-2 overflow-x-auto">
-			{items.map((item) => {
-				const height = `${Math.max(item.count === 0 ? 10 : 16, (item.count / max) * 100)}%`;
-				return (
-					<div key={item.key} className="flex min-w-9 flex-1 flex-col items-center gap-2">
-						<div
-							className={`w-full rounded-t-[14px] bg-[var(--smoke-accent)] transition-all ${item.count === 0 ? 'ghost-bar' : ''}`}
-							style={{ height }}
-						/>
-						<div className="text-center text-[10px] uppercase tracking-[0.18em] text-text-dim">{item.label}</div>
-					</div>
-				);
-			})}
-		</div>
-	);
-}
-
-function FullScreenState({ title, body, loading = false }: { title: string; body: string; loading?: boolean }) {
-	return (
-		<div className="mx-auto flex min-h-dvh max-w-md items-center px-4 py-10">
-			<Card padding="default" className="w-full rounded-[30px] border border-white/[0.06] bg-black/[0.25]">
-				<div className="flex flex-col gap-4">
-					{loading && (
-						<div className="flex items-center gap-3">
-							<Loading size={18} />
-							<span className="text-detail uppercase tracking-[0.24em] text-text-dim">Starting Smokeless</span>
-						</div>
-					)}
-					<h1 className="font-[Barlow_Condensed] text-5xl uppercase tracking-[0.08em] text-text">{title}</h1>
-					<p className="text-normal-body leading-relaxed text-text-dim">{body}</p>
-				</div>
-			</Card>
-		</div>
-	);
-}
-
-function ProgramChoice({
-	value,
-	active,
-	description,
-	onSelect,
-}: {
-	value: QuitProgram;
-	active: boolean;
-	description: string;
-	onSelect: (value: QuitProgram) => void;
-}) {
-	return (
-		<button
-			type="button"
-			onClick={() => onSelect(value)}
-			className={`rounded-[20px] border px-4 py-4 text-left transition ${
-				active ? 'border-[var(--smoke-accent)] bg-[color-mix(in_srgb,var(--smoke-accent)_18%,transparent)]' : 'border-white/[0.08] bg-white/[0.02]'
-			}`}
-		>
-			<div className="font-[Barlow_Condensed] text-2xl uppercase tracking-[0.08em] text-text">{value}</div>
-			<div className="mt-1 text-detail uppercase tracking-[0.16em] text-text-dim">{description}</div>
-		</button>
-	);
-}
-
-function NumericField({
-	label,
-	value,
-	step = '1',
-	onChange,
-}: {
-	label: string;
-	value: number;
-	step?: string;
-	onChange: (value: number) => void;
-}) {
-	return (
-		<label className="flex flex-col gap-2">
-			<span className="text-detail uppercase tracking-[0.18em] text-text-dim">{label}</span>
-			<input className="smoke-input" type="number" inputMode="decimal" step={step} value={Number.isFinite(value) ? value : 0} onChange={(event) => onChange(Number(event.currentTarget.value || 0))} />
-		</label>
-	);
-}
-
-function OnboardingFlow({
-	country,
-	draft,
-	onChange,
-	onSubmit,
-}: {
-	country: string;
-	draft: OnboardingDraft;
-	onChange: (next: OnboardingDraft) => void;
-	onSubmit: () => Promise<void>;
-}) {
-	const currency = currencyForCountry(country);
-
-	return (
-		<div className="mx-auto max-w-md px-4 pb-10 pt-6">
-			<ScreenHeader title="Smokeless" />
-			<div className="mt-6 flex flex-col gap-4">
-				<Card padding="default" className="rounded-[28px]">
-					<div className="flex items-center justify-between">
-						<div>
-							<div className="text-detail uppercase tracking-[0.22em] text-text-dim">Onboarding</div>
-							<h2 className="font-[Barlow_Condensed] text-4xl uppercase tracking-[0.08em] text-text">Step {draft.step + 1} of 4</h2>
-						</div>
-						<Badge variant="accent">{currency}</Badge>
-					</div>
-				</Card>
-
-				{draft.step === 0 && (
-					<Card padding="default" className="rounded-[28px]">
-						<div className="flex flex-col gap-4">
-							<SectionHeader title="How many cigarettes do you smoke per day?" />
-							<NumericField label="Daily baseline" value={draft.cigarettesPerDay} onChange={(value) => onChange({ ...draft, cigarettesPerDay: value })} />
-						</div>
-					</Card>
-				)}
-
-				{draft.step === 1 && (
-					<Card padding="default" className="rounded-[28px]">
-						<div className="flex flex-col gap-4">
-							<SectionHeader title="What does a pack cost?" />
-							<NumericField label={`Pack price (${currency})`} value={draft.packPrice} step="0.01" onChange={(value) => onChange({ ...draft, packPrice: value })} />
-						</div>
-					</Card>
-				)}
-
-				{draft.step === 2 && (
-					<Card padding="default" className="rounded-[28px]">
-						<div className="flex flex-col gap-4">
-							<SectionHeader title="How many cigarettes are in a pack?" />
-							<NumericField label="Cigarettes per pack" value={draft.cigarettesPerPack} onChange={(value) => onChange({ ...draft, cigarettesPerPack: value })} />
-						</div>
-					</Card>
-				)}
-
-				{draft.step === 3 && (
-					<Card padding="default" className="rounded-[28px]">
-						<div className="flex flex-col gap-4">
-							<SectionHeader title="Set a quit program?" />
-							<div className="grid gap-3">
-								<ProgramChoice value="linear" active={draft.quitProgram === 'linear'} description="Gradual reduction toward a target date." onSelect={(quitProgram) => onChange({ ...draft, quitProgram })} />
-								<ProgramChoice value="fixed" active={draft.quitProgram === 'fixed'} description="Keep a fixed daily cap." onSelect={(quitProgram) => onChange({ ...draft, quitProgram })} />
-								<ProgramChoice value="minimum" active={draft.quitProgram === 'minimum'} description="Track only, no target." onSelect={(quitProgram) => onChange({ ...draft, quitProgram })} />
-							</div>
-							{draft.quitProgram !== 'minimum' && (
-								<div className="grid gap-4 rounded-[22px] border border-white/[0.08] bg-white/[0.02] p-4">
-									<NumericField label="Target cigarettes" value={draft.programTargetCigarettes} onChange={(value) => onChange({ ...draft, programTargetCigarettes: value })} />
-									<label className="flex flex-col gap-2">
-										<span className="text-detail uppercase tracking-[0.18em] text-text-dim">Target date</span>
-										<input className="smoke-input" type="date" value={draft.programTargetDate} onChange={(event) => onChange({ ...draft, programTargetDate: event.currentTarget.value })} />
-									</label>
-								</div>
-							)}
-						</div>
-					</Card>
-				)}
-
-				<div className="flex gap-3">
-					<Button variant="secondary" className="flex-1" disabled={draft.step === 0} onClick={() => onChange({ ...draft, step: Math.max(0, draft.step - 1) })}>
-						Back
-					</Button>
-					{draft.step < 3 ? (
-						<Button variant="highlight" className="flex-1" onClick={() => onChange({ ...draft, step: Math.min(3, draft.step + 1) })}>
-							Next
-						</Button>
-					) : (
-						<Button variant="highlight" className="flex-1" onClick={() => void onSubmit()}>
-							Start tracking
-						</Button>
-					)}
-				</div>
-			</div>
-		</div>
-	);
-}
-
 export default function App() {
 	const [bootState, setBootState] = useState<BootState>('booting');
 	const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+	const [bootstrapErrorDetail, setBootstrapErrorDetail] = useState<string | null>(null);
+	const [canonicalUid, setCanonicalUid] = useState<string | null>(null);
 	const [tab, setTab] = useState<AppTab>('home');
-	const [statsPeriod, setStatsPeriod] = useState<StatsPeriod>('day');
+	const [statsPeriod, setStatsPeriod] = useState<StatsPeriod>('week');
 	const [toast, setToast] = useState('');
 	const [evenUser, setEvenUser] = useState<EvenUserInfo | null>(null);
+	const [accountInfo, setAccountInfo] = useState<AuthAccountInfo | null>(null);
 	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 	const [onboardingDraft, setOnboardingDraft] = useState<OnboardingDraft>(createDefaultOnboardingDraft('US'));
 	const [todayCount, setTodayCount] = useState(0);
 	const [dailyStats, setDailyStats] = useState<Record<string, number>>({});
 	const [monthlyStats, setMonthlyStats] = useState<Record<string, number>>({});
-	const [recentSmokes, setRecentSmokes] = useState<SmokeEntry[]>([]);
 	const [historyGroups, setHistoryGroups] = useState<HistoryDayGroup[]>([]);
 	const [historyCursor, setHistoryCursor] = useState<HistoryCursor>(null);
 	const [historyHasMore, setHistoryHasMore] = useState(false);
 	const [historyLoading, setHistoryLoading] = useState(false);
 	const [mutating, setMutating] = useState(false);
 	const [editingOnboarding, setEditingOnboarding] = useState(false);
-	const [pastEntryDate, setPastEntryDate] = useState(() => toDateInputValue(new Date()));
-	const [pastEntryTime, setPastEntryTime] = useState(() => toTimeInputValue(new Date()));
+	const [historyMonth, setHistoryMonth] = useState(() => monthStart(new Date()));
+	const [selectedHistoryDay, setSelectedHistoryDay] = useState(() => toDayKey(new Date()));
+	const [historyModalOpen, setHistoryModalOpen] = useState(false);
+	const [modalEntryDate, setModalEntryDate] = useState(() => toDateInputValue(new Date()));
+	const [modalEntryTime, setModalEntryTime] = useState(() => toTimeInputValue(new Date()));
+	const [allSmokeEntries, setAllSmokeEntries] = useState<SmokeEntry[]>([]);
 	const [clock, setClock] = useState(() => Date.now());
 	const [countBump, setCountBump] = useState(false);
 	const previousTodayCountRef = useRef(0);
 	const unsubscribeRef = useRef<(() => void)[]>([]);
+	const bootstrapStartedRef = useRef(false);
 
 	useEffect(() => {
-		const timer = setInterval(() => setClock(Date.now()), 60_000);
+		const timer = setInterval(() => setClock(Date.now()), 1_000);
 		return () => clearInterval(timer);
 	}, []);
 
@@ -359,10 +88,14 @@ export default function App() {
 	const weightedAverage = computeWeightedDailyAverage(dailyStats, userProfile?.createdAt ?? null, now);
 	const dailyTarget = computeDailyTarget(userProfile, now);
 	const moneySaved = computeMoneySaved(userProfile, weightedAverage, now);
-	const averageInterval = computeSleepAwareInterval(recentSmokes, now);
-	const healthMilestone = getHealthMilestone(userProfile?.lastSmokeTimestamp ?? userProfile?.createdAt ?? null, now);
-	const overTarget = dailyTarget !== null && todayCount > dailyTarget;
 	const statsSeries = buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now);
+	const selectedPeriodTotal = getSelectedPeriodTotal(statsPeriod, dailyStats, monthlyStats, now);
+	const comparisonLabel = getPeriodComparisonLabel(statsPeriod, selectedPeriodTotal, weightedAverage, now);
+	const selectedHistoryEntries = getHistoryEntriesForDay(historyGroups, selectedHistoryDay);
+	const historyDaysWithEntries = new Set(historyGroups.map((group) => group.dayKey));
+	const timerLabel = formatTimerClock(userProfile?.lastSmokeTimestamp ?? null, now);
+	const longestCessationLabel = formatDurationClock(computeLongestCessation(allSmokeEntries, now));
+	const averageIntervalLabel = formatDurationClock((computeSleepAwareInterval(allSmokeEntries, now) ?? 0) * 60_000 || null);
 
 	const hudSnapshot: HudSnapshot = {
 		todayCount,
@@ -377,10 +110,10 @@ export default function App() {
 	}, [hudSnapshot]);
 
 	useEffect(() => {
-		if (evenUser && !userProfile) {
-			saveOnboardingDraft(evenUser.uid, onboardingDraft);
+		if (canonicalUid && !userProfile) {
+			saveOnboardingDraft(canonicalUid, onboardingDraft);
 		}
-	}, [evenUser, onboardingDraft, userProfile]);
+	}, [canonicalUid, onboardingDraft, userProfile]);
 
 	useEffect(() => {
 		if (!userProfile) return;
@@ -411,16 +144,11 @@ export default function App() {
 	});
 
 	const refreshDerivedData = useEffectEvent(async (uid: string, includeHistory = false) => {
-		const [daily, monthly, smokes] = await Promise.all([
-			fetchDailyStats(uid),
-			fetchMonthlyStats(uid),
-			fetchRecentSmokes(uid),
-		]);
-
+		const [daily, monthly, entries] = await Promise.all([fetchDailyStats(uid), fetchMonthlyStats(uid), fetchAllSmokeEntries(uid)]);
 		startTransition(() => {
 			setDailyStats(daily);
 			setMonthlyStats(monthly);
-			setRecentSmokes(smokes);
+			setAllSmokeEntries(entries);
 			setTodayCount(daily[toDayKey(new Date())] ?? 0);
 		});
 
@@ -442,102 +170,122 @@ export default function App() {
 	const bootstrap = useEffectEvent(async () => {
 		if (missingClientEnv.length > 0) {
 			setBlockedMessage(`Missing web config: ${missingClientEnv.join(', ')}`);
+			setBootstrapErrorDetail(`missing-env:${missingClientEnv.join(',')}`);
 			setBootState('blocked');
 			return;
 		}
 
 		try {
 			const bridge = await waitForEvenAppBridge();
-			const rawUser = await bridge.getUserInfo?.();
+			const rawUser = typeof bridge.getUserInfo === 'function' ? await bridge.getUserInfo() : await bridge.callEvenApp(EvenAppMethod.GetUserInfo);
 			const normalized = normalizeEvenUserInfo(rawUser);
-
 			if (!normalized) {
-				setBlockedMessage('Unable to connect to your Even account. Please restart the app.');
+				setBlockedMessage('Unable to connect to Even. Please restart the app.');
+				setBootstrapErrorDetail('even-user:normalize-failed');
 				setBootState('blocked');
 				return;
 			}
 
-			setEvenUser(normalized);
-			setOnboardingDraft(loadSavedOnboarding(normalized.uid, normalized.country));
-			await ensureFirebaseSession(normalized);
+			for (const unsubscribe of unsubscribeRef.current) unsubscribe();
+			unsubscribeRef.current = [];
 
-			const profile = await fetchUserProfile(normalized.uid);
-			if (profile) {
-				await upsertEvenProfileFields(normalized.uid, normalized);
+			setEvenUser(normalized);
+
+			const redirectResolution = await resolveGoogleLinkRedirect();
+			const firebaseUid = redirectResolution.activeUid ?? (await ensureFirebaseSession());
+			const activeAccount = redirectResolution.account ?? getCurrentAccountInfo();
+
+			if (redirectResolution.mergedFromUid && redirectResolution.mergedFromUid !== firebaseUid) {
+				await mergeUserData(redirectResolution.mergedFromUid, firebaseUid, normalized, activeAccount);
+				moveOnboardingDraft(redirectResolution.mergedFromUid, firebaseUid);
 			}
 
-			const unsubscribes = [
-				subscribeToUserProfile(normalized.uid, (nextProfile) => {
+			setAccountInfo(activeAccount);
+			setCanonicalUid(firebaseUid);
+			setOnboardingDraft(loadSavedOnboarding(firebaseUid, normalized.country));
+			await ensureCanonicalUserData(firebaseUid, normalized);
+			if (activeAccount) await upsertAuthProviderFields(firebaseUid, activeAccount);
+
+			unsubscribeRef.current = [
+				subscribeToUserProfile(firebaseUid, (nextProfile) => {
 					startTransition(() => {
 						setUserProfile(nextProfile);
 						if (!nextProfile) {
-							setOnboardingDraft(loadSavedOnboarding(normalized.uid, normalized.country));
+							setOnboardingDraft(loadSavedOnboarding(firebaseUid, normalized.country));
 						}
 					});
 				}),
-				subscribeToTodayCount(normalized.uid, (count) => {
+				subscribeToTodayCount(firebaseUid, (count) => {
 					startTransition(() => setTodayCount(count));
 				}),
 			];
 
-			unsubscribeRef.current = unsubscribes;
-			await refreshDerivedData(normalized.uid, true);
+			await refreshDerivedData(firebaseUid, true);
+			setBootstrapErrorDetail(null);
 			setBootState('ready');
 		} catch (error) {
 			console.error('[Smokeless] bootstrap failed', error);
-			setBlockedMessage('Unable to connect to your Even account. Please restart the app.');
+			setBlockedMessage('Smokeless could not finish startup. Please restart the app.');
+			if (error instanceof Error) {
+				const code = 'code' in error && typeof error.code === 'string' ? error.code : '';
+				setBootstrapErrorDetail(code ? `${code}: ${error.message}` : error.message);
+			} else {
+				setBootstrapErrorDetail(String(error));
+			}
 			setBootState('blocked');
 		}
 	});
 
 	useEffect(() => {
+		if (bootstrapStartedRef.current) return;
+		bootstrapStartedRef.current = true;
 		void bootstrap();
-	}, [bootstrap]);
+	}, []);
 
 	const handleOnboardingSubmit = useEffectEvent(async () => {
-		if (!evenUser) return;
+		if (!evenUser || !canonicalUid) return;
 		setMutating(true);
 		try {
-			await saveOnboarding(evenUser.uid, evenUser, onboardingDraft);
-			clearOnboardingDraft(evenUser.uid);
+			await saveOnboarding(canonicalUid, evenUser, onboardingDraft, accountInfo);
+			clearOnboardingDraft(canonicalUid);
 			setEditingOnboarding(false);
-			await refreshDerivedData(evenUser.uid, true);
+			await refreshDerivedData(canonicalUid, true);
 			pushToast('Onboarding saved');
 		} finally {
 			setMutating(false);
 		}
 	});
 
+	const handleGoogleLink = useEffectEvent(async () => {
+		setMutating(true);
+		try {
+			await startGoogleLinkRedirect();
+		} catch (error) {
+			console.error('[Smokeless] google link failed to start', error);
+			setMutating(false);
+			pushToast('Could not start Google linking');
+		}
+	});
+
 	const handleAddSmoke = useEffectEvent(async () => {
-		if (!evenUser || !userProfile || mutating) return false;
-
-		const snapshot = {
-			todayCount,
-			lastSmokeTimestamp: userProfile.lastSmokeTimestamp,
-		};
-
+		if (!canonicalUid || !userProfile || mutating) return false;
+		const snapshot = { todayCount, lastSmokeTimestamp: userProfile.lastSmokeTimestamp };
 		const optimisticNow = new Date();
 		setMutating(true);
 		startTransition(() => {
 			setTodayCount(snapshot.todayCount + 1);
-			setUserProfile({
-				...userProfile,
-				lastSmokeTimestamp: optimisticNow,
-			});
+			setUserProfile({ ...userProfile, lastSmokeTimestamp: optimisticNow });
 		});
 
 		try {
-			await addSmokeEntry(evenUser.uid, optimisticNow);
-			await refreshDerivedData(evenUser.uid, tab === 'history');
+			await addSmokeEntry(canonicalUid, optimisticNow);
+			await refreshDerivedData(canonicalUid, tab === 'history');
 			return true;
 		} catch (error) {
 			console.error('[Smokeless] add smoke failed', error);
 			startTransition(() => {
 				setTodayCount(snapshot.todayCount);
-				setUserProfile({
-					...userProfile,
-					lastSmokeTimestamp: snapshot.lastSmokeTimestamp,
-				});
+				setUserProfile({ ...userProfile, lastSmokeTimestamp: snapshot.lastSmokeTimestamp });
 			});
 			pushToast('Could not log smoke');
 			return false;
@@ -547,11 +295,15 @@ export default function App() {
 	});
 
 	const handleAddPastEntry = useEffectEvent(async () => {
-		if (!evenUser) return;
+		if (!canonicalUid) return;
 		setMutating(true);
 		try {
-			await addSmokeEntry(evenUser.uid, combineDateAndTime(pastEntryDate, pastEntryTime));
-			await refreshDerivedData(evenUser.uid, true);
+			const entryDate = combineDateAndTime(modalEntryDate, modalEntryTime);
+			await addSmokeEntry(canonicalUid, entryDate);
+			await refreshDerivedData(canonicalUid, true);
+			setHistoryModalOpen(false);
+			setSelectedHistoryDay(modalEntryDate);
+			setHistoryMonth(monthStart(entryDate));
 			pushToast('Past smoke added');
 		} catch (error) {
 			console.error('[Smokeless] add past entry failed', error);
@@ -562,14 +314,12 @@ export default function App() {
 	});
 
 	const handleDeleteEntry = useEffectEvent(async (entry: SmokeEntry) => {
-		if (!evenUser) return;
-		if (!window.confirm(`Soft delete the smoke logged at ${formatTime(entry.timestamp)}?`)) {
-			return;
-		}
+		if (!canonicalUid) return;
+		if (!window.confirm(`Soft delete the smoke logged at ${formatTime(entry.timestamp)}?`)) return;
 		setMutating(true);
 		try {
-			await softDeleteSmokeEntry(evenUser.uid, entry.id);
-			await refreshDerivedData(evenUser.uid, true);
+			await softDeleteSmokeEntry(canonicalUid, entry.id);
+			await refreshDerivedData(canonicalUid, true);
 			pushToast('Entry deleted');
 		} catch (error) {
 			console.error('[Smokeless] delete smoke failed', error);
@@ -580,10 +330,10 @@ export default function App() {
 	});
 
 	const handleLoadMoreHistory = useEffectEvent(async () => {
-		if (!evenUser || !historyHasMore || historyLoading) return;
+		if (!canonicalUid || !historyHasMore || historyLoading) return;
 		setHistoryLoading(true);
 		try {
-			const page = await fetchHistoryPage(evenUser.uid, historyCursor);
+			const page = await fetchHistoryPage(canonicalUid, historyCursor);
 			startTransition(() => {
 				setHistoryGroups((current) => [...current, ...page.groups]);
 				setHistoryCursor(page.cursor);
@@ -595,22 +345,19 @@ export default function App() {
 	});
 
 	const handleProgramSave = useEffectEvent(async () => {
-		if (!evenUser || !userProfile) return;
+		if (!canonicalUid || !userProfile) return;
 		setMutating(true);
 		try {
-			await updateProgram(evenUser.uid, {
+			await updateProgram(canonicalUid, {
 				cigarettesPerDay: onboardingDraft.cigarettesPerDay,
 				packPrice: onboardingDraft.packPrice,
 				cigarettesPerPack: onboardingDraft.cigarettesPerPack,
 				quitProgram: onboardingDraft.quitProgram,
 				programTargetCigarettes: onboardingDraft.quitProgram === 'minimum' ? 0 : onboardingDraft.programTargetCigarettes,
-				programTargetDate:
-					onboardingDraft.quitProgram === 'minimum' || !onboardingDraft.programTargetDate
-						? null
-						: new Date(`${onboardingDraft.programTargetDate}T00:00:00`),
+				programTargetDate: onboardingDraft.quitProgram === 'minimum' || !onboardingDraft.programTargetDate ? null : new Date(`${onboardingDraft.programTargetDate}T00:00:00`),
 				programStartDate: new Date(),
 			});
-			await refreshDerivedData(evenUser.uid, false);
+			await refreshDerivedData(canonicalUid, false);
 			pushToast('Program saved');
 		} finally {
 			setMutating(false);
@@ -618,7 +365,7 @@ export default function App() {
 	});
 
 	const handleResetOnboarding = useEffectEvent(() => {
-		if (!userProfile || !evenUser) return;
+		if (!userProfile || !canonicalUid) return;
 		const nextDraft: OnboardingDraft = {
 			cigarettesPerDay: userProfile.cigarettesPerDay,
 			packPrice: userProfile.packPrice,
@@ -630,38 +377,45 @@ export default function App() {
 		};
 		setOnboardingDraft(nextDraft);
 		setEditingOnboarding(true);
-		saveOnboardingDraft(evenUser.uid, nextDraft);
+		saveOnboardingDraft(canonicalUid, nextDraft);
 		pushToast('Onboarding reopened');
 	});
 
 	const handleExport = useEffectEvent(async () => {
-		if (!evenUser) return;
-		const payload = await exportSmokes(evenUser.uid);
+		if (!canonicalUid) return;
+		const payload = await exportSmokes(canonicalUid);
 		downloadJson(`smokeless-export-${toDayKey(new Date())}.json`, payload);
 		pushToast('Export ready');
 	});
 
 	const handleDeleteAll = useEffectEvent(async () => {
-		if (!evenUser) return;
+		if (!canonicalUid) return;
 		if (!window.confirm('Delete all Smokeless data?')) return;
 		if (!window.confirm('This removes smoke history, stats, and onboarding data. Continue?')) return;
 		setMutating(true);
 		try {
-			await deleteAllUserData(evenUser.uid);
-			clearOnboardingDraft(evenUser.uid);
+			await deleteAllUserData(canonicalUid);
+			clearOnboardingDraft(canonicalUid);
 			setDailyStats({});
 			setMonthlyStats({});
-			setRecentSmokes([]);
 			setHistoryGroups([]);
 			setHistoryCursor(null);
 			setHistoryHasMore(false);
+			setAllSmokeEntries([]);
+			setTodayCount(0);
+			setUserProfile(null);
 			pushToast('All data deleted');
 		} finally {
 			setMutating(false);
 		}
 	});
 
-	const currentCurrency = currencyForCountry(userProfile?.evenCountry || evenUser?.country || 'US');
+	const openHistoryModal = useEffectEvent(() => {
+		const baseDate = parseDayKey(selectedHistoryDay);
+		setModalEntryDate(toDateInputValue(baseDate));
+		setModalEntryTime(toTimeInputValue(new Date()));
+		setHistoryModalOpen(true);
+	});
 
 	if (bootState === 'booting') {
 		return (
@@ -674,16 +428,24 @@ export default function App() {
 
 	if (bootState === 'blocked') {
 		return (
-			<>
-				<AppGlasses snapshot={hudSnapshot} onConfirmSmoke={handleAddSmoke} />
-				<FullScreenState title="Account Blocked" body={blockedMessage || 'Unable to connect to your Even account. Please restart the app.'} />
-			</>
+			<div className="mx-auto flex h-dvhitems-center px-4 py-10">
+				<Card padding="default" className="w-full rounded-[20px] border border-border-light bg-surface">
+					<div className="flex flex-col gap-4">
+						<h1 className="font-[DM_Serif_Display] text-4xl tracking-[-0.04em] text-text">Smokeless</h1>
+						<p className="text-normal-body leading-relaxed text-text-dim">{blockedMessage || 'Smokeless could not finish startup. Please restart the app.'}</p>
+						{bootstrapErrorDetail ? (
+							<div className="rounded-[16px] border border-border-light bg-bg p-3">
+								<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Debug</div>
+								<p className="mt-2 break-words font-mono text-[11px] leading-relaxed text-text-dim">{bootstrapErrorDetail}</p>
+							</div>
+						) : null}
+					</div>
+				</Card>
+			</div>
 		);
 	}
 
-	if (!evenUser) {
-		return null;
-	}
+	if (!evenUser || !canonicalUid) return null;
 
 	if (!userProfile || editingOnboarding) {
 		return (
@@ -694,227 +456,122 @@ export default function App() {
 		);
 	}
 
+	const effectiveAuthProvider = accountInfo?.authProvider ?? userProfile.authProvider ?? 'anonymous';
+	const effectiveGoogleEmail = accountInfo?.googleEmail || userProfile.googleEmail;
+	const effectiveGoogleDisplayName = accountInfo?.googleDisplayName || userProfile.googleDisplayName;
+	const googleLinked = effectiveAuthProvider === 'google';
+	const currentCurrency = currencyForCountry(userProfile.evenCountry || evenUser.country);
+
 	return (
 		<>
 			<AppGlasses snapshot={hudSnapshot} onConfirmSmoke={handleAddSmoke} />
-			<AppShell header={<NavBar items={APP_TABS} activeId={tab} onNavigate={(next) => startTransition(() => setTab(next as AppTab))} />} className="mx-auto max-w-md">
-				<div className="px-4 pb-10 pt-6">
-					<ScreenHeader title="Smokeless" />
-					<p className="mt-2 text-normal-body text-text-dim">Weighted averages ignore zero-smoke days and push recent days to the front.</p>
 
-					{tab === 'home' && (
-						<div className="mt-6 flex flex-col gap-4">
-							<Card
-								padding="default"
-								className={`rounded-[32px] border ${overTarget ? 'border-[var(--smoke-danger)]' : 'border-white/[0.06]'} ${overTarget ? 'bg-[color-mix(in_srgb,var(--smoke-danger)_14%,transparent)]' : ''}`}
-							>
-								<div className="flex items-start justify-between gap-4">
-									<div>
-										<div className="text-detail uppercase tracking-[0.24em] text-text-dim">Today</div>
-										<div className={`font-[Barlow_Condensed] text-[6rem] leading-none tracking-[0.04em] text-text ${countBump ? 'ember-bump' : ''}`}>{todayCount}</div>
-									</div>
-									<div className="flex flex-col items-end gap-2">
-										<Badge variant={overTarget ? 'neutral' : 'accent'}>{dailyTarget === null ? 'Tracking only' : `Target ${dailyTarget}`}</Badge>
-										<span className="text-detail uppercase tracking-[0.18em] text-text-dim">{currentCurrency}</span>
-									</div>
-								</div>
-							</Card>
+			<div className="smoke-app-shell h-dvh">
+				<div className="smoke-app-ornament smoke-app-ornament-top" />
+				<div className="smoke-app-ornament smoke-app-ornament-bottom" />
 
-							<Card padding="default" className="rounded-[28px]">
-								<div className="grid gap-4">
-									<div>
-										<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Timer</div>
-										<div className="mt-1 font-[Barlow_Condensed] text-4xl uppercase tracking-[0.06em] text-text">{formatTimerLabel(userProfile.lastSmokeTimestamp, now)}</div>
-									</div>
-									<div className="grid grid-cols-2 gap-3">
-										<div className="rounded-[20px] border border-white/[0.06] bg-white/[0.02] p-4">
-											<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Money saved</div>
-											<div className="mt-2 text-large-title text-text">{formatCurrency(moneySaved, userProfile.evenCountry || evenUser.country)}</div>
-										</div>
-										<div className="rounded-[20px] border border-white/[0.06] bg-white/[0.02] p-4">
-											<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Weighted avg</div>
-											<div className="mt-2 text-large-title text-text">{weightedAverage.toFixed(1)}/day</div>
-										</div>
-									</div>
-								</div>
-							</Card>
+				<div className="relative flex h-full flex-col max-w-md mx-auto overflow-x-visible overflow-y-hidden">
+					{tab === 'home' ? <PageHeader title="Today's record" subtitle={formatShortDate(now)} /> : null}
+					{tab === 'stats' ? <PageHeader title="Stats" subtitle="Weighted view of your smoking trend" /> : null}
+					{tab === 'history' ? (
+						<PageHeader
+							title="History"
+							subtitle="Select a date to view logs"
+							action={
+								<button type="button" className="inline-flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.05] text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" onClick={() => void openHistoryModal()} aria-label="Add smoke entry" title="Add smoke entry">
+									<span className="text-[2rem] leading-none">+</span>
+								</button>
+							}
+						/>
+					) : null}
+					{tab === 'settings' ? <PageHeader title="Settings" subtitle="Account, program, and app actions" /> : null}
 
-							<Card padding="default" className="rounded-[28px]">
-								<div className="flex flex-col gap-3">
-									<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Health timeline</div>
-									<p className="text-normal-body leading-relaxed text-text">{healthMilestone}</p>
-									<p className="text-normal-body text-text-dim">
-										Average interval: {averageInterval ? `${Math.round(averageInterval)} min` : 'Need more history'}
-									</p>
-								</div>
-							</Card>
+					<div className="min-h-0 flex-1 overflow-y-auto overflow-x-visible px-4 pb-32">
+						{tab === 'home' ? (
+							<HomePage
+								todayCount={todayCount}
+								longestCessationLabel={longestCessationLabel}
+								moneySaved={moneySaved}
+								timerLabel={timerLabel}
+								countBump={countBump}
+								mutating={mutating}
+								country={userProfile.evenCountry || evenUser.country}
+								onAddSmoke={() => void handleAddSmoke()}
+							/>
+						) : null}
 
-							<Button variant="highlight" className="h-14 rounded-[20px]" disabled={mutating} onClick={() => void handleAddSmoke()}>
-								Add smoke
-							</Button>
-						</div>
-					)}
+						{tab === 'stats' ? (
+							<StatsPage
+								statsPeriod={statsPeriod}
+								onStatsPeriodChange={setStatsPeriod}
+								statsSeries={statsSeries}
+								totalSmoked={selectedPeriodTotal}
+								comparisonLabel={comparisonLabel}
+								weightedAverage={weightedAverage}
+								averageIntervalLabel={averageIntervalLabel}
+							/>
+						) : null}
 
-					{tab === 'stats' && (
-						<div className="mt-6 flex flex-col gap-4">
-							<Card padding="default" className="rounded-[28px]">
-								<div className="flex flex-wrap gap-2">
-									{STATS_PERIODS.map((period) => (
-										<Button
-											key={period.id}
-											variant={statsPeriod === period.id ? 'highlight' : 'secondary'}
-											size="sm"
-											onClick={() => setStatsPeriod(period.id)}
-										>
-											{period.label}
-										</Button>
-									))}
-								</div>
-							</Card>
+						{tab === 'history' ? (
+							<HistoryPage
+								historyMonth={historyMonth}
+								selectedHistoryDay={selectedHistoryDay}
+								historyDaysWithEntries={historyDaysWithEntries}
+								selectedHistoryEntries={selectedHistoryEntries}
+								historyLoading={historyLoading}
+								historyHasMore={historyHasMore}
+								onHistoryMonthChange={setHistoryMonth}
+								onHistoryDaySelect={(dayKey, date) => {
+									setSelectedHistoryDay(dayKey);
+									setHistoryMonth(date);
+								}}
+								onOpenHistoryModal={() => void openHistoryModal()}
+								onDeleteEntry={(entry) => void handleDeleteEntry(entry)}
+								onLoadMore={() => void handleLoadMoreHistory()}
+							/>
+						) : null}
 
-							<Card padding="default" className="rounded-[28px]">
-								<div className="flex flex-col gap-4">
-									<SectionHeader title="Weighted avg / active days only" />
-									<StatsChart items={statsSeries} />
-								</div>
-							</Card>
+						{tab === 'settings' ? (
+							<SettingsPage
+								userProfile={userProfile}
+								evenName={userProfile.evenName || evenUser.name}
+								canonicalUid={canonicalUid}
+								googleLinked={googleLinked}
+								effectiveGoogleEmail={effectiveGoogleEmail}
+								effectiveGoogleDisplayName={effectiveGoogleDisplayName}
+								currentCurrency={currentCurrency}
+								onboardingDraft={onboardingDraft}
+								mutating={mutating}
+								onGoogleLink={() => void handleGoogleLink()}
+								onDraftChange={(updater) => setOnboardingDraft((current) => updater(current))}
+								onProgramSave={() => void handleProgramSave()}
+								onResetOnboarding={handleResetOnboarding}
+								onExport={() => void handleExport()}
+								onDeleteAll={() => void handleDeleteAll()}
+							/>
+						) : null}
+					</div>
 
-							<Card padding="default" className="rounded-[28px]">
-								<div className="grid grid-cols-2 gap-3">
-									<div className="rounded-[20px] border border-white/[0.06] bg-white/[0.02] p-4">
-										<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Weighted avg</div>
-										<div className="mt-2 text-large-title text-text">{weightedAverage.toFixed(1)}/day</div>
-									</div>
-									<div className="rounded-[20px] border border-white/[0.06] bg-white/[0.02] p-4">
-										<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Today</div>
-										<div className="mt-2 text-large-title text-text">{todayCount}</div>
-									</div>
-								</div>
-								<p className="mt-4 text-normal-body text-text-dim">
-									Zero-smoke days stay visible in the chart as ghost bars but are excluded from the weighted average below.
-								</p>
-							</Card>
-						</div>
-					)}
-
-					{tab === 'history' && (
-						<div className="mt-6 flex flex-col gap-4">
-							<Card padding="default" className="rounded-[28px]">
-								<div className="grid gap-4">
-									<SectionHeader title="Add past entry" />
-									<div className="grid grid-cols-2 gap-3">
-										<label className="flex flex-col gap-2">
-											<span className="text-detail uppercase tracking-[0.18em] text-text-dim">Date</span>
-											<input className="smoke-input" type="date" value={pastEntryDate} onChange={(event) => setPastEntryDate(event.currentTarget.value)} />
-										</label>
-										<label className="flex flex-col gap-2">
-											<span className="text-detail uppercase tracking-[0.18em] text-text-dim">Time</span>
-											<input className="smoke-input" type="time" value={pastEntryTime} onChange={(event) => setPastEntryTime(event.currentTarget.value)} />
-										</label>
-									</div>
-									<Button variant="secondary" className="rounded-[18px]" disabled={mutating} onClick={() => void handleAddPastEntry()}>
-										Add timestamped smoke
-									</Button>
-								</div>
-							</Card>
-
-							{historyGroups.map((group) => (
-								<Card key={group.dayKey} padding="default" className="rounded-[28px]">
-									<div className="flex flex-col gap-3">
-										<div className="flex items-center justify-between">
-											<div>
-												<div className="font-[Barlow_Condensed] text-3xl uppercase tracking-[0.08em] text-text">{formatLongDate(group.date)}</div>
-												<div className="text-detail uppercase tracking-[0.16em] text-text-dim">{group.count} smokes</div>
-											</div>
-											<Badge variant="neutral">{group.dayKey}</Badge>
-										</div>
-										<div className="flex flex-wrap gap-2">
-											{group.entries.map((entry) => (
-												<button
-													key={entry.id}
-												type="button"
-												onClick={() => void handleDeleteEntry(entry)}
-												className="rounded-full border border-white/[0.08] px-3 py-2 text-detail uppercase tracking-[0.14em] text-text-dim transition hover:border-[var(--smoke-danger)] hover:text-text"
-											>
-													{formatTime(entry.timestamp)}
-												</button>
-											))}
-										</div>
-									</div>
-								</Card>
-							))}
-
-							{historyLoading && <Card padding="default" className="rounded-[28px]"><Loading size={18} /></Card>}
-
-							{historyHasMore && (
-								<Button variant="secondary" className="rounded-[20px]" disabled={historyLoading} onClick={() => void handleLoadMoreHistory()}>
-									Load 30 more days
-								</Button>
-							)}
-						</div>
-					)}
-
-					{tab === 'program' && (
-						<div className="mt-6 flex flex-col gap-4">
-							<Card padding="default" className="rounded-[28px]">
-								<div className="grid gap-4">
-									<SectionHeader title="Program" />
-									<div className="grid gap-3">
-										<ProgramChoice value="linear" active={onboardingDraft.quitProgram === 'linear'} description="Gradual reduction toward a date." onSelect={(quitProgram) => setOnboardingDraft((current) => ({ ...current, quitProgram }))} />
-										<ProgramChoice value="fixed" active={onboardingDraft.quitProgram === 'fixed'} description="Same cap every day." onSelect={(quitProgram) => setOnboardingDraft((current) => ({ ...current, quitProgram }))} />
-										<ProgramChoice value="minimum" active={onboardingDraft.quitProgram === 'minimum'} description="Track without a limit." onSelect={(quitProgram) => setOnboardingDraft((current) => ({ ...current, quitProgram }))} />
-									</div>
-									<NumericField label="Baseline cigarettes/day" value={onboardingDraft.cigarettesPerDay} onChange={(value) => setOnboardingDraft((current) => ({ ...current, cigarettesPerDay: value }))} />
-									<NumericField label={`Pack price (${currentCurrency})`} value={onboardingDraft.packPrice} step="0.01" onChange={(value) => setOnboardingDraft((current) => ({ ...current, packPrice: value }))} />
-									<NumericField label="Cigarettes per pack" value={onboardingDraft.cigarettesPerPack} onChange={(value) => setOnboardingDraft((current) => ({ ...current, cigarettesPerPack: value }))} />
-									{onboardingDraft.quitProgram !== 'minimum' && (
-										<>
-											<NumericField label="Target cigarettes" value={onboardingDraft.programTargetCigarettes} onChange={(value) => setOnboardingDraft((current) => ({ ...current, programTargetCigarettes: value }))} />
-											<label className="flex flex-col gap-2">
-												<span className="text-detail uppercase tracking-[0.18em] text-text-dim">Target date</span>
-												<input className="smoke-input" type="date" value={onboardingDraft.programTargetDate} onChange={(event) => setOnboardingDraft((current) => ({ ...current, programTargetDate: event.currentTarget.value }))} />
-											</label>
-										</>
-									)}
-									<Button variant="highlight" className="rounded-[18px]" disabled={mutating} onClick={() => void handleProgramSave()}>
-										Save program
-									</Button>
-								</div>
-							</Card>
-
-							<Card padding="default" className="rounded-[28px]">
-								<div className="flex flex-col gap-3">
-									<SectionHeader title="Even account" />
-									<p className="text-normal-body text-text">{userProfile.evenName || evenUser.name}</p>
-									<p className="text-normal-body text-text-dim">{userProfile.evenUid}</p>
-									<p className="text-normal-body text-text-dim">{userProfile.evenCountry || evenUser.country}</p>
-								</div>
-							</Card>
-
-							<Card padding="default" className="rounded-[28px]">
-								<div className="flex flex-col gap-3">
-									<SectionHeader title="Actions" />
-									<Button variant="secondary" className="rounded-[18px]" onClick={handleResetOnboarding}>
-										Onboarding reset
-									</Button>
-									<Button variant="secondary" className="rounded-[18px]" onClick={() => void handleExport()}>
-										Export JSON
-									</Button>
-									<Button variant="danger" className="rounded-[18px]" onClick={() => void handleDeleteAll()}>
-										Delete all data
-									</Button>
-								</div>
-							</Card>
-						</div>
-					)}
+					<BottomTabBar activeTab={tab} onChange={(next) => startTransition(() => setTab(next))} />
 				</div>
-			</AppShell>
+			</div>
 
-			{toast && (
-				<div className="fixed bottom-6 left-4 right-4 z-50 mx-auto max-w-md">
+			<AddSmokeModal
+				open={historyModalOpen}
+				date={modalEntryDate}
+				time={modalEntryTime}
+				mutating={mutating}
+				onClose={() => setHistoryModalOpen(false)}
+				onDateChange={setModalEntryDate}
+				onTimeChange={setModalEntryTime}
+				onSave={() => void handleAddPastEntry()}
+			/>
+
+			{toast ? (
+				<div className="fixed bottom-28 left-4 right-4 z-[60]">
 					<Toast message={toast} />
 				</div>
-			)}
+			) : null}
 		</>
 	);
 }

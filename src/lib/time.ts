@@ -48,6 +48,25 @@ export function formatTimerLabel(date: Date | null, now = new Date()): string {
 	return `${hours}h ${minutes}m since last smoke`;
 }
 
+export function formatTimerClock(date: Date | null, now = new Date()): string {
+	if (!date) return '--:--:--';
+	const deltaMs = Math.max(0, now.getTime() - date.getTime());
+	const totalSeconds = Math.floor(deltaMs / 1000);
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
+	const seconds = totalSeconds % 60;
+	return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+export function formatDurationClock(durationMs: number | null): string {
+	if (durationMs === null) return '--:--:--';
+	const totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
+	const hours = Math.floor(totalSeconds / 3600);
+	const minutes = Math.floor((totalSeconds % 3600) / 60);
+	const seconds = totalSeconds % 60;
+	return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+}
+
 export function formatHudLastSmoke(date: Date | null, now = new Date()): string {
 	if (!date) return 'none yet';
 	const deltaMs = Math.max(0, now.getTime() - date.getTime());

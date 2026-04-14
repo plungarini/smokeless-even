@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 @import 'tailwindcss';
 @import 'even-toolkit/web/theme-dark.css';
 @import 'even-toolkit/web/typography.css';
@@ -6,98 +6,6 @@
 
 @source "../../node_modules/even-toolkit/dist/web/**/*.js";
 
-:root {
-	--smoke-bg: #0d0d0d;
-	--smoke-surface: #1a1a1a;
-	--smoke-accent: #e8914a;
-	--smoke-text: #f2f0eb;
-	--smoke-text-muted: rgba(242, 240, 235, 0.45);
-	--smoke-danger: #c0392b;
-	--smoke-success: #27ae60;
-}
-
-@theme inline {
-	--color-bg: var(--smoke-bg);
-	--color-surface: var(--smoke-surface);
-	--color-surface-light: color-mix(in srgb, var(--smoke-surface) 80%, white 20%);
-	--color-surface-lighter: color-mix(in srgb, var(--smoke-surface) 68%, white 32%);
-	--color-accent: var(--smoke-accent);
-	--color-accent-alpha: color-mix(in srgb, var(--smoke-accent) 16%, transparent);
-	--color-accent-warning: #f6b26b;
-	--color-text: var(--smoke-text);
-	--color-text-dim: var(--smoke-text-muted);
-	--color-text-muted: var(--smoke-text-muted);
-	--color-text-highlight: var(--smoke-text);
-	--color-border: rgba(255, 255, 255, 0.08);
-	--color-border-light: rgba(255, 255, 255, 0.04);
-	--color-positive: var(--smoke-success);
-	--color-positive-alpha: color-mix(in srgb, var(--smoke-success) 18%, transparent);
-	--color-negative: var(--smoke-danger);
-	--color-negative-alpha: color-mix(in srgb, var(--smoke-danger) 14%, transparent);
-	--color-overlay: rgba(0, 0, 0, 0.65);
-	--color-input-bg: rgba(255, 255, 255, 0.04);
-	--font-display: 'Barlow Condensed', var(--font-display);
-	--font-body: 'IBM Plex Sans', var(--font-body);
-}
-
-@layer base {
-	html,
-	body {
-		min-height: 100%;
-		background:
-			radial-gradient(circle at top left, rgba(232, 145, 74, 0.14), transparent 32%),
-			radial-gradient(circle at bottom right, rgba(192, 57, 43, 0.16), transparent 34%),
-			var(--smoke-bg);
-		color: var(--smoke-text);
-		font-family: 'IBM Plex Sans', sans-serif;
-	}
-
-	body {
-		margin: 0;
-		overflow-x: hidden;
-	}
-
-	button,
-	input,
-	select {
-		font: inherit;
-	}
-
-	#root {
-		min-height: 100dvh;
-	}
-}
-
-@keyframes ember-bump {
-	0% {
-		transform: scale(1);
-	}
-	50% {
-		transform: scale(1.08);
-	}
-	100% {
-		transform: scale(1);
-	}
-}
-
-.ember-bump {
-	animation: ember-bump 200ms ease-out;
-}
-
-.smoke-input {
-	width: 100%;
-	border-radius: 18px;
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	background: rgba(255, 255, 255, 0.04);
-	color: var(--smoke-text);
-	padding: 0.95rem 1rem;
-	box-sizing: border-box;
-}
-
-.smoke-input:focus {
-	outline: 1px solid color-mix(in srgb, var(--smoke-accent) 60%, white 40%);
-}
-
-.ghost-bar {
-	opacity: 0.25;
-}
+@import './styles/base.css';
+@import './styles/theme.css';
+@import './styles/glass.css';

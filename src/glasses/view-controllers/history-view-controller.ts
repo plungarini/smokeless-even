@@ -13,7 +13,7 @@ export class HistoryViewController implements HistoryViewControllerContract {
 	buildContent(context: HudScreenRenderContext, selectedDay: HudHistoryDaySummary | null) {
 		return {
 			'chrome-header': this.screen.buildHeader(context.now),
-			'root-body': this.screen.buildHistoryBody(selectedDay),
+			'root-body': this.screen.buildHistoryBody(context.ui.historySelectedDayKey, selectedDay),
 			'chrome-footer': this.screen.buildFooter('history'),
 		};
 	}

@@ -33,30 +33,9 @@ function tabToHudRoute(tab: AppTab): HudUiState['route'] | null {
 	return null;
 }
 
-function getAdjacentHistoryDayKey(groups: HistoryDayGroup[], currentDayKey: string, delta: -1 | 1): string | null {
-	if (groups.length === 0) return null;
-	const currentIndex = groups.findIndex((group) => group.dayKey === currentDayKey);
-	const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
-	const nextIndex = Math.min(Math.max(safeCurrentIndex + delta, 0), groups.length - 1);
-	return groups[nextIndex]?.dayKey ?? groups[0]?.dayKey ?? null;
-}
-
-function getClosestHistoryDayKey(groups: HistoryDayGroup[], targetDayKey: string): string | null {
-	if (groups.length === 0) return null;
-	const exact = groups.find((group) => group.dayKey === targetDayKey);
-	if (exact) return exact.dayKey;
-
-	const targetTime = parseDayKey(targetDayKey).getTime();
-	let closest = groups[0]!;
-	let closestDistance = Math.abs(closest.date.getTime() - targetTime);
-	for (const group of groups.slice(1)) {
-		const distance = Math.abs(group.date.getTime() - targetTime);
-		if (distance < closestDistance) {
-			closest = group;
-			closestDistance = distance;
-		}
-	}
-	return closest.dayKey;
+function stepHistoryDayKey(currentDayKey: string | null, deltaDays: number): string {
+	const baseDate = currentDayKey ? parseDayKey(currentDayKey) : new Date();
+	return toDayKey(addDays(baseDate, deltaDays));
 }
 
 function downloadJson(filename: string, payload: unknown): void {
@@ -296,18 +275,26 @@ export default function App() {
 				case 'goStats':
 					return { ...current, route: 'stats' };
 				case 'goHistory':
-					return { ...current, route: 'history', historySelectedDayKey: getClosestHistoryDayKey(historyGroups, toDayKey(new Date())) };
+					return { ...current, route: 'history', historySelectedDayKey: current.historySelectedDayKey ?? toDayKey(new Date()) };
 				case 'cycleStatsPeriod': {
 					const periods: StatsPeriod[] = ['week', 'month', 'year'];
 					const currentIndex = periods.indexOf(current.statsPeriod);
 					return { ...current, route: 'stats', statsPeriod: periods[(currentIndex + 1) % periods.length] ?? 'week' };
 				}
 				case 'historyPrevDay':
-					return { ...current, route: 'history', historySelectedDayKey: getAdjacentHistoryDayKey(historyGroups, selectedHistoryDay, -1) };
+					return {
+						...current,
+						route: 'history',
+						historySelectedDayKey: stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, -1),
+					};
 				case 'historyNextDay':
-					return { ...current, route: 'history', historySelectedDayKey: getAdjacentHistoryDayKey(historyGroups, selectedHistoryDay, 1) };
+					return {
+						...current,
+						route: 'history',
+						historySelectedDayKey: stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, 1),
+					};
 				case 'historyResetToday':
-					return { ...current, route: 'history', historySelectedDayKey: getClosestHistoryDayKey(historyGroups, toDayKey(new Date())) };
+					return { ...current, route: 'history', historySelectedDayKey: toDayKey(new Date()) };
 				case 'openMenu':
 				case 'closeMenu':
 					return current;

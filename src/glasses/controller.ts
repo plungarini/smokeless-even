@@ -272,9 +272,10 @@ export class HudController {
 	}
 
 	private getSelectedHistoryDay(): HudHistoryDaySummary | null {
-		if (this.snapshot.history.days.length === 0) return null;
-		const selected = this.ui.historySelectedDayKey ? this.snapshot.history.days.find((day) => day.dayKey === this.ui.historySelectedDayKey) : null;
-		return selected ?? this.snapshot.history.days[0] ?? null;
+		if (!this.ui.historySelectedDayKey) {
+			return this.snapshot.history.days[0] ?? null;
+		}
+		return this.snapshot.history.days.find((day) => day.dayKey === this.ui.historySelectedDayKey) ?? null;
 	}
 
 }

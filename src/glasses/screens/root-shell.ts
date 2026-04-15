@@ -81,9 +81,10 @@ export class RootShellScreen {
 		return `${stats.period.toUpperCase()}  ${stats.totalSmoked} smoked\n\n${truncate(stats.comparisonLabel, 28)}\n\nAvg ${stats.weightedAverage.toFixed(1)}/day\nGap ${stats.averageIntervalLabel}\n\n${spark}\n${counts}`;
 	}
 
-	buildHistoryBody(selectedDay: HudHistoryDaySummary | null): string {
+	buildHistoryBody(selectedDayKey: string | null, selectedDay: HudHistoryDaySummary | null): string {
+		const displayDate = selectedDay?.date ?? (selectedDayKey ? parseDayKey(selectedDayKey) : new Date());
 		if (!selectedDay) {
-			return 'No history yet\n\nScroll when entries exist\n\nClick resets to today';
+			return `${formatHistoryDay(displayDate)}\n\n0 smokes\n\nNo smokes logged\n\nScroll days  •  Click today`;
 		}
 
 		const times = selectedDay.entries.slice(0, 8).map((entry) => formatClock(entry.timestamp));
@@ -112,4 +113,8 @@ function formatClock(date: Date): string {
 
 function formatHistoryDay(date: Date): string {
 	return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function parseDayKey(dayKey: string): Date {
+	return new Date(`${dayKey}T00:00:00`);
 }

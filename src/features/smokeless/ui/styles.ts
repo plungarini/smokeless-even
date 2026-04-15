@@ -4,7 +4,7 @@ export const smokeInputClass =
 export const glassCardClass = 'smoke-glass-card';
 
 export const iconButtonClass =
-	'inline-flex items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.05] text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]';
+	'inline-flex items-center shrink-0 justify-center rounded-full border border-white/[0.1] bg-white/[0.05] text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]';
 
 export const floatingIconClass = `${iconButtonClass} h-[4.25rem] w-[4.25rem]`;
 
@@ -20,6 +20,6 @@ export const segmentedButtonBaseClass =
 export const segmentedButtonActiveClass = 'bg-white/[0.22] text-text';
 
 export const plusFabClass =
-	'flex h-[6.5rem] w-[6.5rem] shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.08] text-[4.6rem] leading-none text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_32px_rgba(0,0,0,0.22)]';
+	'flex size-[6.5rem] shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.08] text-[4.6rem] leading-none text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_32px_rgba(0,0,0,0.22)]';
 
 export const detailsCardClass = `smoke-details-card ${glassCardClass}`;

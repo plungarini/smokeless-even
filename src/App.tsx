@@ -1,19 +1,39 @@
+import { EvenAppMethod, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
 import { Card, Toast } from 'even-toolkit/web';
 import { startTransition, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import { EvenAppMethod, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { AppGlasses } from './glasses/AppGlasses';
-import type { HudActions, HudIntent, HudUiState } from './glasses/types';
-import { computeDailyTarget, computeLongestCessation, computeMoneySaved, computeWeightedDailyAverage } from './domain/calculations';
-import type { AuthAccountInfo, EvenUserInfo, HistoryDayGroup, HudPendingAction, HudSnapshot, OnboardingDraft, SmokeLogEntry, UserDocument } from './domain/types';
 import { missingClientEnv } from './config/env';
-import { normalizeEvenUserInfo } from './lib/even';
-import { addDays, combineDateAndTime, currencyForCountry, formatDurationClock, formatTime, formatTimerClock, parseDayKey, toDateInputValue, toDayKey, toTimeInputValue } from './lib/time';
-import { ensureFirebaseSession, getCurrentAccountInfo, resolveGoogleLinkRedirect, startGoogleLinkRedirect } from './services/auth';
-import { addSmokeEntry, deleteAllUserData, deleteLogEntry, deriveHistoryGroupsFromLogs, deriveStatsFromLogs, ensureCanonicalUserData, exportLogs, fetchAllLogEntries, mergeUserData, saveOnboarding, subscribeToTodayCount, subscribeToUserDocument, updateProgram, upsertAuthProviderFields } from './services/firestore';
-import { buildStatsSeries, formatStatsIntervalLabel, getAverageCigsAcrossNonEmptyBuckets, getAverageIntervalAcrossNonEmptyBuckets, getPeriodComparisonLabel, getSelectedPeriodTotal } from './features/smokeless/lib/stats-series';
-import { clearOnboardingDraft, createDefaultOnboardingDraft, loadSavedOnboarding, moveOnboardingDraft, saveOnboardingDraft } from './features/smokeless/lib/onboarding-draft';
+import {
+	computeDailyTarget,
+	computeLongestCessation,
+	computeMoneySaved,
+	computeWeightedDailyAverage,
+} from './domain/calculations';
+import type {
+	AuthAccountInfo,
+	EvenUserInfo,
+	HistoryDayGroup,
+	HudPendingAction,
+	HudSnapshot,
+	OnboardingDraft,
+	SmokeLogEntry,
+	UserDocument,
+} from './domain/types';
 import { formatShortDate, getHistoryEntriesForDay, monthStart } from './features/smokeless/lib/history-calendar';
-import type { AppTab, StatsPeriod } from './features/smokeless/ui/types';
+import {
+	clearOnboardingDraft,
+	createDefaultOnboardingDraft,
+	loadSavedOnboarding,
+	moveOnboardingDraft,
+	saveOnboardingDraft,
+} from './features/smokeless/lib/onboarding-draft';
+import {
+	buildStatsSeries,
+	formatStatsIntervalLabel,
+	getAverageCigsAcrossNonEmptyBuckets,
+	getAverageIntervalAcrossNonEmptyBuckets,
+	getPeriodComparisonLabel,
+	getSelectedPeriodTotal,
+} from './features/smokeless/lib/stats-series';
 import { AddSmokeModal } from './features/smokeless/ui/components/AddSmokeModal';
 import { BottomTabBar } from './features/smokeless/ui/components/BottomTabBar';
 import { FullScreenState } from './features/smokeless/ui/components/FullScreenState';
@@ -23,6 +43,44 @@ import { HomePage } from './features/smokeless/ui/pages/HomePage';
 import { OnboardingFlow } from './features/smokeless/ui/pages/OnboardingFlow';
 import { SettingsPage } from './features/smokeless/ui/pages/SettingsPage';
 import { StatsPage } from './features/smokeless/ui/pages/StatsPage';
+import type { AppTab, StatsPeriod } from './features/smokeless/ui/types';
+import { AppGlasses } from './glasses/AppGlasses';
+import type { HudActions, HudIntent, HudUiState } from './glasses/types';
+import { normalizeEvenUserInfo } from './lib/even';
+import {
+	addDays,
+	combineDateAndTime,
+	currencyForCountry,
+	formatDurationClock,
+	formatTime,
+	formatTimerClock,
+	parseDayKey,
+	toDateInputValue,
+	toDayKey,
+	toTimeInputValue,
+} from './lib/time';
+import {
+	ensureFirebaseSession,
+	getCurrentAccountInfo,
+	resolveGoogleLinkRedirect,
+	startGoogleLinkRedirect,
+} from './services/auth';
+import {
+	addSmokeEntry,
+	deleteAllUserData,
+	deleteLogEntry,
+	deriveHistoryGroupsFromLogs,
+	deriveStatsFromLogs,
+	ensureCanonicalUserData,
+	exportLogs,
+	fetchAllLogEntries,
+	mergeUserData,
+	saveOnboarding,
+	subscribeToTodayCount,
+	subscribeToUserDocument,
+	updateProgram,
+	upsertAuthProviderFields,
+} from './services/firestore';
 
 type BootState = 'booting' | 'blocked' | 'ready';
 
@@ -114,30 +172,44 @@ export default function App() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()],
 	);
-	const hudReferenceNow = useMemo(() => new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0), [now.getFullYear(), now.getMonth(), now.getDate()]);
+	const hudReferenceNow = useMemo(
+		() => new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0),
+		[now.getFullYear(), now.getMonth(), now.getDate()],
+	);
 	const weightedAverage = useMemo(
-		() => computeWeightedDailyAverage(dailyStats, userDocument?.onboarding?.completedAt ?? userDocument?.createdAt ?? null, nowMinute),
+		() =>
+			computeWeightedDailyAverage(
+				dailyStats,
+				userDocument?.onboarding?.completedAt ?? userDocument?.createdAt ?? null,
+				nowMinute,
+			),
 		[dailyStats, userDocument?.createdAt, userDocument?.onboarding?.completedAt, nowMinute],
 	);
 	const dailyTarget = computeDailyTarget(userDocument, now);
 	const moneySaved = computeMoneySaved(userDocument, weightedAverage, now);
-	const statsSeries = useMemo(() => buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now), [statsPeriod, dailyStats, monthlyStats, now]);
+	const statsSeries = useMemo(
+		() => buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now),
+		[statsPeriod, dailyStats, monthlyStats, now],
+	);
 	const selectedPeriodTotal = getSelectedPeriodTotal(statsPeriod, dailyStats, monthlyStats, now);
 	const comparisonLabel = getPeriodComparisonLabel(statsPeriod, selectedPeriodTotal, weightedAverage, now);
 	const selectedStatsBucket = useMemo(
-		() => (selectedStatsBucketKey ? statsSeries.find((item) => item.key === selectedStatsBucketKey) ?? null : null),
+		() => (selectedStatsBucketKey ? (statsSeries.find((item) => item.key === selectedStatsBucketKey) ?? null) : null),
 		[selectedStatsBucketKey, statsSeries],
 	);
 	const displayedStatsTotal = selectedStatsBucket?.count ?? selectedPeriodTotal;
-	const statsAverageCigs = useMemo(
-		() => getAverageCigsAcrossNonEmptyBuckets(statsSeries),
-		[statsSeries],
-	);
+	const statsAverageCigs = useMemo(() => getAverageCigsAcrossNonEmptyBuckets(statsSeries), [statsSeries]);
 	const statsAverageIntervalLabel = useMemo(
 		() => formatStatsIntervalLabel(getAverageIntervalAcrossNonEmptyBuckets(allSmokeEntries, statsSeries)),
 		[allSmokeEntries, statsSeries],
 	);
-	const statsTotalLabel = selectedStatsBucket ? selectedStatsBucket.label : statsPeriod === 'week' ? 'This week' : statsPeriod === 'month' ? 'This month' : 'This year';
+	const statsTotalLabel = selectedStatsBucket
+		? selectedStatsBucket.label
+		: statsPeriod === 'week'
+			? 'This week'
+			: statsPeriod === 'month'
+				? 'This month'
+				: 'This year';
 	const hudStatsSummaries = useMemo(() => {
 		const buildHudStatsSummary = (period: 'week' | 'month' | 'year') => {
 			const series = buildStatsSeries(period, dailyStats, monthlyStats, hudReferenceNow);
@@ -147,7 +219,10 @@ export default function App() {
 				totalSmoked,
 				comparisonLabel: getPeriodComparisonLabel(period, totalSmoked, weightedAverage, hudReferenceNow),
 				weightedAverage: getAverageCigsAcrossNonEmptyBuckets(series),
-				averageIntervalLabel: formatStatsIntervalLabel(getAverageIntervalAcrossNonEmptyBuckets(allSmokeEntries, series), { padHours: true }),
+				averageIntervalLabel: formatStatsIntervalLabel(
+					getAverageIntervalAcrossNonEmptyBuckets(allSmokeEntries, series),
+					{ padHours: true },
+				),
 				series,
 			};
 		};
@@ -239,7 +314,9 @@ export default function App() {
 			cigarettesPerPack: onboarding.cigarettesPerPack,
 			quitProgram: onboarding.quitProgram,
 			programTargetCigarettes: onboarding.programTargetCigarettes,
-			programTargetDate: onboarding.programTargetDate ? toDateInputValue(onboarding.programTargetDate) : toDateInputValue(addDays(new Date(), 90)),
+			programTargetDate: onboarding.programTargetDate
+				? toDateInputValue(onboarding.programTargetDate)
+				: toDateInputValue(addDays(new Date(), 90)),
 			step: 0,
 		});
 	}, [userDocument]);
@@ -274,8 +351,14 @@ export default function App() {
 		if (statsPeriod !== hudUi.statsPeriod) {
 			startTransition(() => setStatsPeriod(hudUi.statsPeriod));
 		}
-		if (hudUi.route === 'history' && hudUi.historySelectedDayKey && selectedHistoryDay !== hudUi.historySelectedDayKey) {
-			console.log(`[HUD-HISTORY] web sync effect selectedHistoryDay ${selectedHistoryDay} -> ${hudUi.historySelectedDayKey}`);
+		if (
+			hudUi.route === 'history' &&
+			hudUi.historySelectedDayKey &&
+			selectedHistoryDay !== hudUi.historySelectedDayKey
+		) {
+			console.log(
+				`[HUD-HISTORY] web sync effect selectedHistoryDay ${selectedHistoryDay} -> ${hudUi.historySelectedDayKey}`,
+			);
 			const date = parseDayKey(hudUi.historySelectedDayKey);
 			startTransition(() => {
 				setSelectedHistoryDay(hudUi.historySelectedDayKey!);
@@ -293,7 +376,11 @@ export default function App() {
 				case 'goStats':
 					return { ...current, route: 'stats' };
 				case 'goHistory':
-					return { ...current, route: 'history', historySelectedDayKey: current.historySelectedDayKey ?? toDayKey(new Date()) };
+					return {
+						...current,
+						route: 'history',
+						historySelectedDayKey: current.historySelectedDayKey ?? toDayKey(new Date()),
+					};
 				case 'cycleStatsPeriod': {
 					const periods: StatsPeriod[] = ['week', 'month', 'year'];
 					const currentIndex = periods.indexOf(current.statsPeriod);
@@ -308,7 +395,9 @@ export default function App() {
 					};
 				case 'historyPrevDay': {
 					const nextDayKey = stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, -1);
-					console.log(`[HUD-HISTORY] handleHudNavigate prev ${beforeDayKey} -> ${nextDayKey} (selectedHistoryDay=${selectedHistoryDay})`);
+					console.log(
+						`[HUD-HISTORY] handleHudNavigate prev ${beforeDayKey} -> ${nextDayKey} (selectedHistoryDay=${selectedHistoryDay})`,
+					);
 					return {
 						...current,
 						route: 'history',
@@ -317,7 +406,9 @@ export default function App() {
 				}
 				case 'historyNextDay': {
 					const nextDayKey = stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, 1);
-					console.log(`[HUD-HISTORY] handleHudNavigate next ${beforeDayKey} -> ${nextDayKey} (selectedHistoryDay=${selectedHistoryDay})`);
+					console.log(
+						`[HUD-HISTORY] handleHudNavigate next ${beforeDayKey} -> ${nextDayKey} (selectedHistoryDay=${selectedHistoryDay})`,
+					);
 					return {
 						...current,
 						route: 'history',
@@ -372,7 +463,10 @@ export default function App() {
 
 		try {
 			const bridge = await waitForEvenAppBridge();
-			const rawUser = typeof bridge.getUserInfo === 'function' ? await bridge.getUserInfo() : await bridge.callEvenApp(EvenAppMethod.GetUserInfo);
+			const rawUser =
+				typeof bridge.getUserInfo === 'function'
+					? await bridge.getUserInfo()
+					: await bridge.callEvenApp(EvenAppMethod.GetUserInfo);
 			const normalized = normalizeEvenUserInfo(rawUser);
 			if (!normalized) {
 				setBlockedMessage('Unable to connect to Even. Please restart the app.');
@@ -588,8 +682,12 @@ export default function App() {
 				packPrice: onboardingDraft.packPrice,
 				cigarettesPerPack: onboardingDraft.cigarettesPerPack,
 				quitProgram: onboardingDraft.quitProgram,
-				programTargetCigarettes: onboardingDraft.quitProgram === 'minimum' ? 0 : onboardingDraft.programTargetCigarettes,
-				programTargetDate: onboardingDraft.quitProgram === 'minimum' || !onboardingDraft.programTargetDate ? null : new Date(`${onboardingDraft.programTargetDate}T00:00:00`),
+				programTargetCigarettes:
+					onboardingDraft.quitProgram === 'minimum' ? 0 : onboardingDraft.programTargetCigarettes,
+				programTargetDate:
+					onboardingDraft.quitProgram === 'minimum' || !onboardingDraft.programTargetDate
+						? null
+						: new Date(`${onboardingDraft.programTargetDate}T00:00:00`),
 				programStartDate: new Date(),
 			});
 			await refreshDerivedData(canonicalUid, false);
@@ -608,7 +706,9 @@ export default function App() {
 			cigarettesPerPack: onboarding.cigarettesPerPack,
 			quitProgram: onboarding.quitProgram,
 			programTargetCigarettes: onboarding.programTargetCigarettes,
-			programTargetDate: onboarding.programTargetDate ? toDateInputValue(onboarding.programTargetDate) : toDateInputValue(addDays(new Date(), 90)),
+			programTargetDate: onboarding.programTargetDate
+				? toDateInputValue(onboarding.programTargetDate)
+				: toDateInputValue(addDays(new Date(), 90)),
 			step: 0,
 		};
 		setOnboardingDraft(nextDraft);
@@ -646,8 +746,6 @@ export default function App() {
 		}
 	});
 
-
-
 	const openHistoryModal = useEffectEvent(() => {
 		const baseDate = parseDayKey(selectedHistoryDay);
 		setModalEntryDate(toDateInputValue(baseDate));
@@ -656,19 +754,23 @@ export default function App() {
 	});
 
 	// ── Derived values that are only valid when fully loaded ──
-	const effectiveAuthProvider = (evenUser && canonicalUid && userDocument)
-		? (accountInfo?.authProvider ?? (userDocument.providers.google ? 'google' : 'anonymous'))
-		: 'anonymous';
-	const effectiveGoogleEmail = (evenUser && canonicalUid && userDocument)
-		? (accountInfo?.googleEmail || userDocument.providers.google?.email)
-		: undefined;
-	const effectiveGoogleDisplayName = (evenUser && canonicalUid && userDocument)
-		? (accountInfo?.googleDisplayName || userDocument.providers.google?.displayName)
-		: undefined;
+	const effectiveAuthProvider =
+		evenUser && canonicalUid && userDocument
+			? (accountInfo?.authProvider ?? (userDocument.providers.google ? 'google' : 'anonymous'))
+			: 'anonymous';
+	const effectiveGoogleEmail =
+		evenUser && canonicalUid && userDocument
+			? accountInfo?.googleEmail || userDocument.providers.google?.email
+			: undefined;
+	const effectiveGoogleDisplayName =
+		evenUser && canonicalUid && userDocument
+			? accountInfo?.googleDisplayName || userDocument.providers.google?.displayName
+			: undefined;
 	const googleLinked = effectiveAuthProvider === 'google';
-	const currentCurrency = (evenUser && canonicalUid && userDocument)
-		? currencyForCountry(userDocument.providers.even?.country || evenUser.country)
-		: 'EUR';
+	const currentCurrency =
+		evenUser && canonicalUid && userDocument
+			? currencyForCountry(userDocument.providers.even?.country || evenUser.country)
+			: 'EUR';
 
 	// ── Single stable render: AppGlasses is ALWAYS at position 0 ──
 	// This prevents React from unmounting/remounting it when the app
@@ -684,20 +786,27 @@ export default function App() {
 					<Card padding="default" className="w-full rounded-[20px] border border-border-light bg-surface">
 						<div className="flex flex-col gap-4">
 							<h1 className="font-[DM_Serif_Display] text-4xl tracking-[-0.04em] text-text">Smokeless</h1>
-							<p className="text-normal-body leading-relaxed text-text-dim">{blockedMessage || 'Smokeless could not finish startup. Please restart the app.'}</p>
+							<p className="text-normal-body leading-relaxed text-text-dim">
+								{blockedMessage || 'Smokeless could not finish startup. Please restart the app.'}
+							</p>
 							{bootstrapErrorDetail ? (
 								<div className="rounded-[16px] border border-border-light bg-bg p-3">
 									<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Debug</div>
-									<p className="mt-2 break-words font-mono text-[11px] leading-relaxed text-text-dim">{bootstrapErrorDetail}</p>
+									<p className="mt-2 break-words font-mono text-[11px] leading-relaxed text-text-dim">
+										{bootstrapErrorDetail}
+									</p>
 								</div>
 							) : null}
 						</div>
 					</Card>
 				</div>
-			) : !evenUser || !canonicalUid ? (
-				null
-			) : !userDocument?.onboarding || editingOnboarding ? (
-				<OnboardingFlow country={evenUser.country} draft={onboardingDraft} onChange={setOnboardingDraft} onSubmit={handleOnboardingSubmit} />
+			) : !evenUser || !canonicalUid ? null : !userDocument?.onboarding || editingOnboarding ? (
+				<OnboardingFlow
+					country={evenUser.country}
+					draft={onboardingDraft}
+					onChange={setOnboardingDraft}
+					onSubmit={handleOnboardingSubmit}
+				/>
 			) : (
 				<>
 					<div className="smoke-app-shell h-dvh">
@@ -707,17 +816,7 @@ export default function App() {
 						<div className="relative flex h-full flex-col max-w-md mx-auto overflow-x-visible overflow-y-hidden">
 							{tab === 'home' ? <PageHeader title="Today's record" subtitle={formatShortDate(now)} /> : null}
 							{tab === 'stats' ? <PageHeader title="Stats" subtitle="Weighted view of your smoking trend" /> : null}
-							{tab === 'history' ? (
-								<PageHeader
-									title="History"
-									subtitle="Select a date to view logs"
-									action={
-										<button type="button" className="inline-flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.05] text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" onClick={() => void openHistoryModal()} aria-label="Add smoke entry" title="Add smoke entry">
-											<span className="text-[2rem] leading-none">+</span>
-										</button>
-									}
-								/>
-							) : null}
+							{tab === 'history' ? <PageHeader title="History" subtitle="Select a date to view logs" /> : null}
 							{tab === 'settings' ? <PageHeader title="Settings" subtitle="Account, program, and app actions" /> : null}
 
 							<div className="min-h-0 flex-1 overflow-y-auto overflow-x-visible px-4 pb-32">
@@ -739,11 +838,15 @@ export default function App() {
 										statsPeriod={statsPeriod}
 										onStatsPeriodChange={(period) => {
 											setStatsPeriod(period);
-											setHudUi((current) => (current.statsPeriod === period ? current : { ...current, statsPeriod: period }));
+											setHudUi((current) =>
+												current.statsPeriod === period ? current : { ...current, statsPeriod: period },
+											);
 										}}
 										statsSeries={statsSeries}
 										selectedStatsBucketKey={selectedStatsBucketKey}
-										onStatsBucketSelect={(key) => setSelectedStatsBucketKey((current) => (current === key ? null : key))}
+										onStatsBucketSelect={(key) =>
+											setSelectedStatsBucketKey((current) => (current === key ? null : key))
+										}
 										totalSmoked={displayedStatsTotal}
 										totalLabel={statsTotalLabel}
 										comparisonLabel={comparisonLabel}

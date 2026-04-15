@@ -1,4 +1,5 @@
 import { Card } from 'even-toolkit/web';
+import { IcEditAdd } from 'even-toolkit/web/icons/svg-icons';
 import { formatCurrency } from '../../../../lib/time';
 import { glassCardClass, plusFabClass, sectionLabelClass } from '../styles';
 
@@ -28,25 +29,41 @@ export function HomePage({
 					<div className="grid gap-6">
 						<div>
 							<div className="text-detail uppercase tracking-[0.38em] text-text-dim">Since last smoking</div>
-							<div className="mt-3 text-[4rem] font-semibold leading-none tracking-[-0.04em] text-text">{timerLabel}</div>
+							<div className="mt-3 text-[4rem] font-semibold leading-none tracking-[-0.04em] text-text">
+								{timerLabel}
+							</div>
 						</div>
 						<div>
 							<div className="text-detail uppercase tracking-[0.38em] text-text-dim">Longest cessation</div>
-							<div className="mt-3 text-[3.6rem] font-semibold leading-none tracking-[-0.04em] text-text">{longestCessationLabel}</div>
+							<div className="mt-3 text-[3.6rem] font-semibold leading-none tracking-[-0.04em] text-text">
+								{longestCessationLabel}
+							</div>
 						</div>
 						<div>
 							<div className={sectionLabelClass}>Money saved</div>
-							<div className="mt-3 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] text-text">{formatCurrency(moneySaved, country)}</div>
+							<div className="mt-3 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] text-text">
+								{formatCurrency(moneySaved, country)}
+							</div>
 						</div>
 					</div>
 
 					<div className="mt-2 flex items-end justify-between gap-4">
-						<button type="button" className={plusFabClass} disabled={mutating} onClick={onAddSmoke} aria-label="Log smoke">
-							+
+						<button
+							type="button"
+							className={plusFabClass}
+							disabled={mutating}
+							onClick={onAddSmoke}
+							aria-label="Log smoke"
+						>
+							<IcEditAdd className="size-17 translate-y-0.75" />
 						</button>
 						<div className="text-right">
 							<div className="text-detail uppercase tracking-[0.34em] text-text-dim">Smoked today</div>
-							<div className={`mt-1 font-[DM_Serif_Display] text-[8.5rem] leading-[0.9] tracking-[-0.06em] text-text ${countBump ? 'ember-bump' : ''}`}>{todayCount}</div>
+							<div
+								className={`mt-1 font-[DM_Serif_Display] text-[8.5rem] leading-[0.9] tracking-[-0.06em] text-text ${countBump ? 'ember-bump' : ''}`}
+							>
+								{todayCount}
+							</div>
 						</div>
 					</div>
 				</div>

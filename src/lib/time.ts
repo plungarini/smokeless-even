@@ -92,9 +92,8 @@ export function formatMonthLabel(date: Date): string {
 
 export function formatLongDate(date: Date): string {
 	return date.toLocaleDateString([], {
-		weekday: 'long',
-		month: 'long',
 		day: 'numeric',
+		month: 'numeric',
 		year: 'numeric',
 	});
 }

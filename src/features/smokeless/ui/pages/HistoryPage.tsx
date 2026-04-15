@@ -1,7 +1,13 @@
 import { Button, Card, Loading } from 'even-toolkit/web';
+import { IcEditAdd, IcEditCross } from 'even-toolkit/web/icons/svg-icons';
 import type { SmokeLogEntry } from '../../../../domain/types';
 import { formatLongDate, formatTime, toDayKey } from '../../../../lib/time';
-import { buildCalendarDays, formatIntervalSecondsShort, formatMonthHeading, shiftMonth } from '../../lib/history-calendar';
+import {
+	buildCalendarDays,
+	formatIntervalSecondsShort,
+	formatMonthHeading,
+	shiftMonth,
+} from '../../lib/history-calendar';
 import { circleIconButtonClass, deleteButtonClass, floatingIconClass, glassCardClass } from '../styles';
 
 export function HistoryPage({
@@ -36,11 +42,23 @@ export function HistoryPage({
 		<div className="flex flex-col gap-4 pb-4">
 			<Card padding="default" className={`${glassCardClass} rounded-[32px]`}>
 				<div className="flex items-center justify-between gap-3">
-					<button type="button" className={circleIconButtonClass} onClick={() => onHistoryMonthChange(shiftMonth(historyMonth, -1))} aria-label="Previous month">
+					<button
+						type="button"
+						className={circleIconButtonClass}
+						onClick={() => onHistoryMonthChange(shiftMonth(historyMonth, -1))}
+						aria-label="Previous month"
+					>
 						‹
 					</button>
-					<div className="font-[DM_Serif_Display] text-[2rem] leading-none text-text">{formatMonthHeading(historyMonth)}</div>
-					<button type="button" className={circleIconButtonClass} onClick={() => onHistoryMonthChange(shiftMonth(historyMonth, 1))} aria-label="Next month">
+					<div className="font-[DM_Serif_Display] text-[1.65rem] leading-none text-text">
+						{formatMonthHeading(historyMonth)}
+					</div>
+					<button
+						type="button"
+						className={circleIconButtonClass}
+						onClick={() => onHistoryMonthChange(shiftMonth(historyMonth, 1))}
+						aria-label="Next month"
+					>
 						›
 					</button>
 				</div>
@@ -52,6 +70,7 @@ export function HistoryPage({
 				<div className="mt-4 grid grid-cols-7 gap-2">
 					{calendarDays.map((date) => {
 						const dayKey = toDayKey(date);
+						const isToday = dayKey === toDayKey(new Date());
 						const isSelected = dayKey === selectedHistoryDay;
 						const isCurrentMonth = date.getMonth() === historyMonth.getMonth();
 						const hasEntries = historyDaysWithEntries.has(dayKey);
@@ -59,7 +78,7 @@ export function HistoryPage({
 							<button
 								key={dayKey}
 								type="button"
-								className={`smoke-calendar-day ${isSelected ? 'is-selected' : ''} ${isCurrentMonth ? '' : 'is-muted'}`}
+								className={`smoke-calendar-day ${isSelected ? 'is-selected' : ''} ${isToday ? 'is-today' : ''} ${isCurrentMonth ? '' : 'is-muted'}`}
 								onClick={() => onHistoryDaySelect(dayKey, new Date(date.getFullYear(), date.getMonth(), 1))}
 							>
 								<span>{date.getDate()}</span>
@@ -71,13 +90,20 @@ export function HistoryPage({
 			</Card>
 
 			<Card padding="default" className={`${glassCardClass} rounded-[32px]`}>
-				<div className="flex items-end justify-between gap-4">
+				<div className="flex items-center justify-between gap-4">
 					<div>
-						<div className="font-[DM_Serif_Display] text-[2.1rem] leading-none text-text">{formatLongDate(selectedHistoryDate)}</div>
+						<div className="font-[DM_Serif_Display] text-[2.1rem] leading-none text-text">
+							{formatLongDate(selectedHistoryDate)}
+						</div>
 						<div className="mt-2 text-[15px] text-text-dim">{selectedHistoryEntries.length} logged smokes</div>
 					</div>
-					<button type="button" className={`${floatingIconClass} h-14 w-14`} onClick={onOpenHistoryModal} aria-label="Add smoke for selected day">
-						<span className="text-[2rem] leading-none">+</span>
+					<button
+						type="button"
+						className={`${floatingIconClass} size-12! shrink-0`}
+						onClick={onOpenHistoryModal}
+						aria-label="Add smoke for selected day"
+					>
+						<IcEditAdd className="size-7 translate-y-0.5" />
 					</button>
 				</div>
 
@@ -90,12 +116,24 @@ export function HistoryPage({
 					</div>
 					{selectedHistoryEntries.length > 0 ? (
 						selectedHistoryEntries.map((entry, index) => (
-							<div key={entry.id} className="grid grid-cols-[56px_1fr_88px_58px] items-center border-b border-white/[0.05] px-4 py-4 last:border-b-0">
-								<div className="text-[15px] text-text-dim">{selectedHistoryEntries.length - index}</div>
-								<div className="text-[2rem] font-medium leading-none tracking-[-0.04em] text-text">{formatTime(entry.timestamp)}</div>
-								<div className="text-[15px] text-text-dim">{formatIntervalSecondsShort(entry.intervalSincePrevious)}</div>
-								<button type="button" className={deleteButtonClass} onClick={() => onDeleteEntry(entry)} aria-label={`Delete smoke at ${formatTime(entry.timestamp)}`}>
-									×
+							<div
+								key={entry.id}
+								className="grid grid-cols-[56px_1fr_88px_58px] items-center border-b border-white/[0.05] px-4 py-4 last:border-b-0"
+							>
+								<div className="text-[0.75rem] text-text-dim">{selectedHistoryEntries.length - index}</div>
+								<div className="text-[1rem] font-medium leading-none tracking-[-0.04em] text-text">
+									{formatTime(entry.timestamp)}
+								</div>
+								<div className="text-[0.75rem] text-text-dim">
+									{formatIntervalSecondsShort(entry.intervalSincePrevious)}
+								</div>
+								<button
+									type="button"
+									className={`${deleteButtonClass} justify-self-end`}
+									onClick={() => onDeleteEntry(entry)}
+									aria-label={`Delete smoke at ${formatTime(entry.timestamp)}`}
+								>
+									<IcEditCross className="size-4" />
 								</button>
 							</div>
 						))

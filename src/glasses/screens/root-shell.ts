@@ -122,9 +122,35 @@ export class RootShellScreen {
 
 	buildStatsBody(context: HudScreenRenderContext): string {
 		const stats = context.snapshot.stats[context.ui.statsPeriod];
-		const spark = truncate(stats.series.map((item) => item.label).join(' '), 38);
-		const counts = truncate(stats.series.map((item) => `${item.label}:${item.count}`).join('  '), 38);
-		return `${stats.period.toUpperCase()}  ${stats.totalSmoked} smoked\n\n${truncate(stats.comparisonLabel, 28)}\n\nAvg ${Math.round(stats.weightedAverage)}/day\nGap ${stats.averageIntervalLabel}\n\n${spark}\n${counts}`;
+		const period = stats.period;
+
+		let series = stats.series;
+		if (period === 'year') {
+			const currMonth = context.now.getMonth();
+			const range = currMonth <= 5 ? 0 : currMonth - 5;
+			series = series.slice(range, range + 6);
+		}
+
+		series = series.map((i) => ({ ...i, count: 2000 }));
+
+		const itemsPerLine = 4;
+		const lines: string[] = [];
+
+		for (let i = 0; i < series.length; i += itemsPerLine) {
+			const row = series.slice(i, i + itemsPerLine);
+			lines.push(
+				row
+					.map((item) => {
+						const countStr = String(item.count).padStart(6, ' ');
+						return `•  ${item.label}: ${countStr}`;
+					})
+					.join('  '),
+			);
+		}
+
+		const gridText = lines.join('  •\n') + '  •';
+
+		return `[${period.toUpperCase()}]  ${stats.totalSmoked} smoked\n\n----     Average:     ${Math.round(stats.weightedAverage)} /day   (${stats.averageIntervalLabel})     ----\n\n${gridText}`;
 	}
 
 	buildHistoryBody(selectedDayKey: string | null, selectedDay: HudHistoryDaySummary | null): string {

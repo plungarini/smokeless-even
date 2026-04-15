@@ -18,6 +18,7 @@ export type HudIntent =
 	| { type: 'goStats' }
 	| { type: 'goHistory' }
 	| { type: 'cycleStatsPeriod' }
+	| { type: 'historySetDay'; dayKey: string }
 	| { type: 'historyPrevDay' }
 	| { type: 'historyNextDay' }
 	| { type: 'historyResetToday' }

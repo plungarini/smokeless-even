@@ -259,6 +259,7 @@ export default function App() {
 			startTransition(() => setStatsPeriod(hudUi.statsPeriod));
 		}
 		if (hudUi.route === 'history' && hudUi.historySelectedDayKey && selectedHistoryDay !== hudUi.historySelectedDayKey) {
+			console.log(`[HUD-HISTORY] web sync effect selectedHistoryDay ${selectedHistoryDay} -> ${hudUi.historySelectedDayKey}`);
 			const date = parseDayKey(hudUi.historySelectedDayKey);
 			startTransition(() => {
 				setSelectedHistoryDay(hudUi.historySelectedDayKey!);
@@ -269,6 +270,7 @@ export default function App() {
 
 	const handleHudNavigate = useEffectEvent((intent: HudIntent) => {
 		setHudUi((current) => {
+			const beforeDayKey = current.historySelectedDayKey;
 			switch (intent.type) {
 				case 'goHome':
 					return { ...current, route: 'home' };
@@ -281,19 +283,33 @@ export default function App() {
 					const currentIndex = periods.indexOf(current.statsPeriod);
 					return { ...current, route: 'stats', statsPeriod: periods[(currentIndex + 1) % periods.length] ?? 'week' };
 				}
-				case 'historyPrevDay':
+				case 'historySetDay':
+					console.log(`[HUD-HISTORY] handleHudNavigate set ${beforeDayKey} -> ${intent.dayKey}`);
 					return {
 						...current,
 						route: 'history',
-						historySelectedDayKey: stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, -1),
+						historySelectedDayKey: intent.dayKey,
 					};
-				case 'historyNextDay':
+				case 'historyPrevDay': {
+					const nextDayKey = stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, -1);
+					console.log(`[HUD-HISTORY] handleHudNavigate prev ${beforeDayKey} -> ${nextDayKey} (selectedHistoryDay=${selectedHistoryDay})`);
 					return {
 						...current,
 						route: 'history',
-						historySelectedDayKey: stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, 1),
+						historySelectedDayKey: nextDayKey,
 					};
+				}
+				case 'historyNextDay': {
+					const nextDayKey = stepHistoryDayKey(current.historySelectedDayKey ?? selectedHistoryDay, 1);
+					console.log(`[HUD-HISTORY] handleHudNavigate next ${beforeDayKey} -> ${nextDayKey} (selectedHistoryDay=${selectedHistoryDay})`);
+					return {
+						...current,
+						route: 'history',
+						historySelectedDayKey: nextDayKey,
+					};
+				}
 				case 'historyResetToday':
+					console.log(`[HUD-HISTORY] handleHudNavigate reset ${beforeDayKey} -> ${toDayKey(new Date())}`);
 					return { ...current, route: 'history', historySelectedDayKey: toDayKey(new Date()) };
 				case 'openMenu':
 				case 'closeMenu':

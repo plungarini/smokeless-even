@@ -71,12 +71,16 @@ export class HudController {
 
 	updateUi(ui: HudUiState): void {
 		const prevRoute = this.route;
+		const prevHistoryDayKey = this.ui.historySelectedDayKey;
 		this.ui = ui;
 		if (this.route !== 'menu') {
 			this.route = ui.route;
 		}
 		if (this.route !== prevRoute) {
 			console.log(`[HUD-CTRL] updateUi changed route ${prevRoute} -> ${this.route} (ui.route=${ui.route})`);
+		}
+		if (ui.route === 'history' && prevHistoryDayKey !== ui.historySelectedDayKey) {
+			console.log(`[HUD-HISTORY] updateUi historySelectedDayKey ${prevHistoryDayKey} -> ${ui.historySelectedDayKey}`);
 		}
 	}
 
@@ -108,6 +112,11 @@ export class HudController {
 		}
 
 		const context: HudScreenRenderContext = { now, snapshot: this.snapshot, ui: this.ui };
+		if (this.route === 'history') {
+			console.log(
+				`[HUD-HISTORY] buildRenderState dayKey=${this.ui.historySelectedDayKey}`,
+			);
+		}
 		if (this.route === 'menu') {
 			return {
 				layout: this.menuController.buildLayout(),
@@ -138,6 +147,11 @@ export class HudController {
 	async handleEvent(event: EvenHubEvent): Promise<void> {
 		const eventType = event.textEvent?.eventType ?? event.sysEvent?.eventType ?? event.listEvent?.eventType;
 		console.log(`[HUD-CTRL] handleEvent  route=${this.route}  eventType=${eventType}  listIndex=${event.listEvent?.currentSelectItemIndex}`);
+		if (this.route === 'history') {
+			console.log(
+				`[HUD-HISTORY] raw event text=${event.textEvent?.eventType ?? 'none'} sys=${event.sysEvent?.eventType ?? 'none'} list=${event.listEvent?.eventType ?? 'none'} dayKey=${this.ui.historySelectedDayKey}`,
+			);
+		}
 		if (this.snapshot.phase !== 'ready') return;
 
 		if (this.route === 'menu') {
@@ -201,16 +215,23 @@ export class HudController {
 					break;
 				case 'goHome':
 					this.route = 'home';
+					this.ui = { ...this.ui, route: 'home' };
 					this.onNavigate(intent);
 					this.onChange();
 					break;
 				case 'goStats':
 					this.route = 'stats';
+					this.ui = { ...this.ui, route: 'stats' };
 					this.onNavigate(intent);
 					this.onChange();
 					break;
 				case 'goHistory':
 					this.route = 'history';
+					this.ui = {
+						...this.ui,
+						route: 'history',
+						historySelectedDayKey: this.ui.historySelectedDayKey ?? toDayKey(new Date()),
+					};
 					this.onNavigate(intent);
 					this.onChange();
 					break;
@@ -219,12 +240,27 @@ export class HudController {
 					this.onChange();
 					break;
 				case 'cycleStatsPeriod':
-				case 'historyPrevDay':
-				case 'historyNextDay':
-				case 'historyResetToday':
 					this.onNavigate(intent);
+					break;
+				case 'historyPrevDay':
+					this.applyHistoryDayChange(-1);
+					break;
+				case 'historyNextDay':
+					this.applyHistoryDayChange(1);
+					break;
+				case 'historyResetToday':
+					{
+					const nextDayKey = toDayKey(new Date());
+					this.ui = {
+						...this.ui,
+						route: 'history',
+						historySelectedDayKey: nextDayKey,
+					};
+					console.log(`[HUD-HISTORY] intent historyResetToday -> ${nextDayKey}`);
+					this.onNavigate({ type: 'historySetDay', dayKey: nextDayKey });
 					this.onChange();
 					break;
+					}
 			}
 		}
 	}
@@ -272,10 +308,42 @@ export class HudController {
 	}
 
 	private getSelectedHistoryDay(): HudHistoryDaySummary | null {
-		if (!this.ui.historySelectedDayKey) {
+		const dayKey = this.ui.historySelectedDayKey;
+		if (!dayKey) {
 			return this.snapshot.history.days[0] ?? null;
 		}
-		return this.snapshot.history.days.find((day) => day.dayKey === this.ui.historySelectedDayKey) ?? null;
+		return this.snapshot.history.days.find((day) => day.dayKey === dayKey) ?? null;
 	}
 
+	private applyHistoryDayChange(deltaDays: number): void {
+		const currentDayKey = this.ui.historySelectedDayKey;
+		const nextDayKey = stepHistoryDayKey(currentDayKey, deltaDays);
+		this.ui = {
+			...this.ui,
+			route: 'history',
+			historySelectedDayKey: nextDayKey,
+		};
+		console.log(
+			`[HUD-HISTORY] intent ${deltaDays < 0 ? 'historyPrevDay' : 'historyNextDay'} current=${currentDayKey} -> ${nextDayKey}`,
+		);
+		this.onNavigate({ type: 'historySetDay', dayKey: nextDayKey });
+		this.onChange();
+	}
+
+}
+
+function stepHistoryDayKey(currentDayKey: string | null, deltaDays: number): string {
+	const baseDate = currentDayKey ? parseDayKey(currentDayKey) : new Date();
+	return toDayKey(new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate() + deltaDays));
+}
+
+function parseDayKey(dayKey: string): Date {
+	return new Date(`${dayKey}T00:00:00`);
+}
+
+function toDayKey(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
 }

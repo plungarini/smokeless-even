@@ -1,5 +1,5 @@
 import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import type { HudSnapshot } from '../domain/types';
 import { HudController } from './controller';
 import { HudSession } from './session';
@@ -51,10 +51,13 @@ export function AppGlasses({ snapshot, actions, ui, onNavigate }: Props) {
 	}, [renderHud]);
 
 	// ── Props sync: push new props into the already-existing controller ──
-	useEffect(() => {
+	useLayoutEffect(() => {
 		controllerRef.current?.updateActions(actions);
 		controllerRef.current?.updateSnapshot(snapshot);
 		controllerRef.current?.updateUi(ui);
+		if (ui.route === 'history') {
+			console.log(`[HUD-HISTORY] AppGlasses props sync dayKey=${ui.historySelectedDayKey}`);
+		}
 		scheduleRender();
 	}, [actions, snapshot, ui, scheduleRender]);
 

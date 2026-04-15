@@ -2,7 +2,7 @@ import { ListContainerProperty, ListItemContainerProperty, TextContainerProperty
 import type { HudHistoryDaySummary } from '../domain/types';
 import { formatDayLabel, formatHudLastSmoke, formatLongDate, formatTime } from '../lib/time';
 import { HUD_CREATE_TEXT_LIMIT, HUD_WIDTH } from './constants';
-import type { HudLayoutDescriptor } from './types';
+import type { HudLayoutDescriptor, HudTextDescriptor } from './types';
 
 export function clamp(value: number, min: number, max: number): number {
 	return Math.min(Math.max(value, min), max);
@@ -24,6 +24,20 @@ export function instantiateLayout(layout: HudLayoutDescriptor, textContents: Rec
 				}),
 		),
 		listObject: layout.listObject,
+	};
+}
+
+export function createGhostEventDescriptor(containerID: number, containerName: string): HudTextDescriptor {
+	return {
+		containerID,
+		containerName,
+		xPosition: 0,
+		yPosition: 0,
+		width: 0,
+		height: 0,
+		paddingLength: 0,
+		borderWidth: 0,
+		isEventCapture: 1,
 	};
 }
 

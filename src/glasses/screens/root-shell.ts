@@ -41,8 +41,56 @@ const ROOT_LAYOUT: HudLayoutDescriptor = {
 	],
 };
 
+const HISTORY_LAYOUT: HudLayoutDescriptor = {
+	key: 'history-shell',
+	textDescriptors: [
+		{
+			containerID: 1,
+			containerName: 'chrome-header',
+			xPosition: 0,
+			yPosition: 0,
+			width: HUD_WIDTH,
+			height: 26,
+			paddingLength: 4,
+		},
+		{
+			containerID: 2,
+			containerName: 'root-body',
+			xPosition: 0,
+			yPosition: 34,
+			width: HUD_WIDTH,
+			height: 214,
+			paddingLength: 10,
+			borderWidth: 1,
+			borderRadius: HUD_BORDER_RADIUS,
+			isEventCapture: 0,
+		},
+		{
+			containerID: 3,
+			containerName: 'chrome-footer',
+			xPosition: 0,
+			yPosition: 258,
+			width: HUD_WIDTH,
+			height: 22,
+			paddingLength: 2,
+		},
+		{
+			containerID: 4,
+			containerName: 'history-event-shield',
+			xPosition: 0,
+			yPosition: 0,
+			width: HUD_WIDTH,
+			height: 288,
+			paddingLength: 0,
+			borderWidth: 0,
+			isEventCapture: 1,
+		},
+	],
+};
+
 export class RootShellScreen {
 	readonly layout = ROOT_LAYOUT;
+	readonly historyLayout = HISTORY_LAYOUT;
 
 	buildHeader(now: Date): string {
 		return `${formatHeaderTime(now)}      Smokeless`;

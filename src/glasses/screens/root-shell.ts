@@ -1,58 +1,54 @@
-import type { HudHistoryDaySummary } from '../../domain/types';
 import { computeWeightedIntervalForDay } from '../../domain/calculations';
+import type { HudHistoryDaySummary } from '../../domain/types';
 import { formatDurationClock } from '../../lib/time';
 import { HUD_BORDER_RADIUS, HUD_WIDTH } from '../constants';
 import type { HudHomeVisualState, HudLayoutDescriptor, HudRootRoute, HudScreenRenderContext } from '../types';
 import { truncate } from '../utils';
 
+const getFooter = (id: number) => ({
+	containerID: id,
+	containerName: 'chrome-footer',
+	xPosition: 13,
+	yPosition: 251,
+	width: 270,
+	height: 35,
+	paddingLength: 4,
+});
+
+const getHeader = (id = 1) => ({
+	containerID: id,
+	containerName: 'chrome-header',
+	xPosition: 12,
+	yPosition: 0,
+	width: 200,
+	height: 40,
+	paddingLength: 4,
+});
+
 const ROOT_LAYOUT: HudLayoutDescriptor = {
 	key: 'root-shell',
 	textDescriptors: [
-		{
-			containerID: 1,
-			containerName: 'chrome-header',
-			xPosition: 0,
-			yPosition: 0,
-			width: HUD_WIDTH,
-			height: 26,
-			paddingLength: 4,
-		},
+		getHeader(),
 		{
 			containerID: 2,
 			containerName: 'root-body',
 			xPosition: 0,
-			yPosition: 34,
+			yPosition: 37,
 			width: HUD_WIDTH,
-			height: 214,
-			paddingLength: 10,
+			height: 213,
+			paddingLength: 15,
 			borderWidth: 1,
 			borderRadius: HUD_BORDER_RADIUS,
 			isEventCapture: 1,
 		},
-		{
-			containerID: 3,
-			containerName: 'chrome-footer',
-			xPosition: 0,
-			yPosition: 258,
-			width: HUD_WIDTH,
-			height: 22,
-			paddingLength: 2,
-		},
+		getFooter(3),
 	],
 };
 
 const HISTORY_LAYOUT: HudLayoutDescriptor = {
 	key: 'history-shell',
 	textDescriptors: [
-		{
-			containerID: 1,
-			containerName: 'chrome-header',
-			xPosition: 0,
-			yPosition: 0,
-			width: HUD_WIDTH,
-			height: 26,
-			paddingLength: 4,
-		},
+		getHeader(),
 		{
 			containerID: 2,
 			containerName: 'root-body',
@@ -65,15 +61,7 @@ const HISTORY_LAYOUT: HudLayoutDescriptor = {
 			borderRadius: HUD_BORDER_RADIUS,
 			isEventCapture: 0,
 		},
-		{
-			containerID: 3,
-			containerName: 'chrome-footer',
-			xPosition: 0,
-			yPosition: 258,
-			width: HUD_WIDTH,
-			height: 22,
-			paddingLength: 2,
-		},
+		getFooter(3),
 		{
 			containerID: 4,
 			containerName: 'history-event-shield',
@@ -93,15 +81,19 @@ export class RootShellScreen {
 	readonly historyLayout = HISTORY_LAYOUT;
 
 	buildHeader(now: Date): string {
-		return `${formatHeaderTime(now)}      Smokeless`;
+		return `${formatHeaderTime(now)}   •   Smokeless`;
 	}
 
 	buildFooter(activeRoute: HudRootRoute): string {
 		const labels: HudRootRoute[] = ['home', 'stats', 'history'];
 		return labels
 			.map((route) => {
-				const label = route === 'home' ? 'Home' : route === 'stats' ? 'Stats' : 'History';
-				return route === activeRoute ? `[${label}]` : ` ${label} `;
+				const labels: Record<HudRootRoute, string> = {
+					home: 'Home',
+					stats: 'Stats',
+					history: 'History',
+				};
+				return route === activeRoute ? `[${labels[route]}]` : ` ${labels[route]} `;
 			})
 			.join('      ');
 	}

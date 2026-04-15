@@ -1,5 +1,5 @@
 import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import type { HudSnapshot } from '../domain/types';
 import { HudController } from './controller';
 import { HudSession } from './session';
@@ -175,7 +175,7 @@ function getHudSyncKey(snapshot: HudSnapshot, ui: HudUiState): string {
 	}
 
 	const selectedDay = ui.historySelectedDayKey
-		? snapshot.history.days.find((day) => day.dayKey === ui.historySelectedDayKey) ?? null
+		? (snapshot.history.days.find((day) => day.dayKey === ui.historySelectedDayKey) ?? null)
 		: null;
 
 	return [

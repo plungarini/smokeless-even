@@ -20,26 +20,16 @@ export class MenuViewController implements MenuViewControllerContract {
 	}
 
 	buildContent(_activeRoute: HudRootRoute) {
-		return buildMenuContents(this.selectedIndex);
+		return buildMenuContents(this.selectedIndex, _activeRoute);
 	}
 
 	async handleEvent(event: EvenHubEvent): Promise<HudIntent[]> {
 		const type = event.listEvent?.eventType ?? event.textEvent?.eventType ?? event.sysEvent?.eventType;
 
-		if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT) {
-			const nextIndex = Math.min(this.selectedIndex + 1, MENU_ITEMS.length - 1);
-			if (nextIndex !== this.selectedIndex) {
-				return [{ type: 'menuScroll', index: nextIndex }];
-			}
-			return [];
-		}
-
-		if (type === OsEventTypeList.SCROLL_TOP_EVENT) {
-			const prevIndex = Math.max(this.selectedIndex - 1, 0);
-			if (prevIndex !== this.selectedIndex) {
-				return [{ type: 'menuScroll', index: prevIndex }];
-			}
-			return [];
+		if (type === OsEventTypeList.SCROLL_BOTTOM_EVENT || type === OsEventTypeList.SCROLL_TOP_EVENT) {
+			const dir = type === OsEventTypeList.SCROLL_BOTTOM_EVENT ? 1 : -1;
+			const index = (this.selectedIndex + dir + MENU_ITEMS.length) % MENU_ITEMS.length;
+			return [{ type: 'menuScroll', index }];
 		}
 
 		if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) return [{ type: 'closeMenu' }];
@@ -48,7 +38,8 @@ export class MenuViewController implements MenuViewControllerContract {
 			const view = getMenuViewByIndex(this.selectedIndex);
 			if (view === 'home') return [{ type: 'goHome' }];
 			if (view === 'stats') return [{ type: 'goStats' }];
-			return [{ type: 'goHistory' }];
+			if (view === 'history') return [{ type: 'goHistory' }];
+			return [{ type: 'goHome' }];
 		}
 
 		return [];

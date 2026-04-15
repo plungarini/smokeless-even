@@ -3,7 +3,7 @@ import type { HudHistoryDaySummary, HudSnapshot, HudStatsPeriod } from '../domai
 
 export type HudRoute = 'home' | 'stats' | 'history' | 'menu' | 'status';
 export type HudRootRoute = 'home' | 'stats' | 'history';
-export type HudRootView = 'home' | 'stats' | 'history-list';
+export type HudRootView = 'home' | 'stats' | 'history';
 
 export interface HudUiState {
 	route: HudRootRoute;
@@ -97,7 +97,11 @@ export interface StatsViewController {
 export interface HistoryViewController {
 	buildLayout(): HudLayoutDescriptor;
 	buildContent(context: HudScreenRenderContext, selectedDay: HudHistoryDaySummary | null): Record<string, string>;
-	handleEvent(event: EvenHubEvent, context: HudScreenRenderContext, selectedDay: HudHistoryDaySummary | null): Promise<HudIntent[]>;
+	handleEvent(
+		event: EvenHubEvent,
+		context: HudScreenRenderContext,
+		selectedDay: HudHistoryDaySummary | null,
+	): Promise<HudIntent[]>;
 	getUpgradeableContainers(): string[];
 }
 

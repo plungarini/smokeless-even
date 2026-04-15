@@ -1,9 +1,18 @@
 import { OsEventTypeList, type EvenHubEvent } from '@evenrealities/even_hub_sdk';
 import type { HudHistoryDaySummary, HudSnapshot } from '../domain/types';
 import { getMenuIndexForView } from './screens/menu-screen';
-import { StatusScreen } from './screens/status-screen';
 import { RootShellScreen } from './screens/root-shell';
-import type { HudActions, HudHomeVisualState, HudIntent, HudRenderState, HudRoute, HudScreenRenderContext, HudTransientStatus, HudUiState } from './types';
+import { StatusScreen } from './screens/status-screen';
+import type {
+	HudActions,
+	HudHomeVisualState,
+	HudIntent,
+	HudRenderState,
+	HudRoute,
+	HudScreenRenderContext,
+	HudTransientStatus,
+	HudUiState,
+} from './types';
 import { HistoryViewController } from './view-controllers/history-view-controller';
 import { HomeViewController } from './view-controllers/home-view-controller';
 import { MenuViewController } from './view-controllers/menu-view-controller';
@@ -19,9 +28,30 @@ const defaultSnapshot: HudSnapshot = {
 		weightedAverage: 0,
 	},
 	stats: {
-		week: { period: 'week', totalSmoked: 0, comparisonLabel: '0%', weightedAverage: 0, averageIntervalLabel: '--:--:--', series: [] },
-		month: { period: 'month', totalSmoked: 0, comparisonLabel: '0%', weightedAverage: 0, averageIntervalLabel: '--:--:--', series: [] },
-		year: { period: 'year', totalSmoked: 0, comparisonLabel: '0%', weightedAverage: 0, averageIntervalLabel: '--:--:--', series: [] },
+		week: {
+			period: 'week',
+			totalSmoked: 0,
+			comparisonLabel: '0%',
+			weightedAverage: 0,
+			averageIntervalLabel: '--:--:--',
+			series: [],
+		},
+		month: {
+			period: 'month',
+			totalSmoked: 0,
+			comparisonLabel: '0%',
+			weightedAverage: 0,
+			averageIntervalLabel: '--:--:--',
+			series: [],
+		},
+		year: {
+			period: 'year',
+			totalSmoked: 0,
+			comparisonLabel: '0%',
+			weightedAverage: 0,
+			averageIntervalLabel: '--:--:--',
+			series: [],
+		},
 	},
 	history: {
 		days: [],
@@ -113,9 +143,7 @@ export class HudController {
 
 		const context: HudScreenRenderContext = { now, snapshot: this.snapshot, ui: this.ui };
 		if (this.route === 'history') {
-			console.log(
-				`[HUD-HISTORY] buildRenderState dayKey=${this.ui.historySelectedDayKey}`,
-			);
+			console.log(`[HUD-HISTORY] buildRenderState dayKey=${this.ui.historySelectedDayKey}`);
 		}
 		if (this.route === 'menu') {
 			return {
@@ -146,25 +174,17 @@ export class HudController {
 
 	async handleEvent(event: EvenHubEvent): Promise<void> {
 		const eventType = event.textEvent?.eventType ?? event.sysEvent?.eventType ?? event.listEvent?.eventType;
-		console.log(`[HUD-CTRL] handleEvent  route=${this.route}  eventType=${eventType}  listIndex=${event.listEvent?.currentSelectItemIndex}`);
+		console.log(
+			`[HUD-CTRL] handleEvent  route=${this.route}  eventType=${eventType}  listIndex=${event.listEvent?.currentSelectItemIndex}`,
+		);
 		if (this.route === 'history') {
 			console.log(
 				`[HUD-HISTORY] raw event text=${event.textEvent?.eventType ?? 'none'} sys=${event.sysEvent?.eventType ?? 'none'} list=${event.listEvent?.eventType ?? 'none'} dayKey=${this.ui.historySelectedDayKey}`,
 			);
 		}
-		if (this.snapshot.phase !== 'ready') return;
 
 		if (this.route === 'menu') {
-			const elapsed = Date.now() - this.menuOpenedAt;
-			console.log(`[HUD-CTRL] menu event  elapsed=${elapsed}ms  cooldown=${this.MENU_ENTRY_COOLDOWN_MS}ms`);
-			// Drop events arriving within the cooldown window after menu opened.
-			// The G2 firmware emits a phantom CLICK right after a DOUBLE_CLICK, which
-			// would otherwise be processed as a menu commit (goHome at index 0).
-			if (elapsed >= this.MENU_ENTRY_COOLDOWN_MS) {
-				await this.applyIntents(await this.menuController.handleEvent(event));
-			} else {
-				console.log(`[HUD-CTRL] menu event DROPPED (within cooldown)`);
-			}
+			await this.applyIntents(await this.menuController.handleEvent(event));
 			return;
 		}
 
@@ -182,16 +202,26 @@ export class HudController {
 				await this.triggerLogSmoke();
 				return;
 			}
-			await this.applyIntents(await this.homeController.handleEvent(event, { now: new Date(), snapshot: this.snapshot, ui: this.ui }));
+			await this.applyIntents(
+				await this.homeController.handleEvent(event, { now: new Date(), snapshot: this.snapshot, ui: this.ui }),
+			);
 			return;
 		}
 
 		if (this.route === 'stats') {
-			await this.applyIntents(await this.statsController.handleEvent(event, { now: new Date(), snapshot: this.snapshot, ui: this.ui }));
+			await this.applyIntents(
+				await this.statsController.handleEvent(event, { now: new Date(), snapshot: this.snapshot, ui: this.ui }),
+			);
 			return;
 		}
 
-		await this.applyIntents(await this.historyController.handleEvent(event, { now: new Date(), snapshot: this.snapshot, ui: this.ui }, this.getSelectedHistoryDay()));
+		await this.applyIntents(
+			await this.historyController.handleEvent(
+				event,
+				{ now: new Date(), snapshot: this.snapshot, ui: this.ui },
+				this.getSelectedHistoryDay(),
+			),
+		);
 	}
 
 	private async applyIntents(intents: HudIntent[]): Promise<void> {
@@ -199,13 +229,10 @@ export class HudController {
 			console.log(`[HUD-CTRL] applyIntent  type=${intent.type}  currentRoute=${this.route}`);
 			switch (intent.type) {
 				case 'openMenu': {
-					// Pre-seed the selected index to match the current active route
-					// so opening from stats pre-highlights "Stats", etc.
-					const routeForIndex = this.ui.route === 'history' ? 'history-list' : this.ui.route;
-					this.menuController.setInitialIndex(getMenuIndexForView(routeForIndex));
+					this.menuController.setInitialIndex(getMenuIndexForView(this.ui.route));
 					this.route = 'menu';
 					this.menuOpenedAt = Date.now();
-					console.log(`[HUD-CTRL] route -> menu  initialIndex=${getMenuIndexForView(routeForIndex)}`);
+					console.log(`[HUD-CTRL] route -> menu  initialIndex=${getMenuIndexForView(this.ui.route)}`);
 					this.onChange();
 					break;
 				}
@@ -248,8 +275,7 @@ export class HudController {
 				case 'historyNextDay':
 					this.applyHistoryDayChange(1);
 					break;
-				case 'historyResetToday':
-					{
+				case 'historyResetToday': {
 					const nextDayKey = toDayKey(new Date());
 					this.ui = {
 						...this.ui,
@@ -260,7 +286,7 @@ export class HudController {
 					this.onNavigate({ type: 'historySetDay', dayKey: nextDayKey });
 					this.onChange();
 					break;
-					}
+				}
 			}
 		}
 	}
@@ -272,7 +298,10 @@ export class HudController {
 			this.setHomeVisualState({ mode: 'logging', message: null, loggedAt: null, todayCount: null });
 			const result = await this.actions.logSmoke();
 			if (!result.ok) {
-				this.setHomeVisualState({ mode: 'error', message: result.errorMessage ?? 'Could not log smoke.', loggedAt: null, todayCount: null }, 1700);
+				this.setHomeVisualState(
+					{ mode: 'error', message: result.errorMessage ?? 'Could not log smoke.', loggedAt: null, todayCount: null },
+					1700,
+				);
 				return;
 			}
 			this.setHomeVisualState(
@@ -302,9 +331,23 @@ export class HudController {
 	}
 
 	private buildPhaseStatus(): HudTransientStatus {
-		if (this.snapshot.phase === 'blocked') return { tone: 'error', title: 'Smokeless', body: [this.snapshot.statusMessage ?? 'Please restart the app on your phone.'] };
-		if (this.snapshot.phase === 'onboarding') return { tone: 'neutral', title: 'Onboarding', body: [this.snapshot.statusMessage ?? 'Continue setup on your phone to unlock the HUD.'] };
-		return { tone: 'neutral', title: 'Smokeless', body: [this.snapshot.statusMessage ?? 'Connecting to Even and syncing your smoking history.'] };
+		if (this.snapshot.phase === 'blocked')
+			return {
+				tone: 'error',
+				title: 'Smokeless',
+				body: [this.snapshot.statusMessage ?? 'Please restart the app on your phone.'],
+			};
+		if (this.snapshot.phase === 'onboarding')
+			return {
+				tone: 'neutral',
+				title: 'Onboarding',
+				body: [this.snapshot.statusMessage ?? 'Continue setup on your phone to unlock the HUD.'],
+			};
+		return {
+			tone: 'neutral',
+			title: 'Smokeless',
+			body: [this.snapshot.statusMessage ?? 'Connecting to Even and syncing your smoking history.'],
+		};
 	}
 
 	private getSelectedHistoryDay(): HudHistoryDaySummary | null {
@@ -329,7 +372,6 @@ export class HudController {
 		this.onNavigate({ type: 'historySetDay', dayKey: nextDayKey });
 		this.onChange();
 	}
-
 }
 
 function stepHistoryDayKey(currentDayKey: string | null, deltaDays: number): string {

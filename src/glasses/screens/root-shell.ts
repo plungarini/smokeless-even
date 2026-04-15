@@ -100,20 +100,24 @@ export class RootShellScreen {
 
 	buildHomeBody(context: HudScreenRenderContext, visualState: HudHomeVisualState): string {
 		const timerLabel = formatSmokeFreeClock(context.snapshot.home.lastSmokeAt, context.now);
+		const statusSpacing = '                               ';
+		const bodySpacing = '                               ';
+		const valueSpacing = '                            ';
+		const padValueSpace = (val: string | number) => `${val}`.padStart(valueSpacing.length, ' ');
 
 		if (visualState.mode === 'logging') {
-			return 'Tap to add smoke\n\nLogging smoke...\n\nPlease hold still';
+			return `${statusSpacing}--     Logging smoke...     --\n\n${bodySpacing}• Today:    ${padValueSpace('...')}\n\n${bodySpacing}• Last:${padValueSpace('--:--:--')}`;
 		}
 
 		if (visualState.mode === 'success') {
-			return `Smoke logged\n\n${visualState.todayCount ?? context.snapshot.home.todayCount} today\n\n${timerLabel} smoke-free`;
+			return `${statusSpacing}--       Smoke logged       --\n\n${bodySpacing}• Today:    ${padValueSpace(visualState.todayCount ?? context.snapshot.home.todayCount)}\n\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
 		}
 
 		if (visualState.mode === 'error') {
-			return `Could not log smoke\n\n${truncate(visualState.message ?? 'Please try again.', 30)}\n\n${timerLabel} smoke-free`;
+			return `${statusSpacing}--   Could not log smoke    --\n\n${truncate(visualState.message ?? 'Please try again.', 30)}\n\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
 		}
 
-		return `Tap to add smoke\n\n${context.snapshot.home.todayCount} today\n\n${timerLabel} smoke-free`;
+		return `${statusSpacing}--     Tap to add a Log     --\n\n${bodySpacing}• Today:    ${padValueSpace(context.snapshot.home.todayCount)}\n\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
 	}
 
 	buildStatsBody(context: HudScreenRenderContext): string {
@@ -146,7 +150,7 @@ function formatSmokeFreeClock(lastSmokeAt: Date | null, now: Date): string {
 	const hours = Math.floor(totalSeconds / 3600);
 	const minutes = Math.floor((totalSeconds % 3600) / 60);
 	const seconds = totalSeconds % 60;
-	return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+	return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
 
 function formatHistoryDay(date: Date): string {

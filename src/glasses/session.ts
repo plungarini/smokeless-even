@@ -22,7 +22,9 @@ export class HudSession {
 		const params = instantiateLayout(next.layout, next.textContents);
 
 		if (!this.pageCreated) {
-			console.log(`[HUD-SESSION] createStartUpPage  key=${next.layout.key}  containers=${params.containerTotalNum}  textKeys=${Object.keys(next.textContents).join(',')}`);
+			console.log(
+				`[HUD-SESSION] createStartUpPage  key=${next.layout.key}  containers=${params.containerTotalNum}  textKeys=${Object.keys(next.textContents).join(',')}`,
+			);
 			const created = await this.bridge.createStartUpPageContainer(new CreateStartUpPageContainer(params));
 			console.log(`[HUD-SESSION] createStartUpPage result=${created}`);
 			if (created === StartUpPageCreateResult.success) {
@@ -34,7 +36,9 @@ export class HudSession {
 		}
 
 		if (this.activeLayoutKey !== next.layout.key) {
-			console.log(`[HUD-SESSION] rebuildPage  oldKey=${this.activeLayoutKey}  newKey=${next.layout.key}  containers=${params.containerTotalNum}`);
+			console.log(
+				`[HUD-SESSION] rebuildPage  oldKey=${this.activeLayoutKey}  newKey=${next.layout.key}  containers=${params.containerTotalNum}`,
+			);
 			await this.bridge.rebuildPageContainer(new RebuildPageContainer(params));
 			this.pageCreated = true;
 			this.activeLayoutKey = next.layout.key;

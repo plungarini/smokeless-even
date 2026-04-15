@@ -1,4 +1,4 @@
-import type { EvenHubEvent, ListContainerProperty } from '@evenrealities/even_hub_sdk';
+import type { EvenHubEvent, ImageContainerProperty, ListContainerProperty } from '@evenrealities/even_hub_sdk';
 import type { HudHistoryDaySummary, HudSnapshot, HudStatsPeriod } from '../domain/types';
 
 export type HudRoute = 'home' | 'stats' | 'history' | 'menu' | 'status';
@@ -60,6 +60,7 @@ export interface HudLayoutDescriptor {
 	key: string;
 	textDescriptors: HudTextDescriptor[];
 	listObject?: ListContainerProperty[];
+	imageObject?: ImageContainerProperty[];
 }
 
 export interface HudRenderState {

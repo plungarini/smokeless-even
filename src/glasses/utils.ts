@@ -24,6 +24,7 @@ export function instantiateLayout(layout: HudLayoutDescriptor, textContents: Rec
 				}),
 		),
 		listObject: layout.listObject,
+		imageObject: layout.imageObject,
 	};
 }
 
@@ -115,17 +116,26 @@ export function formatHistoryRow(day: HudHistoryDaySummary, selected: boolean): 
 	const newest = day.entries[0]?.timestamp ?? null;
 	const oldest = day.entries[day.entries.length - 1]?.timestamp ?? null;
 	const range =
-		newest && oldest ? `${formatTime(oldest)} to ${formatTime(newest)}` : newest ? formatTime(newest) : 'No times logged';
+		newest && oldest
+			? `${formatTime(oldest)} to ${formatTime(newest)}`
+			: newest
+				? formatTime(newest)
+				: 'No times logged';
 	return `${selected ? '>' : ' '} ${truncate(`${formatDayLabel(day.date)}  ${day.count} smokes`, 43)}\n  ${truncate(range, 40)}`;
 }
 
-export function formatHistoryDetailPage(day: HudHistoryDaySummary, pageIndex: number, rowsPerPage: number): { body: string; totalPages: number } {
-	const lines = day.entries.length === 0
-		? ['No smokes logged for this day.']
-		: day.entries.map((entry, index) => {
-			const next = day.entries[index + 1]?.timestamp ?? null;
-			return `${String(day.entries.length - index).padStart(2, ' ')}  ${formatTime(entry.timestamp)}  ${next ? formatGap(entry.timestamp, next) : 'latest'}`;
-		});
+export function formatHistoryDetailPage(
+	day: HudHistoryDaySummary,
+	pageIndex: number,
+	rowsPerPage: number,
+): { body: string; totalPages: number } {
+	const lines =
+		day.entries.length === 0
+			? ['No smokes logged for this day.']
+			: day.entries.map((entry, index) => {
+					const next = day.entries[index + 1]?.timestamp ?? null;
+					return `${String(day.entries.length - index).padStart(2, ' ')}  ${formatTime(entry.timestamp)}  ${next ? formatGap(entry.timestamp, next) : 'latest'}`;
+				});
 	const totalPages = Math.max(1, Math.ceil(lines.length / rowsPerPage));
 	const pageLines = lines.slice(pageIndex * rowsPerPage, pageIndex * rowsPerPage + rowsPerPage);
 	const content = `${formatLongDate(day.date)}\n${day.count} smokes\n\n${pageLines.join('\n')}`;

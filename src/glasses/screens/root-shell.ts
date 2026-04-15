@@ -53,10 +53,10 @@ const HISTORY_LAYOUT: HudLayoutDescriptor = {
 			containerID: 2,
 			containerName: 'root-body',
 			xPosition: 0,
-			yPosition: 34,
+			yPosition: 37,
 			width: HUD_WIDTH,
-			height: 214,
-			paddingLength: 10,
+			height: 213,
+			paddingLength: 15,
 			borderWidth: 1,
 			borderRadius: HUD_BORDER_RADIUS,
 			isEventCapture: 0,
@@ -100,24 +100,24 @@ export class RootShellScreen {
 
 	buildHomeBody(context: HudScreenRenderContext, visualState: HudHomeVisualState): string {
 		const timerLabel = formatSmokeFreeClock(context.snapshot.home.lastSmokeAt, context.now);
-		const statusSpacing = '                               ';
+		const statusSpacing = '\n                               ';
 		const bodySpacing = '                               ';
 		const valueSpacing = '                            ';
 		const padValueSpace = (val: string | number) => `${val}`.padStart(valueSpacing.length, ' ');
 
 		if (visualState.mode === 'logging') {
-			return `${statusSpacing}--     Logging smoke...     --\n\n${bodySpacing}• Today:    ${padValueSpace('...')}\n\n${bodySpacing}• Last:${padValueSpace('--:--:--')}`;
+			return `${statusSpacing}--     Logging smoke...     --\n\n${bodySpacing}• Today:    ${padValueSpace('...')}\n${bodySpacing}• Last:${padValueSpace('--:--:--')}`;
 		}
 
 		if (visualState.mode === 'success') {
-			return `${statusSpacing}--       Smoke logged       --\n\n${bodySpacing}• Today:    ${padValueSpace(visualState.todayCount ?? context.snapshot.home.todayCount)}\n\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
+			return `${statusSpacing}--       Smoke logged       --\n\n${bodySpacing}• Today:    ${padValueSpace(visualState.todayCount ?? context.snapshot.home.todayCount)}\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
 		}
 
 		if (visualState.mode === 'error') {
-			return `${statusSpacing}--   Could not log smoke    --\n\n${truncate(visualState.message ?? 'Please try again.', 30)}\n\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
+			return `${statusSpacing}--   Could not log smoke    --\n\n${truncate(visualState.message ?? 'Please try again.', 30)}\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
 		}
 
-		return `${statusSpacing}--     Tap to add a Log     --\n\n${bodySpacing}• Today:    ${padValueSpace(context.snapshot.home.todayCount)}\n\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
+		return `${statusSpacing}--     Tap to add a Log     --\n\n${bodySpacing}• Today:    ${padValueSpace(context.snapshot.home.todayCount)}\n${bodySpacing}• Last:${padValueSpace(timerLabel)}`;
 	}
 
 	buildStatsBody(context: HudScreenRenderContext): string {
@@ -130,8 +130,6 @@ export class RootShellScreen {
 			const range = currMonth <= 5 ? 0 : currMonth - 5;
 			series = series.slice(range, range + 6);
 		}
-
-		series = series.map((i) => ({ ...i, count: 2000 }));
 
 		const itemsPerLine = 4;
 		const lines: string[] = [];
@@ -155,13 +153,14 @@ export class RootShellScreen {
 
 	buildHistoryBody(selectedDayKey: string | null, selectedDay: HudHistoryDaySummary | null): string {
 		const displayDate = selectedDay?.date ?? (selectedDayKey ? parseDayKey(selectedDayKey) : new Date());
-		if (!selectedDay) {
-			return `${formatHistoryDay(displayDate)}\n\nTotal smoked: 0\nAvg interval: 00:00:00\n\nScroll days  •  Click today`;
-		}
+		const padValue = (val: string | number) => `${val}`.padStart(14, ' ');
 
+		if (!selectedDay) {
+			return `${formatHistoryDay(displayDate)}\n\n- Total smoked:    ${padValue(0)}\n- Avg interval: ${padValue('--:--:--')}\n\nScroll days  •  Click today`;
+		}
 		const weightedInterval = computeWeightedIntervalForDay(selectedDay.entries);
-		const averageIntervalLabel = weightedInterval === null ? '00:00:00' : formatDurationClock(weightedInterval);
-		return `${formatHistoryDay(selectedDay.date)}\n\nTotal smoked: ${selectedDay.count}\nAvg interval: ${averageIntervalLabel}\n\nScroll days  •  Click today`;
+		const averageIntervalLabel = weightedInterval === null ? '--:--:--' : formatDurationClock(weightedInterval);
+		return `${formatHistoryDay(selectedDay.date)}\n\n- Total smoked:    ${padValue(selectedDay.count)}\n- Avg interval: ${padValue(averageIntervalLabel)}\n\nScroll days  •  Click today`;
 	}
 }
 
@@ -180,7 +179,17 @@ function formatSmokeFreeClock(lastSmokeAt: Date | null, now: Date): string {
 }
 
 function formatHistoryDay(date: Date): string {
-	return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+	const str = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+
+	const now = new Date();
+	date.setHours(0, 0, 0, 0);
+	now.setHours(0, 0, 0, 0);
+
+	const isPast = date.getTime() < now.getTime() && '<';
+	const isFuture = date.getTime() > now.getTime() && '>';
+	const isNow = date.getTime() === now.getTime() && '•';
+
+	return `${isNow || isPast || isFuture}   ${str}`;
 }
 
 function parseDayKey(dayKey: string): Date {

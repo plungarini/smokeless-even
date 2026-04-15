@@ -55,7 +55,7 @@ export function formatTimerClock(date: Date | null, now = new Date()): string {
 	const hours = Math.floor(totalSeconds / 3600);
 	const minutes = Math.floor((totalSeconds % 3600) / 60);
 	const seconds = totalSeconds % 60;
-	return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+	return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
 export function formatDurationClock(durationMs: number | null): string {
@@ -64,7 +64,7 @@ export function formatDurationClock(durationMs: number | null): string {
 	const hours = Math.floor(totalSeconds / 3600);
 	const minutes = Math.floor((totalSeconds % 3600) / 60);
 	const seconds = totalSeconds % 60;
-	return `${hours}:${pad(minutes)}:${pad(seconds)}`;
+	return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
 export function formatHudLastSmoke(date: Date | null, now = new Date()): string {

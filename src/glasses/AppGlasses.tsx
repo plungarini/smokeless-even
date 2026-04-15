@@ -17,6 +17,8 @@ export function AppGlasses({ snapshot, actions, ui, onNavigate }: Props) {
 	const sessionRef = useRef<HudSession | null>(null);
 	const renderLockRef = useRef({ active: false, queued: false });
 	const minuteClockRef = useRef('');
+	const lastAppliedSyncKeyRef = useRef<string | null>(null);
+	const lastActionsRef = useRef<HudActions | null>(null);
 
 	// Keep latest props in refs so the bridge effect (mount-once) always
 	// has access to current values without needing to re-run.
@@ -50,16 +52,30 @@ export function AppGlasses({ snapshot, actions, ui, onNavigate }: Props) {
 			});
 	}, [renderHud]);
 
+	const syncKey = getHudSyncKey(snapshot, ui);
+
 	// ── Props sync: push new props into the already-existing controller ──
 	useLayoutEffect(() => {
-		controllerRef.current?.updateActions(actions);
-		controllerRef.current?.updateSnapshot(snapshot);
-		controllerRef.current?.updateUi(ui);
+		const controller = controllerRef.current;
+		if (!controller) return;
+
+		if (lastActionsRef.current !== actions) {
+			controller.updateActions(actions);
+			lastActionsRef.current = actions;
+		}
+
+		if (lastAppliedSyncKeyRef.current === syncKey) {
+			return;
+		}
+
+		controller.updateSnapshot(snapshot);
+		controller.updateUi(ui);
+		lastAppliedSyncKeyRef.current = syncKey;
 		if (ui.route === 'history') {
 			console.log(`[HUD-HISTORY] AppGlasses props sync dayKey=${ui.historySelectedDayKey}`);
 		}
 		scheduleRender();
-	}, [actions, snapshot, ui, scheduleRender]);
+	}, [actions, snapshot, ui, scheduleRender, syncKey]);
 
 	// ── 1-second timer for home-screen clock + smoke timer ──
 	useEffect(() => {
@@ -127,4 +143,45 @@ export function AppGlasses({ snapshot, actions, ui, onNavigate }: Props) {
 	}, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally mount-once
 
 	return null;
+}
+
+function getHudSyncKey(snapshot: HudSnapshot, ui: HudUiState): string {
+	if (snapshot.phase !== 'ready') {
+		return `phase:${snapshot.phase}:${snapshot.statusMessage ?? ''}`;
+	}
+
+	if (ui.route === 'home') {
+		return [
+			'home',
+			snapshot.phase,
+			snapshot.home.todayCount,
+			snapshot.home.lastSmokeAt?.getTime() ?? 'none',
+			snapshot.home.dailyTarget ?? 'none',
+			snapshot.pendingAction ?? 'none',
+		].join('|');
+	}
+
+	if (ui.route === 'stats') {
+		const stats = snapshot.stats[ui.statsPeriod];
+		return [
+			'stats',
+			ui.statsPeriod,
+			stats.totalSmoked,
+			stats.comparisonLabel,
+			stats.weightedAverage,
+			stats.averageIntervalLabel,
+			stats.series.map((item) => `${item.label}:${item.count}`).join(','),
+		].join('|');
+	}
+
+	const selectedDay = ui.historySelectedDayKey
+		? snapshot.history.days.find((day) => day.dayKey === ui.historySelectedDayKey) ?? null
+		: null;
+
+	return [
+		'history',
+		ui.historySelectedDayKey ?? 'today',
+		selectedDay?.count ?? 0,
+		selectedDay?.entries.map((entry) => entry.timestamp.getTime()).join(',') ?? '',
+	].join('|');
 }

@@ -1,4 +1,6 @@
 import type { HudHistoryDaySummary } from '../../domain/types';
+import { computeWeightedIntervalForDay } from '../../domain/calculations';
+import { formatDurationClock } from '../../lib/time';
 import { HUD_BORDER_RADIUS, HUD_WIDTH } from '../constants';
 import type { HudHomeVisualState, HudLayoutDescriptor, HudRootRoute, HudScreenRenderContext } from '../types';
 import { truncate } from '../utils';
@@ -84,12 +86,12 @@ export class RootShellScreen {
 	buildHistoryBody(selectedDayKey: string | null, selectedDay: HudHistoryDaySummary | null): string {
 		const displayDate = selectedDay?.date ?? (selectedDayKey ? parseDayKey(selectedDayKey) : new Date());
 		if (!selectedDay) {
-			return `${formatHistoryDay(displayDate)}\n\n0 smokes\n\nNo smokes logged\n\nScroll days  •  Click today`;
+			return `${formatHistoryDay(displayDate)}\n\nTotal smoked: 0\nAvg interval: 00:00:00\n\nScroll days  •  Click today`;
 		}
 
-		const times = selectedDay.entries.slice(0, 8).map((entry) => formatClock(entry.timestamp));
-		const lines = times.length > 0 ? times.join('   ') : 'No times logged';
-		return `${formatHistoryDay(selectedDay.date)}\n\n${selectedDay.count} smokes\n\n${lines}\n\nScroll days  •  Click today`;
+		const weightedInterval = computeWeightedIntervalForDay(selectedDay.entries);
+		const averageIntervalLabel = weightedInterval === null ? '00:00:00' : formatDurationClock(weightedInterval);
+		return `${formatHistoryDay(selectedDay.date)}\n\nTotal smoked: ${selectedDay.count}\nAvg interval: ${averageIntervalLabel}\n\nScroll days  •  Click today`;
 	}
 }
 
@@ -105,10 +107,6 @@ function formatSmokeFreeClock(lastSmokeAt: Date | null, now: Date): string {
 	const minutes = Math.floor((totalSeconds % 3600) / 60);
 	const seconds = totalSeconds % 60;
 	return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-function formatClock(date: Date): string {
-	return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
 function formatHistoryDay(date: Date): string {

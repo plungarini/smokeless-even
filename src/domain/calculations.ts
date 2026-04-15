@@ -20,6 +20,19 @@ function median(values: number[]): number {
 	return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
 }
 
+export function computeWeightedMean(samples: Array<{ value: number; weight: number }>): number | null {
+	let weightedTotal = 0;
+	let totalWeight = 0;
+
+	for (const sample of samples) {
+		if (!Number.isFinite(sample.value) || !Number.isFinite(sample.weight) || sample.weight <= 0) continue;
+		weightedTotal += sample.value * sample.weight;
+		totalWeight += sample.weight;
+	}
+
+	return totalWeight > 0 ? weightedTotal / totalWeight : null;
+}
+
 export function computeWeightedDailyAverage(
 	dailyStats: Record<string, number>,
 	createdAt: Date | null,
@@ -28,8 +41,7 @@ export function computeWeightedDailyAverage(
 	const todayKey = toDayKey(now);
 	const minDay = createdAt ? startOfDay(createdAt) : addDays(now, -365);
 
-	let totalWeight = 0;
-	let weightedTotal = 0;
+	const samples: Array<{ value: number; weight: number }> = [];
 
 	for (const [dayKey, count] of Object.entries(dailyStats)) {
 		if (count <= 0 || dayKey === todayKey) continue;
@@ -39,12 +51,13 @@ export function computeWeightedDailyAverage(
 		const daysAgo = diffCalendarDays(now, day);
 		if (daysAgo <= 0) continue;
 
-		const weight = Math.exp(-DECAY_LAMBDA * daysAgo);
-		totalWeight += weight;
-		weightedTotal += count * weight;
+		samples.push({
+			value: count,
+			weight: Math.exp(-DECAY_LAMBDA * daysAgo),
+		});
 	}
 
-	return totalWeight > 0 ? weightedTotal / totalWeight : 0;
+	return computeWeightedMean(samples) ?? 0;
 }
 
 export function computeSleepAwareInterval(entries: SmokeEntry[], now = new Date()): number | null {
@@ -68,8 +81,7 @@ export function computeSleepAwareInterval(entries: SmokeEntry[], now = new Date(
 	const medianGap = median(gaps.map((gap) => gap.gapMinutes));
 	const threshold = Math.max(180, 2.5 * medianGap);
 
-	let weightedTotal = 0;
-	let totalWeight = 0;
+	const samples: Array<{ value: number; weight: number }> = [];
 
 	for (const gap of gaps) {
 		if (gap.gapMinutes >= threshold) continue;
@@ -78,12 +90,40 @@ export function computeSleepAwareInterval(entries: SmokeEntry[], now = new Date(
 		const daysAgo = diffCalendarDays(now, gap.endedAt);
 		if (daysAgo <= 0) continue;
 
-		const weight = Math.exp(-DECAY_LAMBDA * daysAgo);
-		weightedTotal += gap.gapMinutes * weight;
-		totalWeight += weight;
+		samples.push({
+			value: gap.gapMinutes,
+			weight: Math.exp(-DECAY_LAMBDA * daysAgo),
+		});
 	}
 
-	return totalWeight > 0 ? weightedTotal / totalWeight : null;
+	return computeWeightedMean(samples);
+}
+
+export function computeWeightedIntervalForDay(entries: SmokeEntry[]): number | null {
+	const active = entries
+		.filter((entry) => !entry.deletedAt)
+		.slice()
+		.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
+	if (active.length < 2) return null;
+
+	const gaps = active
+		.map((entry, index) => {
+			if (index === 0) return null;
+			const previous = active[index - 1];
+			return entry.timestamp.getTime() - previous.timestamp.getTime();
+		})
+		.filter((gapMs): gapMs is number => gapMs !== null && gapMs >= 0);
+
+	if (gaps.length === 0) return null;
+
+	const samples = gaps.map((gapMs, index) => ({
+		value: gapMs,
+		// Favor more recent intra-day gaps slightly more than early-day ones.
+		weight: Math.exp(-DECAY_LAMBDA * (gaps.length - 1 - index)),
+	}));
+
+	return computeWeightedMean(samples);
 }
 
 export function computeLongestCessation(entries: SmokeEntry[], now = new Date()): number | null {

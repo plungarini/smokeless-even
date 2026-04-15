@@ -1,7 +1,7 @@
 import { Button, Card, Loading } from 'even-toolkit/web';
-import type { SmokeEntry } from '../../../../domain/types';
+import type { SmokeLogEntry } from '../../../../domain/types';
 import { formatLongDate, formatTime, toDayKey } from '../../../../lib/time';
-import { buildCalendarDays, formatIntervalShort, formatMonthHeading, shiftMonth } from '../../lib/history-calendar';
+import { buildCalendarDays, formatIntervalSecondsShort, formatMonthHeading, shiftMonth } from '../../lib/history-calendar';
 import { circleIconButtonClass, deleteButtonClass, floatingIconClass, glassCardClass } from '../styles';
 
 export function HistoryPage({
@@ -20,13 +20,13 @@ export function HistoryPage({
 	historyMonth: Date;
 	selectedHistoryDay: string;
 	historyDaysWithEntries: Set<string>;
-	selectedHistoryEntries: SmokeEntry[];
+	selectedHistoryEntries: SmokeLogEntry[];
 	historyLoading: boolean;
 	historyHasMore: boolean;
 	onHistoryMonthChange: (nextMonth: Date) => void;
 	onHistoryDaySelect: (dayKey: string, date: Date) => void;
 	onOpenHistoryModal: () => void;
-	onDeleteEntry: (entry: SmokeEntry) => void;
+	onDeleteEntry: (entry: SmokeLogEntry) => void;
 	onLoadMore: () => void;
 }) {
 	const calendarDays = buildCalendarDays(historyMonth);
@@ -93,7 +93,7 @@ export function HistoryPage({
 							<div key={entry.id} className="grid grid-cols-[56px_1fr_88px_58px] items-center border-b border-white/[0.05] px-4 py-4 last:border-b-0">
 								<div className="text-[15px] text-text-dim">{selectedHistoryEntries.length - index}</div>
 								<div className="text-[2rem] font-medium leading-none tracking-[-0.04em] text-text">{formatTime(entry.timestamp)}</div>
-								<div className="text-[15px] text-text-dim">{formatIntervalShort(entry.timestamp, selectedHistoryEntries[index + 1]?.timestamp ?? null)}</div>
+								<div className="text-[15px] text-text-dim">{formatIntervalSecondsShort(entry.intervalSincePrevious)}</div>
 								<button type="button" className={deleteButtonClass} onClick={() => onDeleteEntry(entry)} aria-label={`Delete smoke at ${formatTime(entry.timestamp)}`}>
 									×
 								</button>

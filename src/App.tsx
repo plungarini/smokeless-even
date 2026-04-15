@@ -4,12 +4,12 @@ import { EvenAppMethod, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk
 import { AppGlasses } from './glasses/AppGlasses';
 import type { HudActions, HudIntent, HudUiState } from './glasses/types';
 import { computeDailyTarget, computeLongestCessation, computeMoneySaved, computeSleepAwareInterval, computeWeightedDailyAverage } from './domain/calculations';
-import type { AuthAccountInfo, EvenUserInfo, HistoryDayGroup, HudPendingAction, HudSnapshot, OnboardingDraft, SmokeEntry, UserProfile } from './domain/types';
+import type { AuthAccountInfo, EvenUserInfo, HistoryDayGroup, HudPendingAction, HudSnapshot, OnboardingDraft, SmokeLogEntry, UserDocument } from './domain/types';
 import { missingClientEnv } from './config/env';
 import { normalizeEvenUserInfo } from './lib/even';
 import { addDays, combineDateAndTime, currencyForCountry, formatDurationClock, formatTime, formatTimerClock, parseDayKey, toDateInputValue, toDayKey, toTimeInputValue } from './lib/time';
 import { ensureFirebaseSession, getCurrentAccountInfo, resolveGoogleLinkRedirect, startGoogleLinkRedirect } from './services/auth';
-import { addSmokeEntry, deleteAllUserData, ensureCanonicalUserData, exportSmokes, fetchAllSmokeEntries, fetchDailyStats, fetchHistoryPage, fetchMonthlyStats, mergeUserData, saveOnboarding, softDeleteSmokeEntry, subscribeToTodayCount, subscribeToUserProfile, type HistoryCursor, updateProgram, upsertAuthProviderFields } from './services/firestore';
+import { addSmokeEntry, deleteAllUserData, deleteLogEntry, deriveHistoryGroupsFromLogs, deriveStatsFromLogs, ensureCanonicalUserData, exportLogs, fetchAllLogEntries, mergeUserData, saveOnboarding, subscribeToTodayCount, subscribeToUserDocument, updateProgram, upsertAuthProviderFields } from './services/firestore';
 import { buildStatsSeries, getPeriodComparisonLabel, getSelectedPeriodTotal } from './features/smokeless/lib/stats-series';
 import { clearOnboardingDraft, createDefaultOnboardingDraft, loadSavedOnboarding, moveOnboardingDraft, saveOnboardingDraft } from './features/smokeless/lib/onboarding-draft';
 import { formatShortDate, getHistoryEntriesForDay, monthStart } from './features/smokeless/lib/history-calendar';
@@ -58,13 +58,12 @@ export default function App() {
 	const [toast, setToast] = useState('');
 	const [evenUser, setEvenUser] = useState<EvenUserInfo | null>(null);
 	const [accountInfo, setAccountInfo] = useState<AuthAccountInfo | null>(null);
-	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+	const [userDocument, setUserDocument] = useState<UserDocument | null>(null);
 	const [onboardingDraft, setOnboardingDraft] = useState<OnboardingDraft>(createDefaultOnboardingDraft('US'));
 	const [todayCount, setTodayCount] = useState(0);
 	const [dailyStats, setDailyStats] = useState<Record<string, number>>({});
 	const [monthlyStats, setMonthlyStats] = useState<Record<string, number>>({});
 	const [historyGroups, setHistoryGroups] = useState<HistoryDayGroup[]>([]);
-	const [historyCursor, setHistoryCursor] = useState<HistoryCursor>(null);
 	const [historyHasMore, setHistoryHasMore] = useState(false);
 	const [historyLoading, setHistoryLoading] = useState(false);
 	const [mutating, setMutating] = useState(false);
@@ -80,9 +79,10 @@ export default function App() {
 	const [historyModalOpen, setHistoryModalOpen] = useState(false);
 	const [modalEntryDate, setModalEntryDate] = useState(() => toDateInputValue(new Date()));
 	const [modalEntryTime, setModalEntryTime] = useState(() => toTimeInputValue(new Date()));
-	const [allSmokeEntries, setAllSmokeEntries] = useState<SmokeEntry[]>([]);
+	const [allSmokeEntries, setAllSmokeEntries] = useState<SmokeLogEntry[]>([]);
 	const [clock, setClock] = useState(() => Date.now());
 	const [countBump, setCountBump] = useState(false);
+	const [optimisticLastSmokeAt, setOptimisticLastSmokeAt] = useState<Date | null>(null);
 	const previousTodayCountRef = useRef(0);
 	const unsubscribeRef = useRef<(() => void)[]>([]);
 	const bootstrapStartedRef = useRef(false);
@@ -104,6 +104,7 @@ export default function App() {
 	}, [todayCount]);
 
 	const now = new Date(clock);
+	const lastSmokeAt = optimisticLastSmokeAt ?? allSmokeEntries[allSmokeEntries.length - 1]?.timestamp ?? null;
 	// Quantise to the current minute so that floating-point calculations that
 	// depend on `now` don't produce a new value — and therefore a new snapshot —
 	// on every 1-second clock tick. We only need minute-level precision here.
@@ -114,17 +115,17 @@ export default function App() {
 	);
 	const hudReferenceNow = useMemo(() => new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0), [now.getFullYear(), now.getMonth(), now.getDate()]);
 	const weightedAverage = useMemo(
-		() => computeWeightedDailyAverage(dailyStats, userProfile?.createdAt ?? null, nowMinute),
-		[dailyStats, userProfile?.createdAt, nowMinute],
+		() => computeWeightedDailyAverage(dailyStats, userDocument?.onboarding?.completedAt ?? userDocument?.createdAt ?? null, nowMinute),
+		[dailyStats, userDocument?.createdAt, userDocument?.onboarding?.completedAt, nowMinute],
 	);
-	const dailyTarget = computeDailyTarget(userProfile, now);
-	const moneySaved = computeMoneySaved(userProfile, weightedAverage, now);
+	const dailyTarget = computeDailyTarget(userDocument, now);
+	const moneySaved = computeMoneySaved(userDocument, weightedAverage, now);
 	const statsSeries = buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now);
 	const selectedPeriodTotal = getSelectedPeriodTotal(statsPeriod, dailyStats, monthlyStats, now);
 	const comparisonLabel = getPeriodComparisonLabel(statsPeriod, selectedPeriodTotal, weightedAverage, now);
 	const selectedHistoryEntries = getHistoryEntriesForDay(historyGroups, selectedHistoryDay);
 	const historyDaysWithEntries = new Set(historyGroups.map((group) => group.dayKey));
-	const timerLabel = formatTimerClock(userProfile?.lastSmokeTimestamp ?? null, now);
+	const timerLabel = formatTimerClock(lastSmokeAt, now);
 	const longestCessationLabel = formatDurationClock(computeLongestCessation(allSmokeEntries, now));
 	const averageIntervalLabel = useMemo(
 		() => formatDurationClock((computeSleepAwareInterval(allSmokeEntries, nowMinute) ?? 0) * 60_000 || null),
@@ -135,7 +136,7 @@ export default function App() {
 			? 'booting'
 			: bootState === 'blocked'
 				? 'blocked'
-				: !userProfile || editingOnboarding
+				: !userDocument?.onboarding || editingOnboarding
 					? 'onboarding'
 					: 'ready';
 	const hudStatusMessage =
@@ -153,7 +154,7 @@ export default function App() {
 			statusMessage: hudStatusMessage,
 			home: {
 				todayCount,
-				lastSmokeAt: userProfile?.lastSmokeTimestamp ?? null,
+				lastSmokeAt,
 				dailyTarget,
 				weightedAverage,
 			},
@@ -199,7 +200,7 @@ export default function App() {
 			hudPhase,
 			hudStatusMessage,
 			todayCount,
-			userProfile?.lastSmokeTimestamp,
+			lastSmokeAt,
 			dailyTarget,
 			weightedAverage,
 			dailyStats,
@@ -214,23 +215,24 @@ export default function App() {
 	);
 
 	useEffect(() => {
-		if (canonicalUid && !userProfile) {
+		if (canonicalUid && !userDocument) {
 			saveOnboardingDraft(canonicalUid, onboardingDraft);
 		}
-	}, [canonicalUid, onboardingDraft, userProfile]);
+	}, [canonicalUid, onboardingDraft, userDocument]);
 
 	useEffect(() => {
-		if (!userProfile) return;
+		if (!userDocument?.onboarding) return;
+		const onboarding = userDocument.onboarding;
 		setOnboardingDraft({
-			cigarettesPerDay: userProfile.cigarettesPerDay,
-			packPrice: userProfile.packPrice,
-			cigarettesPerPack: userProfile.cigarettesPerPack,
-			quitProgram: userProfile.quitProgram,
-			programTargetCigarettes: userProfile.programTargetCigarettes,
-			programTargetDate: userProfile.programTargetDate ? toDateInputValue(userProfile.programTargetDate) : toDateInputValue(addDays(new Date(), 90)),
+			cigarettesPerDay: onboarding.cigarettesPerDay,
+			packPrice: onboarding.packPrice,
+			cigarettesPerPack: onboarding.cigarettesPerPack,
+			quitProgram: onboarding.quitProgram,
+			programTargetCigarettes: onboarding.programTargetCigarettes,
+			programTargetDate: onboarding.programTargetDate ? toDateInputValue(onboarding.programTargetDate) : toDateInputValue(addDays(new Date(), 90)),
 			step: 0,
 		});
-	}, [userProfile]);
+	}, [userDocument]);
 
 	useEffect(() => {
 		return () => {
@@ -328,26 +330,21 @@ export default function App() {
 	});
 
 	const refreshDerivedData = useEffectEvent(async (uid: string, includeHistory = false) => {
-		const [daily, monthly, entries] = await Promise.all([fetchDailyStats(uid), fetchMonthlyStats(uid), fetchAllSmokeEntries(uid)]);
+		const entries = await fetchAllLogEntries(uid);
+		const { daily, monthly } = deriveStatsFromLogs(entries);
+		const historyGroupsFromLogs = deriveHistoryGroupsFromLogs(entries);
 		startTransition(() => {
 			setDailyStats(daily);
 			setMonthlyStats(monthly);
 			setAllSmokeEntries(entries);
 			setTodayCount(daily[toDayKey(new Date())] ?? 0);
+			setHistoryGroups(historyGroupsFromLogs);
+			setHistoryHasMore(false);
+			setOptimisticLastSmokeAt(null);
 		});
 
 		if (includeHistory) {
-			setHistoryLoading(true);
-			try {
-				const history = await fetchHistoryPage(uid, null);
-				startTransition(() => {
-					setHistoryGroups(history.groups);
-					setHistoryCursor(history.cursor);
-					setHistoryHasMore(history.hasMore);
-				});
-			} finally {
-				setHistoryLoading(false);
-			}
+			setHistoryLoading(false);
 		}
 	});
 
@@ -391,10 +388,10 @@ export default function App() {
 			if (activeAccount) await upsertAuthProviderFields(firebaseUid, activeAccount);
 
 			unsubscribeRef.current = [
-				subscribeToUserProfile(firebaseUid, (nextProfile) => {
+				subscribeToUserDocument(firebaseUid, (nextDocument) => {
 					startTransition(() => {
-						setUserProfile(nextProfile);
-						if (!nextProfile) {
+						setUserDocument(nextDocument);
+						if (!nextDocument?.onboarding) {
 							setOnboardingDraft(loadSavedOnboarding(firebaseUid, normalized.country));
 						}
 					});
@@ -452,7 +449,7 @@ export default function App() {
 	});
 
 	const performSmokeLog = useEffectEvent(async () => {
-		if (!canonicalUid || !userProfile) {
+		if (!canonicalUid || !userDocument?.onboarding) {
 			return {
 				ok: false,
 				errorMessage: 'Smokeless is still syncing your account.',
@@ -466,13 +463,13 @@ export default function App() {
 			};
 		}
 
-		const snapshot = { todayCount, lastSmokeTimestamp: userProfile.lastSmokeTimestamp };
+		const snapshot = { todayCount, lastSmokeAt };
 		const optimisticNow = new Date();
 		hudSmokeLockRef.current = true;
 		setMutating(true);
 		startTransition(() => {
 			setTodayCount(snapshot.todayCount + 1);
-			setUserProfile({ ...userProfile, lastSmokeTimestamp: optimisticNow });
+			setOptimisticLastSmokeAt(optimisticNow);
 		});
 
 		try {
@@ -487,7 +484,7 @@ export default function App() {
 			console.error('[Smokeless] add smoke failed', error);
 			startTransition(() => {
 				setTodayCount(snapshot.todayCount);
-				setUserProfile({ ...userProfile, lastSmokeTimestamp: snapshot.lastSmokeTimestamp });
+				setOptimisticLastSmokeAt(snapshot.lastSmokeAt);
 			});
 			pushToast('Could not log smoke');
 			return {
@@ -526,12 +523,12 @@ export default function App() {
 		}
 	});
 
-	const handleDeleteEntry = useEffectEvent(async (entry: SmokeEntry) => {
+	const handleDeleteEntry = useEffectEvent(async (entry: SmokeLogEntry) => {
 		if (!canonicalUid) return;
-		if (!window.confirm(`Soft delete the smoke logged at ${formatTime(entry.timestamp)}?`)) return;
+		if (!window.confirm(`Delete the smoke logged at ${formatTime(entry.timestamp)}?`)) return;
 		setMutating(true);
 		try {
-			await softDeleteSmokeEntry(canonicalUid, entry.id);
+			await deleteLogEntry(canonicalUid, entry.id);
 			await refreshDerivedData(canonicalUid, true);
 			pushToast('Entry deleted');
 		} catch (error) {
@@ -543,23 +540,7 @@ export default function App() {
 	});
 
 	const handleLoadMoreHistory = useEffectEvent(async () => {
-		if (!canonicalUid || !historyHasMore || historyLoading) return false;
-		setHistoryLoading(true);
-		try {
-			const page = await fetchHistoryPage(canonicalUid, historyCursor);
-			startTransition(() => {
-				setHistoryGroups((current) => [...current, ...page.groups]);
-				setHistoryCursor(page.cursor);
-				setHistoryHasMore(page.hasMore);
-			});
-			return page.groups.length > 0 || page.hasMore;
-		} catch (error) {
-			console.error('[Smokeless] load more history failed', error);
-			pushToast('Could not load more history');
-			return false;
-		} finally {
-			setHistoryLoading(false);
-		}
+		return false;
 	});
 
 	const hudActions: HudActions = useMemo(
@@ -585,7 +566,7 @@ export default function App() {
 	);
 
 	const handleProgramSave = useEffectEvent(async () => {
-		if (!canonicalUid || !userProfile) return;
+		if (!canonicalUid || !userDocument?.onboarding) return;
 		setMutating(true);
 		try {
 			await updateProgram(canonicalUid, {
@@ -605,14 +586,15 @@ export default function App() {
 	});
 
 	const handleResetOnboarding = useEffectEvent(() => {
-		if (!userProfile || !canonicalUid) return;
+		if (!userDocument?.onboarding || !canonicalUid) return;
+		const onboarding = userDocument.onboarding;
 		const nextDraft: OnboardingDraft = {
-			cigarettesPerDay: userProfile.cigarettesPerDay,
-			packPrice: userProfile.packPrice,
-			cigarettesPerPack: userProfile.cigarettesPerPack,
-			quitProgram: userProfile.quitProgram,
-			programTargetCigarettes: userProfile.programTargetCigarettes,
-			programTargetDate: userProfile.programTargetDate ? toDateInputValue(userProfile.programTargetDate) : toDateInputValue(addDays(new Date(), 90)),
+			cigarettesPerDay: onboarding.cigarettesPerDay,
+			packPrice: onboarding.packPrice,
+			cigarettesPerPack: onboarding.cigarettesPerPack,
+			quitProgram: onboarding.quitProgram,
+			programTargetCigarettes: onboarding.programTargetCigarettes,
+			programTargetDate: onboarding.programTargetDate ? toDateInputValue(onboarding.programTargetDate) : toDateInputValue(addDays(new Date(), 90)),
 			step: 0,
 		};
 		setOnboardingDraft(nextDraft);
@@ -623,7 +605,7 @@ export default function App() {
 
 	const handleExport = useEffectEvent(async () => {
 		if (!canonicalUid) return;
-		const payload = await exportSmokes(canonicalUid);
+		const payload = await exportLogs(canonicalUid);
 		downloadJson(`smokeless-export-${toDayKey(new Date())}.json`, payload);
 		pushToast('Export ready');
 	});
@@ -631,7 +613,7 @@ export default function App() {
 	const handleDeleteAll = useEffectEvent(async () => {
 		if (!canonicalUid) return;
 		if (!window.confirm('Delete all Smokeless data?')) return;
-		if (!window.confirm('This removes smoke history, stats, and onboarding data. Continue?')) return;
+		if (!window.confirm('This removes smoke history, onboarding data, and linked profile data. Continue?')) return;
 		setMutating(true);
 		try {
 			await deleteAllUserData(canonicalUid);
@@ -639,11 +621,11 @@ export default function App() {
 			setDailyStats({});
 			setMonthlyStats({});
 			setHistoryGroups([]);
-			setHistoryCursor(null);
 			setHistoryHasMore(false);
 			setAllSmokeEntries([]);
 			setTodayCount(0);
-			setUserProfile(null);
+			setUserDocument(null);
+			setOptimisticLastSmokeAt(null);
 			pushToast('All data deleted');
 		} finally {
 			setMutating(false);
@@ -660,18 +642,18 @@ export default function App() {
 	});
 
 	// ── Derived values that are only valid when fully loaded ──
-	const effectiveAuthProvider = (evenUser && canonicalUid && userProfile)
-		? (accountInfo?.authProvider ?? userProfile.authProvider ?? 'anonymous')
+	const effectiveAuthProvider = (evenUser && canonicalUid && userDocument)
+		? (accountInfo?.authProvider ?? (userDocument.providers.google ? 'google' : 'anonymous'))
 		: 'anonymous';
-	const effectiveGoogleEmail = (evenUser && canonicalUid && userProfile)
-		? (accountInfo?.googleEmail || userProfile.googleEmail)
+	const effectiveGoogleEmail = (evenUser && canonicalUid && userDocument)
+		? (accountInfo?.googleEmail || userDocument.providers.google?.email)
 		: undefined;
-	const effectiveGoogleDisplayName = (evenUser && canonicalUid && userProfile)
-		? (accountInfo?.googleDisplayName || userProfile.googleDisplayName)
+	const effectiveGoogleDisplayName = (evenUser && canonicalUid && userDocument)
+		? (accountInfo?.googleDisplayName || userDocument.providers.google?.displayName)
 		: undefined;
 	const googleLinked = effectiveAuthProvider === 'google';
-	const currentCurrency = (evenUser && canonicalUid && userProfile)
-		? currencyForCountry(userProfile.evenCountry || evenUser.country)
+	const currentCurrency = (evenUser && canonicalUid && userDocument)
+		? currencyForCountry(userDocument.providers.even?.country || evenUser.country)
 		: 'EUR';
 
 	// ── Single stable render: AppGlasses is ALWAYS at position 0 ──
@@ -700,7 +682,7 @@ export default function App() {
 				</div>
 			) : !evenUser || !canonicalUid ? (
 				null
-			) : !userProfile || editingOnboarding ? (
+			) : !userDocument?.onboarding || editingOnboarding ? (
 				<OnboardingFlow country={evenUser.country} draft={onboardingDraft} onChange={setOnboardingDraft} onSubmit={handleOnboardingSubmit} />
 			) : (
 				<>
@@ -733,7 +715,7 @@ export default function App() {
 										timerLabel={timerLabel}
 										countBump={countBump}
 										mutating={mutating}
-										country={userProfile.evenCountry || evenUser.country}
+										country={userDocument.providers.even?.country || evenUser.country}
 										onAddSmoke={() => void handleAddSmoke()}
 									/>
 								) : null}
@@ -779,8 +761,8 @@ export default function App() {
 
 								{tab === 'settings' ? (
 									<SettingsPage
-										userProfile={userProfile}
-										evenName={userProfile.evenName || evenUser.name}
+										userDocument={userDocument}
+										evenName={userDocument.providers.even?.name || evenUser.name}
 										canonicalUid={canonicalUid}
 										googleLinked={googleLinked}
 										effectiveGoogleEmail={effectiveGoogleEmail}

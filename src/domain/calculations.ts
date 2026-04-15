@@ -1,4 +1,4 @@
-import type { SmokeEntry, UserProfile } from './types';
+import type { SmokeLogEntry, UserDocument } from './types';
 import { addDays, diffCalendarDays, parseDayKey, startOfDay, toDayKey } from '../lib/time';
 
 const DECAY_LAMBDA = 0.1;
@@ -60,9 +60,8 @@ export function computeWeightedDailyAverage(
 	return computeWeightedMean(samples) ?? 0;
 }
 
-export function computeSleepAwareInterval(entries: SmokeEntry[], now = new Date()): number | null {
+export function computeSleepAwareInterval(entries: SmokeLogEntry[], now = new Date()): number | null {
 	const active = entries
-		.filter((entry) => !entry.deletedAt)
 		.slice()
 		.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
@@ -99,9 +98,8 @@ export function computeSleepAwareInterval(entries: SmokeEntry[], now = new Date(
 	return computeWeightedMean(samples);
 }
 
-export function computeWeightedIntervalForDay(entries: SmokeEntry[]): number | null {
+export function computeWeightedIntervalForDay(entries: SmokeLogEntry[]): number | null {
 	const active = entries
-		.filter((entry) => !entry.deletedAt)
 		.slice()
 		.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
@@ -126,9 +124,8 @@ export function computeWeightedIntervalForDay(entries: SmokeEntry[]): number | n
 	return computeWeightedMean(samples);
 }
 
-export function computeLongestCessation(entries: SmokeEntry[], now = new Date()): number | null {
+export function computeLongestCessation(entries: SmokeLogEntry[], now = new Date()): number | null {
 	const active = entries
-		.filter((entry) => !entry.deletedAt)
 		.slice()
 		.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
@@ -146,31 +143,33 @@ export function computeLongestCessation(entries: SmokeEntry[], now = new Date())
 	return longestGapMs;
 }
 
-export function computeDailyTarget(profile: UserProfile | null, now = new Date()): number | null {
-	if (!profile) return null;
-	if (profile.quitProgram === 'minimum') return null;
-	if (profile.quitProgram === 'fixed') return Math.max(0, Math.round(profile.programTargetCigarettes));
+export function computeDailyTarget(userDocument: UserDocument | null, now = new Date()): number | null {
+	const onboarding = userDocument?.onboarding;
+	if (!onboarding) return null;
+	if (onboarding.quitProgram === 'minimum') return null;
+	if (onboarding.quitProgram === 'fixed') return Math.max(0, Math.round(onboarding.programTargetCigarettes));
 
-	const startDate = profile.programStartDate ?? profile.createdAt ?? now;
-	const targetDate = profile.programTargetDate;
+	const startDate = onboarding.programStartDate ?? onboarding.completedAt ?? userDocument?.createdAt ?? now;
+	const targetDate = onboarding.programTargetDate;
 
-	if (!targetDate) return profile.cigarettesPerDay;
+	if (!targetDate) return onboarding.cigarettesPerDay;
 
 	const totalProgramDays = Math.max(1, diffCalendarDays(targetDate, startDate));
 	const day = Math.max(0, Math.min(totalProgramDays, diffCalendarDays(now, startDate)));
-	const baseline = profile.cigarettesPerDay;
-	const finalTarget = profile.programTargetCigarettes;
+	const baseline = onboarding.cigarettesPerDay;
+	const finalTarget = onboarding.programTargetCigarettes;
 	const target = baseline - (baseline - finalTarget) * (day / totalProgramDays);
 
 	return Math.max(finalTarget, Math.round(target));
 }
 
-export function computeMoneySaved(profile: UserProfile | null, weightedAverage: number, now = new Date()): number {
-	if (!profile) return 0;
-	const pricePerCigarette = profile.packPrice / Math.max(profile.cigarettesPerPack, 1);
-	const start = profile.programStartDate ?? profile.createdAt ?? now;
+export function computeMoneySaved(userDocument: UserDocument | null, weightedAverage: number, now = new Date()): number {
+	const onboarding = userDocument?.onboarding;
+	if (!onboarding) return 0;
+	const pricePerCigarette = onboarding.packPrice / Math.max(onboarding.cigarettesPerPack, 1);
+	const start = onboarding.programStartDate ?? onboarding.completedAt ?? userDocument?.createdAt ?? now;
 	const daysSinceStart = Math.max(1, (now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
-	return (profile.cigarettesPerDay - weightedAverage) * pricePerCigarette * daysSinceStart;
+	return (onboarding.cigarettesPerDay - weightedAverage) * pricePerCigarette * daysSinceStart;
 }
 
 export function getHealthMilestone(lastSmokeAt: Date | null, now = new Date()): string {

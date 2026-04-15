@@ -1,5 +1,7 @@
 export type QuitProgram = 'linear' | 'fixed' | 'minimum';
 export type AuthProvider = 'anonymous' | 'google';
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type WeekStart = 'Monday' | 'Sunday';
 
 export interface EvenUserInfo {
 	uid: string;
@@ -16,7 +18,13 @@ export interface AuthAccountInfo {
 	isAnonymous: boolean;
 }
 
-export interface UserProfile {
+export interface UserPreferences {
+	locale: string;
+	themeMode: ThemeMode | string;
+	weekStart: WeekStart | string;
+}
+
+export interface UserOnboarding {
 	cigarettesPerDay: number;
 	packPrice: number;
 	cigarettesPerPack: number;
@@ -24,29 +32,55 @@ export interface UserProfile {
 	programStartDate: Date | null;
 	programTargetDate: Date | null;
 	programTargetCigarettes: number;
-	createdAt: Date | null;
-	lastSmokeTimestamp: Date | null;
-	evenUid: string;
-	evenName: string;
-	evenAvatar: string;
-	evenCountry: string;
-	evenUpdatedAt: Date | null;
-	authProvider: AuthProvider;
-	googleEmail: string;
-	googleDisplayName: string;
+	completedAt: Date | null;
 }
 
-export interface SmokeEntry {
+export interface UserGoogleProvider {
+	uid: string;
+	email: string;
+	displayName: string;
+	linkedAt: Date | null;
+}
+
+export interface UserEvenProvider {
+	uid: string;
+	name: string;
+	avatar: string;
+	country: string;
+	linkedAt: Date | null;
+}
+
+export interface UserProviders {
+	google: UserGoogleProvider | null;
+	even: UserEvenProvider | null;
+}
+
+export interface UserCessationMetric {
+	value: number;
+	lastUpdated: Date | null;
+}
+
+export interface UserDocument {
+	createdAt: Date | null;
+	updatedAt: Date | null;
+	longestEverCessation: number;
+	todayMaxCessation: UserCessationMetric | null;
+	preferences: UserPreferences;
+	onboarding: UserOnboarding | null;
+	providers: UserProviders;
+}
+
+export interface SmokeLogEntry {
 	id: string;
 	timestamp: Date;
-	deletedAt: Date | null;
+	intervalSincePrevious: number | null;
 }
 
 export interface HistoryDayGroup {
 	dayKey: string;
 	date: Date;
 	count: number;
-	entries: SmokeEntry[];
+	entries: SmokeLogEntry[];
 }
 
 export interface OnboardingDraft {
@@ -89,7 +123,7 @@ export interface HudHistoryDaySummary {
 	dayKey: string;
 	date: Date;
 	count: number;
-	entries: SmokeEntry[];
+	entries: SmokeLogEntry[];
 }
 
 export interface HudHistorySummary {

@@ -1,11 +1,11 @@
 import { Badge, Button, Card } from 'even-toolkit/web';
-import type { OnboardingDraft, QuitProgram, UserProfile } from '../../../../domain/types';
+import type { OnboardingDraft, QuitProgram, UserDocument } from '../../../../domain/types';
 import { circleIconButtonClass, detailsCardClass, glassCardClass, sectionLabelClass, smokeInputClass } from '../styles';
 import { NumericField } from '../components/NumericField';
 import { ProgramChoice } from '../components/ProgramChoice';
 
 export function SettingsPage({
-	userProfile,
+	userDocument,
 	evenName,
 	canonicalUid,
 	googleLinked,
@@ -21,7 +21,7 @@ export function SettingsPage({
 	onExport,
 	onDeleteAll,
 }: {
-	userProfile: UserProfile;
+	userDocument: UserDocument;
 	evenName: string;
 	canonicalUid: string;
 	googleLinked: boolean;
@@ -46,7 +46,7 @@ export function SettingsPage({
 					<div className={`${circleIconButtonClass} h-16 w-16 text-[1.6rem]`}>•</div>
 					<div className="min-w-0">
 						<div className="truncate text-[1.9rem] font-medium leading-none tracking-[-0.03em] text-text">{evenName}</div>
-						<div className="mt-2 truncate text-[15px] text-text-dim">{effectiveGoogleEmail || userProfile.evenUid}</div>
+						<div className="mt-2 truncate text-[15px] text-text-dim">{effectiveGoogleEmail || userDocument.providers.even?.uid || 'No linked account yet'}</div>
 					</div>
 				</div>
 			</Card>
@@ -102,7 +102,7 @@ export function SettingsPage({
 				<div className="flex flex-col gap-3">
 					<div className={sectionLabelClass}>Even account</div>
 					<p className="text-normal-body text-text">{evenName}</p>
-					<p className="text-normal-body text-text-dim">{userProfile.evenUid}</p>
+					<p className="text-normal-body text-text-dim">{userDocument.providers.even?.uid || 'Not linked yet'}</p>
 				</div>
 			</Card>
 

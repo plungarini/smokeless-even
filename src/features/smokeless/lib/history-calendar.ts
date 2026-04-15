@@ -1,4 +1,4 @@
-import type { HistoryDayGroup, SmokeEntry } from '../../../domain/types';
+import type { HistoryDayGroup, SmokeLogEntry } from '../../../domain/types';
 import { addDays } from '../../../lib/time';
 
 export function monthStart(date: Date): Date {
@@ -40,6 +40,18 @@ export function formatIntervalShort(later: Date, earlier: Date | null): string {
 	return `${minutes}m`;
 }
 
-export function getHistoryEntriesForDay(groups: HistoryDayGroup[], dayKey: string): SmokeEntry[] {
+export function formatIntervalSecondsShort(totalSeconds: number | null): string {
+	if (totalSeconds === null) return 'First';
+	const seconds = Math.max(0, Math.round(totalSeconds));
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	const remainingSeconds = seconds % 60;
+	if (hours > 0 && minutes > 0) return `${hours}h ${minutes}m`;
+	if (hours > 0) return remainingSeconds > 0 ? `${hours}h ${remainingSeconds}s` : `${hours}h`;
+	if (minutes > 0) return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+	return `${remainingSeconds}s`;
+}
+
+export function getHistoryEntriesForDay(groups: HistoryDayGroup[], dayKey: string): SmokeLogEntry[] {
 	return groups.find((group) => group.dayKey === dayKey)?.entries ?? [];
 }

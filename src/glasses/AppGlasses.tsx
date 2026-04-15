@@ -1,82 +1,42 @@
-import {
-	CreateStartUpPageContainer,
-	type EvenHubEvent,
-	OsEventTypeList,
-	RebuildPageContainer,
-	StartUpPageCreateResult,
-	TextContainerProperty,
-	waitForEvenAppBridge,
-} from '@evenrealities/even_hub_sdk';
-import { useEffect, useEffectEvent, useRef } from 'react';
+import { waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
+import { useEffect, useRef, useCallback } from 'react';
 import type { HudSnapshot } from '../domain/types';
-import { buildHudText, type HudMode } from './shared';
-
-type Bridge = Awaited<ReturnType<typeof waitForEvenAppBridge>>;
+import { HudController } from './controller';
+import { HudSession } from './session';
+import type { HudActions, HudIntent, HudUiState } from './types';
 
 interface Props {
 	snapshot: HudSnapshot;
-	onConfirmSmoke: () => Promise<boolean>;
+	actions: HudActions;
+	ui: HudUiState;
+	onNavigate: (intent: HudIntent) => void;
 }
 
-export function AppGlasses({ snapshot, onConfirmSmoke }: Props) {
-	const bridgeRef = useRef<Bridge | null>(null);
-	const pageCreatedRef = useRef(false);
-	const modeRef = useRef<HudMode>('glance');
-	const confirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const summaryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const snapshotRef = useRef(snapshot);
+export function AppGlasses({ snapshot, actions, ui, onNavigate }: Props) {
+	const controllerRef = useRef<HudController | null>(null);
+	const sessionRef = useRef<HudSession | null>(null);
 	const renderLockRef = useRef({ active: false, queued: false });
+	const minuteClockRef = useRef('');
 
-	const clearTimers = useEffectEvent(() => {
-		if (confirmTimerRef.current) clearTimeout(confirmTimerRef.current);
-		if (summaryTimerRef.current) clearTimeout(summaryTimerRef.current);
-		confirmTimerRef.current = null;
-		summaryTimerRef.current = null;
-	});
+	// Keep latest props in refs so the bridge effect (mount-once) always
+	// has access to current values without needing to re-run.
+	const latestProps = useRef({ snapshot, actions, ui, onNavigate });
+	latestProps.current = { snapshot, actions, ui, onNavigate };
 
-	const renderHud = useEffectEvent(async () => {
-		const bridge = bridgeRef.current;
-		if (!bridge) return;
+	const renderHud = useCallback(async () => {
+		const controller = controllerRef.current;
+		const session = sessionRef.current;
+		if (!controller || !session) return;
+		await session.render(controller.buildRenderState());
+	}, []);
 
-		const content = buildHudText(modeRef.current, snapshotRef.current);
-		const params = {
-			containerTotalNum: 1,
-			textObject: [
-				new TextContainerProperty({
-					xPosition: 0,
-					yPosition: 84,
-					width: 576,
-					height: 120,
-					borderWidth: 0,
-					paddingLength: 8,
-					containerID: 1,
-					containerName: 'smokeless-hud',
-					isEventCapture: snapshotRef.current.blockedMessage ? 0 : 1,
-					content,
-				}),
-			],
-		};
-
-		if (!pageCreatedRef.current) {
-			const created = await bridge.createStartUpPageContainer(new CreateStartUpPageContainer(params));
-			if (created === StartUpPageCreateResult.success) {
-				pageCreatedRef.current = true;
-				return;
-			}
-		}
-
-		await bridge.rebuildPageContainer(new RebuildPageContainer(params));
-		pageCreatedRef.current = true;
-	});
-
-	const scheduleRender = useEffectEvent(() => {
+	const scheduleRender = useCallback(() => {
 		if (renderLockRef.current.active) {
 			renderLockRef.current.queued = true;
 			return;
 		}
 
 		renderLockRef.current.active = true;
-
 		void renderHud()
 			.catch((error) => {
 				console.error('[Smokeless HUD] render failed', error);
@@ -88,73 +48,65 @@ export function AppGlasses({ snapshot, onConfirmSmoke }: Props) {
 					scheduleRender();
 				}
 			});
-	});
+	}, [renderHud]);
 
-	const enterMode = useEffectEvent((mode: HudMode) => {
-		clearTimers();
-		modeRef.current = mode;
-
-		if (mode === 'confirm') {
-			confirmTimerRef.current = setTimeout(() => {
-				modeRef.current = 'glance';
-				scheduleRender();
-			}, 5000);
-		}
-
-		if (mode === 'summary') {
-			summaryTimerRef.current = setTimeout(() => {
-				modeRef.current = 'glance';
-				scheduleRender();
-			}, 8000);
-		}
-
+	// ── Props sync: push new props into the already-existing controller ──
+	useEffect(() => {
+		controllerRef.current?.updateActions(actions);
+		controllerRef.current?.updateSnapshot(snapshot);
+		controllerRef.current?.updateUi(ui);
 		scheduleRender();
-	});
+	}, [actions, snapshot, ui, scheduleRender]);
 
-	const handleEvent = useEffectEvent(async (event: EvenHubEvent) => {
-		if (snapshotRef.current.blockedMessage) return;
-
-		const type = event.textEvent?.eventType ?? event.sysEvent?.eventType;
-
-		if (type === OsEventTypeList.CLICK_EVENT || type === undefined) {
-			if (modeRef.current === 'confirm') {
-				const ok = await onConfirmSmoke();
-				enterMode('glance');
-				if (!ok) {
-					scheduleRender();
-				}
+	// ── 1-second timer for home-screen clock + smoke timer ──
+	useEffect(() => {
+		const tick = () => {
+			const controller = controllerRef.current;
+			if (!controller) return;
+			const nextMinute = controller.getCurrentHeaderClock(new Date());
+			if (minuteClockRef.current !== nextMinute) {
+				minuteClockRef.current = nextMinute;
+				scheduleRender();
 				return;
 			}
-
-			enterMode('confirm');
-			return;
-		}
-
-		if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) {
-			if (modeRef.current === 'confirm') {
-				enterMode('glance');
-				return;
+			if (controller.shouldRunHomeTimer()) {
+				scheduleRender();
 			}
+		};
 
-			enterMode(modeRef.current === 'summary' ? 'glance' : 'summary');
-		}
-	});
+		tick();
+		const timer = setInterval(tick, 1000);
+		return () => clearInterval(timer);
+	}, [scheduleRender]);
 
+	// ── Bridge init: runs ONCE per component lifetime ──
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	useEffect(() => {
-		snapshotRef.current = snapshot;
-		scheduleRender();
-	}, [snapshot, scheduleRender]);
+		console.log(`[HUD-GLASSES] MOUNT — creating controller + bridge`);
+		const controller = new HudController(
+			latestProps.current.actions,
+			latestProps.current.ui,
+			(intent) => latestProps.current.onNavigate(intent),
+			scheduleRender,
+		);
+		controllerRef.current = controller;
+		controller.updateSnapshot(latestProps.current.snapshot);
+		minuteClockRef.current = controller.getCurrentHeaderClock(new Date());
 
-	useEffect(() => {
 		let cancelled = false;
 
 		void (async () => {
 			try {
 				const bridge = await waitForEvenAppBridge();
 				if (cancelled) return;
-				bridgeRef.current = bridge;
+				console.log(`[HUD-GLASSES] bridge obtained, creating session`);
+				sessionRef.current = new HudSession(bridge);
 				bridge.onEvenHubEvent((event) => {
-					void handleEvent(event);
+					// Guard: ignore events after this component instance is unmounted.
+					// Since the SDK has no unsubscribe mechanism, stale listeners remain
+					// on the bridge. This flag prevents them from doing anything.
+					if (cancelled) return;
+					void controller.handleEvent(event);
 				});
 				scheduleRender();
 			} catch (error) {
@@ -163,10 +115,13 @@ export function AppGlasses({ snapshot, onConfirmSmoke }: Props) {
 		})();
 
 		return () => {
+			console.log(`[HUD-GLASSES] UNMOUNT — disposing controller + session`);
 			cancelled = true;
-			clearTimers();
+			controller.dispose();
+			controllerRef.current = null;
+			sessionRef.current = null;
 		};
-	}, [clearTimers, handleEvent, scheduleRender]);
+	}, []); // eslint-disable-line react-hooks/exhaustive-deps — intentionally mount-once
 
 	return null;
 }

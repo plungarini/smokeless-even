@@ -59,10 +59,50 @@ export interface OnboardingDraft {
 	step: number;
 }
 
-export interface HudSnapshot {
+export type HudPhase = 'booting' | 'blocked' | 'onboarding' | 'ready';
+export type HudPendingAction = 'logSmoke' | 'loadMoreHistory' | null;
+export type HudStatsPeriod = 'week' | 'month' | 'year';
+
+export interface HudSeriesDatum {
+	key: string;
+	label: string;
+	count: number;
+}
+
+export interface HudHomeSummary {
 	todayCount: number;
 	lastSmokeAt: Date | null;
 	dailyTarget: number | null;
 	weightedAverage: number;
-	blockedMessage: string | null;
+}
+
+export interface HudStatsSummary {
+	period: HudStatsPeriod;
+	totalSmoked: number;
+	comparisonLabel: string;
+	weightedAverage: number;
+	averageIntervalLabel: string;
+	series: HudSeriesDatum[];
+}
+
+export interface HudHistoryDaySummary {
+	dayKey: string;
+	date: Date;
+	count: number;
+	entries: SmokeEntry[];
+}
+
+export interface HudHistorySummary {
+	days: HudHistoryDaySummary[];
+	hasMore: boolean;
+	loading: boolean;
+}
+
+export interface HudSnapshot {
+	phase: HudPhase;
+	statusMessage: string | null;
+	home: HudHomeSummary;
+	stats: Record<HudStatsPeriod, HudStatsSummary>;
+	history: HudHistorySummary;
+	pendingAction: HudPendingAction;
 }

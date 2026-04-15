@@ -1,10 +1,10 @@
 import { Card, Toast } from 'even-toolkit/web';
-import { startTransition, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { startTransition, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { EvenAppMethod, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
 import { AppGlasses } from './glasses/AppGlasses';
-import { setHudSnapshot } from './glasses/hud-store';
+import type { HudActions, HudIntent, HudUiState } from './glasses/types';
 import { computeDailyTarget, computeLongestCessation, computeMoneySaved, computeSleepAwareInterval, computeWeightedDailyAverage } from './domain/calculations';
-import type { AuthAccountInfo, EvenUserInfo, HistoryDayGroup, HudSnapshot, OnboardingDraft, SmokeEntry, UserProfile } from './domain/types';
+import type { AuthAccountInfo, EvenUserInfo, HistoryDayGroup, HudPendingAction, HudSnapshot, OnboardingDraft, SmokeEntry, UserProfile } from './domain/types';
 import { missingClientEnv } from './config/env';
 import { normalizeEvenUserInfo } from './lib/even';
 import { addDays, combineDateAndTime, currencyForCountry, formatDurationClock, formatTime, formatTimerClock, parseDayKey, toDateInputValue, toDayKey, toTimeInputValue } from './lib/time';
@@ -25,6 +25,39 @@ import { SettingsPage } from './features/smokeless/ui/pages/SettingsPage';
 import { StatsPage } from './features/smokeless/ui/pages/StatsPage';
 
 type BootState = 'booting' | 'blocked' | 'ready';
+
+function tabToHudRoute(tab: AppTab): HudUiState['route'] | null {
+	if (tab === 'home') return 'home';
+	if (tab === 'stats') return 'stats';
+	if (tab === 'history') return 'history';
+	return null;
+}
+
+function getAdjacentHistoryDayKey(groups: HistoryDayGroup[], currentDayKey: string, delta: -1 | 1): string | null {
+	if (groups.length === 0) return null;
+	const currentIndex = groups.findIndex((group) => group.dayKey === currentDayKey);
+	const safeCurrentIndex = currentIndex >= 0 ? currentIndex : 0;
+	const nextIndex = Math.min(Math.max(safeCurrentIndex + delta, 0), groups.length - 1);
+	return groups[nextIndex]?.dayKey ?? groups[0]?.dayKey ?? null;
+}
+
+function getClosestHistoryDayKey(groups: HistoryDayGroup[], targetDayKey: string): string | null {
+	if (groups.length === 0) return null;
+	const exact = groups.find((group) => group.dayKey === targetDayKey);
+	if (exact) return exact.dayKey;
+
+	const targetTime = parseDayKey(targetDayKey).getTime();
+	let closest = groups[0]!;
+	let closestDistance = Math.abs(closest.date.getTime() - targetTime);
+	for (const group of groups.slice(1)) {
+		const distance = Math.abs(group.date.getTime() - targetTime);
+		if (distance < closestDistance) {
+			closest = group;
+			closestDistance = distance;
+		}
+	}
+	return closest.dayKey;
+}
 
 function downloadJson(filename: string, payload: unknown): void {
 	const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -56,9 +89,15 @@ export default function App() {
 	const [historyHasMore, setHistoryHasMore] = useState(false);
 	const [historyLoading, setHistoryLoading] = useState(false);
 	const [mutating, setMutating] = useState(false);
+	const [hudPendingAction, setHudPendingAction] = useState<HudPendingAction>(null);
 	const [editingOnboarding, setEditingOnboarding] = useState(false);
 	const [historyMonth, setHistoryMonth] = useState(() => monthStart(new Date()));
 	const [selectedHistoryDay, setSelectedHistoryDay] = useState(() => toDayKey(new Date()));
+	const [hudUi, setHudUi] = useState<HudUiState>({
+		route: 'home',
+		statsPeriod: 'week',
+		historySelectedDayKey: null,
+	});
 	const [historyModalOpen, setHistoryModalOpen] = useState(false);
 	const [modalEntryDate, setModalEntryDate] = useState(() => toDateInputValue(new Date()));
 	const [modalEntryTime, setModalEntryTime] = useState(() => toTimeInputValue(new Date()));
@@ -68,6 +107,7 @@ export default function App() {
 	const previousTodayCountRef = useRef(0);
 	const unsubscribeRef = useRef<(() => void)[]>([]);
 	const bootstrapStartedRef = useRef(false);
+	const hudSmokeLockRef = useRef(false);
 
 	useEffect(() => {
 		const timer = setInterval(() => setClock(Date.now()), 1_000);
@@ -85,7 +125,19 @@ export default function App() {
 	}, [todayCount]);
 
 	const now = new Date(clock);
-	const weightedAverage = computeWeightedDailyAverage(dailyStats, userProfile?.createdAt ?? null, now);
+	// Quantise to the current minute so that floating-point calculations that
+	// depend on `now` don't produce a new value — and therefore a new snapshot —
+	// on every 1-second clock tick. We only need minute-level precision here.
+	const nowMinute = useMemo(
+		() => new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0, 0),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()],
+	);
+	const hudReferenceNow = useMemo(() => new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0), [now.getFullYear(), now.getMonth(), now.getDate()]);
+	const weightedAverage = useMemo(
+		() => computeWeightedDailyAverage(dailyStats, userProfile?.createdAt ?? null, nowMinute),
+		[dailyStats, userProfile?.createdAt, nowMinute],
+	);
 	const dailyTarget = computeDailyTarget(userProfile, now);
 	const moneySaved = computeMoneySaved(userProfile, weightedAverage, now);
 	const statsSeries = buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now);
@@ -95,19 +147,92 @@ export default function App() {
 	const historyDaysWithEntries = new Set(historyGroups.map((group) => group.dayKey));
 	const timerLabel = formatTimerClock(userProfile?.lastSmokeTimestamp ?? null, now);
 	const longestCessationLabel = formatDurationClock(computeLongestCessation(allSmokeEntries, now));
-	const averageIntervalLabel = formatDurationClock((computeSleepAwareInterval(allSmokeEntries, now) ?? 0) * 60_000 || null);
+	const averageIntervalLabel = useMemo(
+		() => formatDurationClock((computeSleepAwareInterval(allSmokeEntries, nowMinute) ?? 0) * 60_000 || null),
+		[allSmokeEntries, nowMinute],
+	);
+	const hudPhase =
+		bootState === 'booting'
+			? 'booting'
+			: bootState === 'blocked'
+				? 'blocked'
+				: !userProfile || editingOnboarding
+					? 'onboarding'
+					: 'ready';
+	const hudStatusMessage =
+		hudPhase === 'booting'
+			? 'Connecting to Even and syncing your smoking history.'
+			: hudPhase === 'blocked'
+				? blockedMessage || 'Smokeless could not finish startup. Please restart the app.'
+				: hudPhase === 'onboarding'
+					? 'Finish Smokeless setup on your phone to unlock the glasses HUD.'
+					: null;
 
-	const hudSnapshot: HudSnapshot = {
-		todayCount,
-		lastSmokeAt: userProfile?.lastSmokeTimestamp ?? null,
-		dailyTarget,
-		weightedAverage,
-		blockedMessage: bootState === 'blocked' ? blockedMessage : null,
-	};
-
-	useEffect(() => {
-		setHudSnapshot(hudSnapshot);
-	}, [hudSnapshot]);
+	const hudSnapshot: HudSnapshot = useMemo(
+		() => ({
+			phase: hudPhase,
+			statusMessage: hudStatusMessage,
+			home: {
+				todayCount,
+				lastSmokeAt: userProfile?.lastSmokeTimestamp ?? null,
+				dailyTarget,
+				weightedAverage,
+			},
+			stats: {
+				week: {
+					period: 'week',
+					totalSmoked: getSelectedPeriodTotal('week', dailyStats, monthlyStats, hudReferenceNow),
+					comparisonLabel: getPeriodComparisonLabel('week', getSelectedPeriodTotal('week', dailyStats, monthlyStats, hudReferenceNow), weightedAverage, hudReferenceNow),
+					weightedAverage,
+					averageIntervalLabel,
+					series: buildStatsSeries('week', dailyStats, monthlyStats, hudReferenceNow),
+				},
+				month: {
+					period: 'month',
+					totalSmoked: getSelectedPeriodTotal('month', dailyStats, monthlyStats, hudReferenceNow),
+					comparisonLabel: getPeriodComparisonLabel('month', getSelectedPeriodTotal('month', dailyStats, monthlyStats, hudReferenceNow), weightedAverage, hudReferenceNow),
+					weightedAverage,
+					averageIntervalLabel,
+					series: buildStatsSeries('month', dailyStats, monthlyStats, hudReferenceNow),
+				},
+				year: {
+					period: 'year',
+					totalSmoked: getSelectedPeriodTotal('year', dailyStats, monthlyStats, hudReferenceNow),
+					comparisonLabel: getPeriodComparisonLabel('year', getSelectedPeriodTotal('year', dailyStats, monthlyStats, hudReferenceNow), weightedAverage, hudReferenceNow),
+					weightedAverage,
+					averageIntervalLabel,
+					series: buildStatsSeries('year', dailyStats, monthlyStats, hudReferenceNow),
+				},
+			},
+			history: {
+				days: historyGroups.map((group) => ({
+					dayKey: group.dayKey,
+					date: group.date,
+					count: group.count,
+					entries: group.entries,
+				})),
+				hasMore: historyHasMore,
+				loading: historyLoading || hudPendingAction === 'loadMoreHistory',
+			},
+			pendingAction: hudPendingAction,
+		}),
+		[
+			hudPhase,
+			hudStatusMessage,
+			todayCount,
+			userProfile?.lastSmokeTimestamp,
+			dailyTarget,
+			weightedAverage,
+			dailyStats,
+			monthlyStats,
+			hudReferenceNow,
+			averageIntervalLabel,
+			historyGroups,
+			historyHasMore,
+			historyLoading,
+			hudPendingAction,
+		],
+	);
 
 	useEffect(() => {
 		if (canonicalUid && !userProfile) {
@@ -135,6 +260,62 @@ export default function App() {
 			}
 		};
 	}, []);
+
+	useEffect(() => {
+		const nextRoute = tabToHudRoute(tab);
+		if (!nextRoute) return;
+		setHudUi((current) => (current.route === nextRoute ? current : { ...current, route: nextRoute }));
+	}, [tab]);
+
+	useEffect(() => {
+		setHudUi((current) => (current.statsPeriod === statsPeriod ? current : { ...current, statsPeriod }));
+	}, [statsPeriod]);
+
+	useEffect(() => {
+		const nextTab = hudUi.route;
+		if (tab !== 'settings' && tab !== nextTab) {
+			startTransition(() => setTab(nextTab));
+		}
+		if (statsPeriod !== hudUi.statsPeriod) {
+			startTransition(() => setStatsPeriod(hudUi.statsPeriod));
+		}
+		if (hudUi.route === 'history' && hudUi.historySelectedDayKey && selectedHistoryDay !== hudUi.historySelectedDayKey) {
+			const date = parseDayKey(hudUi.historySelectedDayKey);
+			startTransition(() => {
+				setSelectedHistoryDay(hudUi.historySelectedDayKey!);
+				setHistoryMonth(monthStart(date));
+			});
+		}
+	}, [hudUi, selectedHistoryDay, statsPeriod, tab]);
+
+	const handleHudNavigate = useEffectEvent((intent: HudIntent) => {
+		setHudUi((current) => {
+			switch (intent.type) {
+				case 'goHome':
+					return { ...current, route: 'home' };
+				case 'goStats':
+					return { ...current, route: 'stats' };
+				case 'goHistory':
+					return { ...current, route: 'history', historySelectedDayKey: getClosestHistoryDayKey(historyGroups, toDayKey(new Date())) };
+				case 'cycleStatsPeriod': {
+					const periods: StatsPeriod[] = ['week', 'month', 'year'];
+					const currentIndex = periods.indexOf(current.statsPeriod);
+					return { ...current, route: 'stats', statsPeriod: periods[(currentIndex + 1) % periods.length] ?? 'week' };
+				}
+				case 'historyPrevDay':
+					return { ...current, route: 'history', historySelectedDayKey: getAdjacentHistoryDayKey(historyGroups, selectedHistoryDay, -1) };
+				case 'historyNextDay':
+					return { ...current, route: 'history', historySelectedDayKey: getAdjacentHistoryDayKey(historyGroups, selectedHistoryDay, 1) };
+				case 'historyResetToday':
+					return { ...current, route: 'history', historySelectedDayKey: getClosestHistoryDayKey(historyGroups, toDayKey(new Date())) };
+				case 'openMenu':
+				case 'closeMenu':
+					return current;
+				default:
+					return current;
+			}
+		});
+	});
 
 	const pushToast = useEffectEvent((message: string) => {
 		setToast(message);
@@ -267,10 +448,24 @@ export default function App() {
 		}
 	});
 
-	const handleAddSmoke = useEffectEvent(async () => {
-		if (!canonicalUid || !userProfile || mutating) return false;
+	const performSmokeLog = useEffectEvent(async () => {
+		if (!canonicalUid || !userProfile) {
+			return {
+				ok: false,
+				errorMessage: 'Smokeless is still syncing your account.',
+			};
+		}
+
+		if (mutating || hudSmokeLockRef.current) {
+			return {
+				ok: false,
+				errorMessage: 'A smoke is already being logged.',
+			};
+		}
+
 		const snapshot = { todayCount, lastSmokeTimestamp: userProfile.lastSmokeTimestamp };
 		const optimisticNow = new Date();
+		hudSmokeLockRef.current = true;
 		setMutating(true);
 		startTransition(() => {
 			setTodayCount(snapshot.todayCount + 1);
@@ -279,8 +474,12 @@ export default function App() {
 
 		try {
 			await addSmokeEntry(canonicalUid, optimisticNow);
-			await refreshDerivedData(canonicalUid, tab === 'history');
-			return true;
+			await refreshDerivedData(canonicalUid, tab === 'history' || hudUi.route === 'history');
+			return {
+				ok: true,
+				todayCount: snapshot.todayCount + 1,
+				loggedAt: optimisticNow,
+			};
 		} catch (error) {
 			console.error('[Smokeless] add smoke failed', error);
 			startTransition(() => {
@@ -288,11 +487,17 @@ export default function App() {
 				setUserProfile({ ...userProfile, lastSmokeTimestamp: snapshot.lastSmokeTimestamp });
 			});
 			pushToast('Could not log smoke');
-			return false;
+			return {
+				ok: false,
+				errorMessage: 'Could not log smoke.',
+			};
 		} finally {
+			hudSmokeLockRef.current = false;
 			setMutating(false);
 		}
 	});
+
+	const handleAddSmoke = useEffectEvent(async () => (await performSmokeLog()).ok);
 
 	const handleAddPastEntry = useEffectEvent(async () => {
 		if (!canonicalUid) return;
@@ -304,6 +509,11 @@ export default function App() {
 			setHistoryModalOpen(false);
 			setSelectedHistoryDay(modalEntryDate);
 			setHistoryMonth(monthStart(entryDate));
+			setHudUi((current) => ({
+				...current,
+				route: 'history',
+				historySelectedDayKey: null,
+			}));
 			pushToast('Past smoke added');
 		} catch (error) {
 			console.error('[Smokeless] add past entry failed', error);
@@ -330,7 +540,7 @@ export default function App() {
 	});
 
 	const handleLoadMoreHistory = useEffectEvent(async () => {
-		if (!canonicalUid || !historyHasMore || historyLoading) return;
+		if (!canonicalUid || !historyHasMore || historyLoading) return false;
 		setHistoryLoading(true);
 		try {
 			const page = await fetchHistoryPage(canonicalUid, historyCursor);
@@ -339,10 +549,37 @@ export default function App() {
 				setHistoryCursor(page.cursor);
 				setHistoryHasMore(page.hasMore);
 			});
+			return page.groups.length > 0 || page.hasMore;
+		} catch (error) {
+			console.error('[Smokeless] load more history failed', error);
+			pushToast('Could not load more history');
+			return false;
 		} finally {
 			setHistoryLoading(false);
 		}
 	});
+
+	const hudActions: HudActions = useMemo(
+		() => ({
+			logSmoke: async () => {
+				setHudPendingAction('logSmoke');
+				try {
+					return await performSmokeLog();
+				} finally {
+					setHudPendingAction(null);
+				}
+			},
+			loadMoreHistory: async () => {
+				setHudPendingAction('loadMoreHistory');
+				try {
+					return await handleLoadMoreHistory();
+				} finally {
+					setHudPendingAction(null);
+				}
+			},
+		}),
+		[handleLoadMoreHistory, performSmokeLog],
+	);
 
 	const handleProgramSave = useEffectEvent(async () => {
 		if (!canonicalUid || !userProfile) return;
@@ -410,6 +647,8 @@ export default function App() {
 		}
 	});
 
+
+
 	const openHistoryModal = useEffectEvent(() => {
 		const baseDate = parseDayKey(selectedHistoryDay);
 		setModalEntryDate(toDateInputValue(baseDate));
@@ -417,161 +656,182 @@ export default function App() {
 		setHistoryModalOpen(true);
 	});
 
-	if (bootState === 'booting') {
-		return (
-			<>
-				<AppGlasses snapshot={hudSnapshot} onConfirmSmoke={handleAddSmoke} />
-				<FullScreenState title="Smokeless" body="Connecting to Even and loading your smoking data." loading />
-			</>
-		);
-	}
-
-	if (bootState === 'blocked') {
-		return (
-			<div className="mx-auto flex h-dvhitems-center px-4 py-10">
-				<Card padding="default" className="w-full rounded-[20px] border border-border-light bg-surface">
-					<div className="flex flex-col gap-4">
-						<h1 className="font-[DM_Serif_Display] text-4xl tracking-[-0.04em] text-text">Smokeless</h1>
-						<p className="text-normal-body leading-relaxed text-text-dim">{blockedMessage || 'Smokeless could not finish startup. Please restart the app.'}</p>
-						{bootstrapErrorDetail ? (
-							<div className="rounded-[16px] border border-border-light bg-bg p-3">
-								<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Debug</div>
-								<p className="mt-2 break-words font-mono text-[11px] leading-relaxed text-text-dim">{bootstrapErrorDetail}</p>
-							</div>
-						) : null}
-					</div>
-				</Card>
-			</div>
-		);
-	}
-
-	if (!evenUser || !canonicalUid) return null;
-
-	if (!userProfile || editingOnboarding) {
-		return (
-			<>
-				<AppGlasses snapshot={hudSnapshot} onConfirmSmoke={handleAddSmoke} />
-				<OnboardingFlow country={evenUser.country} draft={onboardingDraft} onChange={setOnboardingDraft} onSubmit={handleOnboardingSubmit} />
-			</>
-		);
-	}
-
-	const effectiveAuthProvider = accountInfo?.authProvider ?? userProfile.authProvider ?? 'anonymous';
-	const effectiveGoogleEmail = accountInfo?.googleEmail || userProfile.googleEmail;
-	const effectiveGoogleDisplayName = accountInfo?.googleDisplayName || userProfile.googleDisplayName;
+	// ── Derived values that are only valid when fully loaded ──
+	const effectiveAuthProvider = (evenUser && canonicalUid && userProfile)
+		? (accountInfo?.authProvider ?? userProfile.authProvider ?? 'anonymous')
+		: 'anonymous';
+	const effectiveGoogleEmail = (evenUser && canonicalUid && userProfile)
+		? (accountInfo?.googleEmail || userProfile.googleEmail)
+		: undefined;
+	const effectiveGoogleDisplayName = (evenUser && canonicalUid && userProfile)
+		? (accountInfo?.googleDisplayName || userProfile.googleDisplayName)
+		: undefined;
 	const googleLinked = effectiveAuthProvider === 'google';
-	const currentCurrency = currencyForCountry(userProfile.evenCountry || evenUser.country);
+	const currentCurrency = (evenUser && canonicalUid && userProfile)
+		? currencyForCountry(userProfile.evenCountry || evenUser.country)
+		: 'EUR';
 
+	// ── Single stable render: AppGlasses is ALWAYS at position 0 ──
+	// This prevents React from unmounting/remounting it when the app
+	// transitions between boot states, onboarding, etc.
 	return (
 		<>
-			<AppGlasses snapshot={hudSnapshot} onConfirmSmoke={handleAddSmoke} />
+			<AppGlasses snapshot={hudSnapshot} actions={hudActions} ui={hudUi} onNavigate={handleHudNavigate} />
 
-			<div className="smoke-app-shell h-dvh">
-				<div className="smoke-app-ornament smoke-app-ornament-top" />
-				<div className="smoke-app-ornament smoke-app-ornament-bottom" />
+			{bootState === 'booting' ? (
+				<FullScreenState title="Smokeless" body="Connecting to Even and loading your smoking data." loading />
+			) : bootState === 'blocked' ? (
+				<div className="mx-auto flex h-dvh items-center px-4 py-10">
+					<Card padding="default" className="w-full rounded-[20px] border border-border-light bg-surface">
+						<div className="flex flex-col gap-4">
+							<h1 className="font-[DM_Serif_Display] text-4xl tracking-[-0.04em] text-text">Smokeless</h1>
+							<p className="text-normal-body leading-relaxed text-text-dim">{blockedMessage || 'Smokeless could not finish startup. Please restart the app.'}</p>
+							{bootstrapErrorDetail ? (
+								<div className="rounded-[16px] border border-border-light bg-bg p-3">
+									<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Debug</div>
+									<p className="mt-2 break-words font-mono text-[11px] leading-relaxed text-text-dim">{bootstrapErrorDetail}</p>
+								</div>
+							) : null}
+						</div>
+					</Card>
+				</div>
+			) : !evenUser || !canonicalUid ? (
+				null
+			) : !userProfile || editingOnboarding ? (
+				<OnboardingFlow country={evenUser.country} draft={onboardingDraft} onChange={setOnboardingDraft} onSubmit={handleOnboardingSubmit} />
+			) : (
+				<>
+					<div className="smoke-app-shell h-dvh">
+						<div className="smoke-app-ornament smoke-app-ornament-top" />
+						<div className="smoke-app-ornament smoke-app-ornament-bottom" />
 
-				<div className="relative flex h-full flex-col max-w-md mx-auto overflow-x-visible overflow-y-hidden">
-					{tab === 'home' ? <PageHeader title="Today's record" subtitle={formatShortDate(now)} /> : null}
-					{tab === 'stats' ? <PageHeader title="Stats" subtitle="Weighted view of your smoking trend" /> : null}
-					{tab === 'history' ? (
-						<PageHeader
-							title="History"
-							subtitle="Select a date to view logs"
-							action={
-								<button type="button" className="inline-flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.05] text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" onClick={() => void openHistoryModal()} aria-label="Add smoke entry" title="Add smoke entry">
-									<span className="text-[2rem] leading-none">+</span>
-								</button>
-							}
-						/>
-					) : null}
-					{tab === 'settings' ? <PageHeader title="Settings" subtitle="Account, program, and app actions" /> : null}
+						<div className="relative flex h-full flex-col max-w-md mx-auto overflow-x-visible overflow-y-hidden">
+							{tab === 'home' ? <PageHeader title="Today's record" subtitle={formatShortDate(now)} /> : null}
+							{tab === 'stats' ? <PageHeader title="Stats" subtitle="Weighted view of your smoking trend" /> : null}
+							{tab === 'history' ? (
+								<PageHeader
+									title="History"
+									subtitle="Select a date to view logs"
+									action={
+										<button type="button" className="inline-flex h-[4.25rem] w-[4.25rem] items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.05] text-text shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]" onClick={() => void openHistoryModal()} aria-label="Add smoke entry" title="Add smoke entry">
+											<span className="text-[2rem] leading-none">+</span>
+										</button>
+									}
+								/>
+							) : null}
+							{tab === 'settings' ? <PageHeader title="Settings" subtitle="Account, program, and app actions" /> : null}
 
-					<div className="min-h-0 flex-1 overflow-y-auto overflow-x-visible px-4 pb-32">
-						{tab === 'home' ? (
-							<HomePage
-								todayCount={todayCount}
-								longestCessationLabel={longestCessationLabel}
-								moneySaved={moneySaved}
-								timerLabel={timerLabel}
-								countBump={countBump}
-								mutating={mutating}
-								country={userProfile.evenCountry || evenUser.country}
-								onAddSmoke={() => void handleAddSmoke()}
+							<div className="min-h-0 flex-1 overflow-y-auto overflow-x-visible px-4 pb-32">
+								{tab === 'home' ? (
+									<HomePage
+										todayCount={todayCount}
+										longestCessationLabel={longestCessationLabel}
+										moneySaved={moneySaved}
+										timerLabel={timerLabel}
+										countBump={countBump}
+										mutating={mutating}
+										country={userProfile.evenCountry || evenUser.country}
+										onAddSmoke={() => void handleAddSmoke()}
+									/>
+								) : null}
+
+								{tab === 'stats' ? (
+									<StatsPage
+										statsPeriod={statsPeriod}
+										onStatsPeriodChange={(period) => {
+											setStatsPeriod(period);
+											setHudUi((current) => (current.statsPeriod === period ? current : { ...current, statsPeriod: period }));
+										}}
+										statsSeries={statsSeries}
+										totalSmoked={selectedPeriodTotal}
+										comparisonLabel={comparisonLabel}
+										weightedAverage={weightedAverage}
+										averageIntervalLabel={averageIntervalLabel}
+									/>
+								) : null}
+
+								{tab === 'history' ? (
+									<HistoryPage
+										historyMonth={historyMonth}
+										selectedHistoryDay={selectedHistoryDay}
+										historyDaysWithEntries={historyDaysWithEntries}
+										selectedHistoryEntries={selectedHistoryEntries}
+										historyLoading={historyLoading}
+										historyHasMore={historyHasMore}
+										onHistoryMonthChange={setHistoryMonth}
+										onHistoryDaySelect={(dayKey, date) => {
+											setSelectedHistoryDay(dayKey);
+											setHistoryMonth(date);
+											setHudUi((current) => ({
+												...current,
+												route: 'history',
+												historySelectedDayKey: dayKey,
+											}));
+										}}
+										onOpenHistoryModal={() => void openHistoryModal()}
+										onDeleteEntry={(entry) => void handleDeleteEntry(entry)}
+										onLoadMore={() => void handleLoadMoreHistory()}
+									/>
+								) : null}
+
+								{tab === 'settings' ? (
+									<SettingsPage
+										userProfile={userProfile}
+										evenName={userProfile.evenName || evenUser.name}
+										canonicalUid={canonicalUid}
+										googleLinked={googleLinked}
+										effectiveGoogleEmail={effectiveGoogleEmail}
+										effectiveGoogleDisplayName={effectiveGoogleDisplayName}
+										currentCurrency={currentCurrency}
+										onboardingDraft={onboardingDraft}
+										mutating={mutating}
+										onGoogleLink={() => void handleGoogleLink()}
+										onDraftChange={(updater) => setOnboardingDraft((current) => updater(current))}
+										onProgramSave={() => void handleProgramSave()}
+										onResetOnboarding={handleResetOnboarding}
+										onExport={() => void handleExport()}
+										onDeleteAll={() => void handleDeleteAll()}
+									/>
+								) : null}
+							</div>
+
+							<BottomTabBar
+								activeTab={tab}
+								onChange={(next) =>
+									startTransition(() => {
+										setTab(next);
+										const nextRoute = tabToHudRoute(next);
+										if (nextRoute) {
+											setHudUi((current) => ({
+												...current,
+												route: nextRoute,
+												historySelectedDayKey: nextRoute === 'history' ? current.historySelectedDayKey : null,
+											}));
+										}
+									})
+								}
 							/>
-						) : null}
-
-						{tab === 'stats' ? (
-							<StatsPage
-								statsPeriod={statsPeriod}
-								onStatsPeriodChange={setStatsPeriod}
-								statsSeries={statsSeries}
-								totalSmoked={selectedPeriodTotal}
-								comparisonLabel={comparisonLabel}
-								weightedAverage={weightedAverage}
-								averageIntervalLabel={averageIntervalLabel}
-							/>
-						) : null}
-
-						{tab === 'history' ? (
-							<HistoryPage
-								historyMonth={historyMonth}
-								selectedHistoryDay={selectedHistoryDay}
-								historyDaysWithEntries={historyDaysWithEntries}
-								selectedHistoryEntries={selectedHistoryEntries}
-								historyLoading={historyLoading}
-								historyHasMore={historyHasMore}
-								onHistoryMonthChange={setHistoryMonth}
-								onHistoryDaySelect={(dayKey, date) => {
-									setSelectedHistoryDay(dayKey);
-									setHistoryMonth(date);
-								}}
-								onOpenHistoryModal={() => void openHistoryModal()}
-								onDeleteEntry={(entry) => void handleDeleteEntry(entry)}
-								onLoadMore={() => void handleLoadMoreHistory()}
-							/>
-						) : null}
-
-						{tab === 'settings' ? (
-							<SettingsPage
-								userProfile={userProfile}
-								evenName={userProfile.evenName || evenUser.name}
-								canonicalUid={canonicalUid}
-								googleLinked={googleLinked}
-								effectiveGoogleEmail={effectiveGoogleEmail}
-								effectiveGoogleDisplayName={effectiveGoogleDisplayName}
-								currentCurrency={currentCurrency}
-								onboardingDraft={onboardingDraft}
-								mutating={mutating}
-								onGoogleLink={() => void handleGoogleLink()}
-								onDraftChange={(updater) => setOnboardingDraft((current) => updater(current))}
-								onProgramSave={() => void handleProgramSave()}
-								onResetOnboarding={handleResetOnboarding}
-								onExport={() => void handleExport()}
-								onDeleteAll={() => void handleDeleteAll()}
-							/>
-						) : null}
+						</div>
 					</div>
 
-					<BottomTabBar activeTab={tab} onChange={(next) => startTransition(() => setTab(next))} />
-				</div>
-			</div>
+					<AddSmokeModal
+						open={historyModalOpen}
+						date={modalEntryDate}
+						time={modalEntryTime}
+						mutating={mutating}
+						onClose={() => setHistoryModalOpen(false)}
+						onDateChange={setModalEntryDate}
+						onTimeChange={setModalEntryTime}
+						onSave={() => void handleAddPastEntry()}
+					/>
 
-			<AddSmokeModal
-				open={historyModalOpen}
-				date={modalEntryDate}
-				time={modalEntryTime}
-				mutating={mutating}
-				onClose={() => setHistoryModalOpen(false)}
-				onDateChange={setModalEntryDate}
-				onTimeChange={setModalEntryTime}
-				onSave={() => void handleAddPastEntry()}
-			/>
-
-			{toast ? (
-				<div className="fixed bottom-28 left-4 right-4 z-[60]">
-					<Toast message={toast} />
-				</div>
-			) : null}
+					{toast ? (
+						<div className="fixed bottom-28 left-4 right-4 z-[60]">
+							<Toast message={toast} />
+						</div>
+					) : null}
+				</>
+			)}
 		</>
 	);
 }

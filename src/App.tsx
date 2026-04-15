@@ -3,14 +3,14 @@ import { startTransition, useEffect, useEffectEvent, useMemo, useRef, useState }
 import { EvenAppMethod, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
 import { AppGlasses } from './glasses/AppGlasses';
 import type { HudActions, HudIntent, HudUiState } from './glasses/types';
-import { computeDailyTarget, computeLongestCessation, computeMoneySaved, computeSleepAwareInterval, computeWeightedDailyAverage } from './domain/calculations';
+import { computeDailyTarget, computeLongestCessation, computeMoneySaved, computeWeightedDailyAverage } from './domain/calculations';
 import type { AuthAccountInfo, EvenUserInfo, HistoryDayGroup, HudPendingAction, HudSnapshot, OnboardingDraft, SmokeLogEntry, UserDocument } from './domain/types';
 import { missingClientEnv } from './config/env';
 import { normalizeEvenUserInfo } from './lib/even';
 import { addDays, combineDateAndTime, currencyForCountry, formatDurationClock, formatTime, formatTimerClock, parseDayKey, toDateInputValue, toDayKey, toTimeInputValue } from './lib/time';
 import { ensureFirebaseSession, getCurrentAccountInfo, resolveGoogleLinkRedirect, startGoogleLinkRedirect } from './services/auth';
 import { addSmokeEntry, deleteAllUserData, deleteLogEntry, deriveHistoryGroupsFromLogs, deriveStatsFromLogs, ensureCanonicalUserData, exportLogs, fetchAllLogEntries, mergeUserData, saveOnboarding, subscribeToTodayCount, subscribeToUserDocument, updateProgram, upsertAuthProviderFields } from './services/firestore';
-import { buildStatsSeries, getPeriodComparisonLabel, getSelectedPeriodTotal } from './features/smokeless/lib/stats-series';
+import { buildStatsSeries, formatStatsIntervalLabel, getAverageCigsAcrossNonEmptyBuckets, getAverageIntervalAcrossNonEmptyBuckets, getPeriodComparisonLabel, getSelectedPeriodTotal } from './features/smokeless/lib/stats-series';
 import { clearOnboardingDraft, createDefaultOnboardingDraft, loadSavedOnboarding, moveOnboardingDraft, saveOnboardingDraft } from './features/smokeless/lib/onboarding-draft';
 import { formatShortDate, getHistoryEntriesForDay, monthStart } from './features/smokeless/lib/history-calendar';
 import type { AppTab, StatsPeriod } from './features/smokeless/ui/types';
@@ -55,6 +55,7 @@ export default function App() {
 	const [canonicalUid, setCanonicalUid] = useState<string | null>(null);
 	const [tab, setTab] = useState<AppTab>('home');
 	const [statsPeriod, setStatsPeriod] = useState<StatsPeriod>('week');
+	const [selectedStatsBucketKey, setSelectedStatsBucketKey] = useState<string | null>(null);
 	const [toast, setToast] = useState('');
 	const [evenUser, setEvenUser] = useState<EvenUserInfo | null>(null);
 	const [accountInfo, setAccountInfo] = useState<AuthAccountInfo | null>(null);
@@ -120,17 +121,47 @@ export default function App() {
 	);
 	const dailyTarget = computeDailyTarget(userDocument, now);
 	const moneySaved = computeMoneySaved(userDocument, weightedAverage, now);
-	const statsSeries = buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now);
+	const statsSeries = useMemo(() => buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now), [statsPeriod, dailyStats, monthlyStats, now]);
 	const selectedPeriodTotal = getSelectedPeriodTotal(statsPeriod, dailyStats, monthlyStats, now);
 	const comparisonLabel = getPeriodComparisonLabel(statsPeriod, selectedPeriodTotal, weightedAverage, now);
+	const selectedStatsBucket = useMemo(
+		() => (selectedStatsBucketKey ? statsSeries.find((item) => item.key === selectedStatsBucketKey) ?? null : null),
+		[selectedStatsBucketKey, statsSeries],
+	);
+	const displayedStatsTotal = selectedStatsBucket?.count ?? selectedPeriodTotal;
+	const statsAverageCigs = useMemo(
+		() => getAverageCigsAcrossNonEmptyBuckets(statsSeries),
+		[statsSeries],
+	);
+	const statsAverageIntervalLabel = useMemo(
+		() => formatStatsIntervalLabel(getAverageIntervalAcrossNonEmptyBuckets(allSmokeEntries, statsSeries)),
+		[allSmokeEntries, statsSeries],
+	);
+	const statsTotalLabel = selectedStatsBucket ? selectedStatsBucket.label : statsPeriod === 'week' ? 'This week' : statsPeriod === 'month' ? 'This month' : 'This year';
+	const hudStatsSummaries = useMemo(() => {
+		const buildHudStatsSummary = (period: 'week' | 'month' | 'year') => {
+			const series = buildStatsSeries(period, dailyStats, monthlyStats, hudReferenceNow);
+			const totalSmoked = getSelectedPeriodTotal(period, dailyStats, monthlyStats, hudReferenceNow);
+			return {
+				period,
+				totalSmoked,
+				comparisonLabel: getPeriodComparisonLabel(period, totalSmoked, weightedAverage, hudReferenceNow),
+				weightedAverage: getAverageCigsAcrossNonEmptyBuckets(series),
+				averageIntervalLabel: formatStatsIntervalLabel(getAverageIntervalAcrossNonEmptyBuckets(allSmokeEntries, series), { padHours: true }),
+				series,
+			};
+		};
+
+		return {
+			week: buildHudStatsSummary('week'),
+			month: buildHudStatsSummary('month'),
+			year: buildHudStatsSummary('year'),
+		};
+	}, [dailyStats, monthlyStats, hudReferenceNow, weightedAverage, allSmokeEntries]);
 	const selectedHistoryEntries = getHistoryEntriesForDay(historyGroups, selectedHistoryDay);
 	const historyDaysWithEntries = new Set(historyGroups.map((group) => group.dayKey));
 	const timerLabel = formatTimerClock(lastSmokeAt, now);
 	const longestCessationLabel = formatDurationClock(computeLongestCessation(allSmokeEntries, now));
-	const averageIntervalLabel = useMemo(
-		() => formatDurationClock((computeSleepAwareInterval(allSmokeEntries, nowMinute) ?? 0) * 60_000 || null),
-		[allSmokeEntries, nowMinute],
-	);
 	const hudPhase =
 		bootState === 'booting'
 			? 'booting'
@@ -159,30 +190,9 @@ export default function App() {
 				weightedAverage,
 			},
 			stats: {
-				week: {
-					period: 'week',
-					totalSmoked: getSelectedPeriodTotal('week', dailyStats, monthlyStats, hudReferenceNow),
-					comparisonLabel: getPeriodComparisonLabel('week', getSelectedPeriodTotal('week', dailyStats, monthlyStats, hudReferenceNow), weightedAverage, hudReferenceNow),
-					weightedAverage,
-					averageIntervalLabel,
-					series: buildStatsSeries('week', dailyStats, monthlyStats, hudReferenceNow),
-				},
-				month: {
-					period: 'month',
-					totalSmoked: getSelectedPeriodTotal('month', dailyStats, monthlyStats, hudReferenceNow),
-					comparisonLabel: getPeriodComparisonLabel('month', getSelectedPeriodTotal('month', dailyStats, monthlyStats, hudReferenceNow), weightedAverage, hudReferenceNow),
-					weightedAverage,
-					averageIntervalLabel,
-					series: buildStatsSeries('month', dailyStats, monthlyStats, hudReferenceNow),
-				},
-				year: {
-					period: 'year',
-					totalSmoked: getSelectedPeriodTotal('year', dailyStats, monthlyStats, hudReferenceNow),
-					comparisonLabel: getPeriodComparisonLabel('year', getSelectedPeriodTotal('year', dailyStats, monthlyStats, hudReferenceNow), weightedAverage, hudReferenceNow),
-					weightedAverage,
-					averageIntervalLabel,
-					series: buildStatsSeries('year', dailyStats, monthlyStats, hudReferenceNow),
-				},
+				week: hudStatsSummaries.week,
+				month: hudStatsSummaries.month,
+				year: hudStatsSummaries.year,
 			},
 			history: {
 				days: historyGroups.map((group) => ({
@@ -206,7 +216,7 @@ export default function App() {
 			dailyStats,
 			monthlyStats,
 			hudReferenceNow,
-			averageIntervalLabel,
+			hudStatsSummaries,
 			historyGroups,
 			historyHasMore,
 			historyLoading,
@@ -247,6 +257,10 @@ export default function App() {
 		if (!nextRoute) return;
 		setHudUi((current) => (current.route === nextRoute ? current : { ...current, route: nextRoute }));
 	}, [tab]);
+
+	useEffect(() => {
+		setSelectedStatsBucketKey(null);
+	}, [statsPeriod]);
 
 	useEffect(() => {
 		setHudUi((current) => (current.statsPeriod === statsPeriod ? current : { ...current, statsPeriod }));
@@ -728,10 +742,13 @@ export default function App() {
 											setHudUi((current) => (current.statsPeriod === period ? current : { ...current, statsPeriod: period }));
 										}}
 										statsSeries={statsSeries}
-										totalSmoked={selectedPeriodTotal}
+										selectedStatsBucketKey={selectedStatsBucketKey}
+										onStatsBucketSelect={(key) => setSelectedStatsBucketKey((current) => (current === key ? null : key))}
+										totalSmoked={displayedStatsTotal}
+										totalLabel={statsTotalLabel}
 										comparisonLabel={comparisonLabel}
-										weightedAverage={weightedAverage}
-										averageIntervalLabel={averageIntervalLabel}
+										weightedAverage={statsAverageCigs}
+										averageIntervalLabel={statsAverageIntervalLabel}
 									/>
 								) : null}
 

@@ -128,7 +128,7 @@ export class RootShellScreen {
 		const stats = context.snapshot.stats[context.ui.statsPeriod];
 		const spark = truncate(stats.series.map((item) => item.label).join(' '), 38);
 		const counts = truncate(stats.series.map((item) => `${item.label}:${item.count}`).join('  '), 38);
-		return `${stats.period.toUpperCase()}  ${stats.totalSmoked} smoked\n\n${truncate(stats.comparisonLabel, 28)}\n\nAvg ${stats.weightedAverage.toFixed(1)}/day\nGap ${stats.averageIntervalLabel}\n\n${spark}\n${counts}`;
+		return `${stats.period.toUpperCase()}  ${stats.totalSmoked} smoked\n\n${truncate(stats.comparisonLabel, 28)}\n\nAvg ${Math.round(stats.weightedAverage)}/day\nGap ${stats.averageIntervalLabel}\n\n${spark}\n${counts}`;
 	}
 
 	buildHistoryBody(selectedDayKey: string | null, selectedDay: HudHistoryDaySummary | null): string {

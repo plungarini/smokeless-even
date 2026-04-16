@@ -1,5 +1,5 @@
 import { GoogleAuthProvider, signInAnonymously, signInWithCustomToken, type User } from 'firebase/auth';
-import { auth, waitForInitialAuthState } from '../lib/firebase';
+import { auth, subscribeToAuthState, waitForInitialAuthState } from '../lib/firebase';
 import type { AuthAccountInfo } from '../domain/types';
 
 function toAccountInfo(user: User | null): AuthAccountInfo | null {
@@ -40,4 +40,8 @@ export async function signInWithCanonicalCustomToken(customToken: string): Promi
 		googleDisplayName: '',
 		isAnonymous: credential.user.isAnonymous,
 	};
+}
+
+export function observeAccountInfo(onValue: (account: AuthAccountInfo | null) => void): () => void {
+	return subscribeToAuthState((user) => onValue(toAccountInfo(user)));
 }

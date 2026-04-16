@@ -1,8 +1,16 @@
-export type QuitProgram = 'linear' | 'fixed' | 'minimum';
 export type AuthProvider = 'anonymous' | 'google';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type WeekStart = 'Monday' | 'Sunday';
-export type GoogleLinkSessionStatus = 'pending' | 'authorized' | 'consumed' | 'expired' | 'cancelled' | 'failed';
+export type GoogleLinkSessionStatus =
+	| 'pending'
+	| 'authorized'
+	| 'migrating'
+	| 'ready_to_switch'
+	| 'switched'
+	| 'consumed'
+	| 'expired'
+	| 'cancelled'
+	| 'failed';
 
 export interface EvenUserInfo {
 	uid: string;
@@ -26,8 +34,10 @@ export interface GoogleLinkPairingSession {
 	linkUrl: string;
 	expiresAt: string;
 	status: GoogleLinkSessionStatus;
+	targetGoogleUid?: string;
 	targetGoogleEmail?: string;
 	targetGoogleDisplayName?: string;
+	switchErrorAt?: string;
 	errorCode?: string;
 	errorMessage?: string;
 }
@@ -36,17 +46,6 @@ export interface UserPreferences {
 	locale: string;
 	themeMode: ThemeMode | string;
 	weekStart: WeekStart | string;
-}
-
-export interface UserOnboarding {
-	cigarettesPerDay: number;
-	packPrice: number;
-	cigarettesPerPack: number;
-	quitProgram: QuitProgram;
-	programStartDate: Date | null;
-	programTargetDate: Date | null;
-	programTargetCigarettes: number;
-	completedAt: Date | null;
 }
 
 export interface UserGoogleProvider {
@@ -80,7 +79,6 @@ export interface UserDocument {
 	longestEverCessation: number;
 	todayMaxCessation: UserCessationMetric | null;
 	preferences: UserPreferences;
-	onboarding: UserOnboarding | null;
 	providers: UserProviders;
 }
 
@@ -97,17 +95,7 @@ export interface HistoryDayGroup {
 	entries: SmokeLogEntry[];
 }
 
-export interface OnboardingDraft {
-	cigarettesPerDay: number;
-	packPrice: number;
-	cigarettesPerPack: number;
-	quitProgram: QuitProgram;
-	programTargetCigarettes: number;
-	programTargetDate: string;
-	step: number;
-}
-
-export type HudPhase = 'booting' | 'blocked' | 'onboarding' | 'ready';
+export type HudPhase = 'booting' | 'blocked' | 'ready';
 export type HudPendingAction = 'logSmoke' | 'loadMoreHistory' | null;
 export type HudStatsPeriod = 'week' | 'month' | 'year';
 

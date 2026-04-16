@@ -10,9 +10,7 @@ import {
 } from 'firebase/auth';
 import { useEffect, useMemo, useState } from 'react';
 import { auth } from '../lib/firebase';
-import { completeGoogleLinkSession, resolveGoogleLinkCode } from '../services/google-link';
-
-const SESSION_STORAGE_KEY = 'smokeless:link-site:session';
+import { completeGoogleLinkSession, finalizeGoogleLinkSession, resolveGoogleLinkCode } from '../services/google-link';
 
 type LinkerPhase = 'idle' | 'ready' | 'authorizing' | 'success' | 'error';
 
@@ -22,7 +20,10 @@ interface ResolvedPairing {
 }
 
 function normalizeCode(value: string): string {
-	return value.toUpperCase().replace(/[^A-Z2-9]/g, '').slice(0, 10);
+	return value
+		.toUpperCase()
+		.replace(/[^A-Z2-9]/g, '')
+		.slice(0, 10);
 }
 
 function formatCodeInput(value: string): string {
@@ -35,15 +36,15 @@ function readStoredPairing(): ResolvedPairing | null {
 	if (typeof window === 'undefined') return null;
 
 	try {
-		const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
-		if (!raw) return null;
-		const parsed = JSON.parse(raw) as Partial<ResolvedPairing>;
-		if (typeof parsed.sessionId !== 'string' || typeof parsed.expiresAt !== 'string') {
+		const params = new URLSearchParams(window.location.search);
+		const sessionId = params.get('sessionId');
+		const expiresAt = params.get('expiresAt');
+		if (!sessionId || !expiresAt) {
 			return null;
 		}
 		return {
-			sessionId: parsed.sessionId,
-			expiresAt: parsed.expiresAt,
+			sessionId,
+			expiresAt,
 		};
 	} catch {
 		return null;
@@ -53,12 +54,17 @@ function readStoredPairing(): ResolvedPairing | null {
 function writeStoredPairing(pairing: ResolvedPairing | null): void {
 	if (typeof window === 'undefined') return;
 
+	const url = new URL(window.location.href);
 	if (!pairing) {
-		window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+		url.searchParams.delete('sessionId');
+		url.searchParams.delete('expiresAt');
+		window.history.replaceState(null, '', url.toString());
 		return;
 	}
 
-	window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(pairing));
+	url.searchParams.set('sessionId', pairing.sessionId);
+	url.searchParams.set('expiresAt', pairing.expiresAt);
+	window.history.replaceState(null, '', url.toString());
 }
 
 function shouldPreferRedirect(): boolean {
@@ -72,7 +78,11 @@ function shouldPreferRedirect(): boolean {
 function shouldFallbackToRedirect(error: unknown): boolean {
 	if (!error || typeof error !== 'object' || !('code' in error)) return false;
 	const code = String((error as { code?: string }).code ?? '');
-	return code === 'auth/popup-blocked' || code === 'auth/web-storage-unsupported' || code === 'auth/operation-not-supported-in-this-environment';
+	return (
+		code === 'auth/popup-blocked' ||
+		code === 'auth/web-storage-unsupported' ||
+		code === 'auth/operation-not-supported-in-this-environment'
+	);
 }
 
 function formatExpiry(seconds: number): string {
@@ -88,6 +98,7 @@ export function LinkerApp() {
 	const [resolvedPairing, setResolvedPairing] = useState<ResolvedPairing | null>(() => readStoredPairing());
 	const [message, setMessage] = useState('Enter the pairing code from Smokeless to continue.');
 	const [linkedEmail, setLinkedEmail] = useState('');
+	const [postAuthError, setPostAuthError] = useState(false);
 	const [clock, setClock] = useState(() => Date.now());
 
 	useEffect(() => {
@@ -108,21 +119,29 @@ export function LinkerApp() {
 			if (redirectResult?.user && storedPairing) {
 				setResolvedPairing(storedPairing);
 				setPhase('authorizing');
-				setMessage('Finishing your Google link...');
+				setMessage('Preparing your Smokeless data...');
 				try {
 					const completion = await completeGoogleLinkSession(storedPairing.sessionId);
+					await finalizeGoogleLinkSession(storedPairing.sessionId);
 					if (cancelled) return;
 					setLinkedEmail(completion.targetGoogleEmail ?? redirectResult.user.email ?? '');
+					setPostAuthError(false);
 					setPhase('success');
-					setMessage('Google account linked. Return to Smokeless to finish the switch.');
+					setMessage('Google account linked successfully. Return to Smokeless to finish the account switch.');
 					writeStoredPairing(null);
 					setResolvedPairing(null);
 					await signOut(auth);
 				} catch (error) {
 					console.error('[Smokeless Link] redirect completion failed', error);
 					if (cancelled) return;
+					setLinkedEmail(redirectResult.user.email ?? '');
+					setPostAuthError(true);
 					setPhase('error');
-					setMessage(error instanceof Error ? error.message : 'Could not finish Google linking.');
+					setMessage(
+						error instanceof Error
+							? error.message
+							: 'Google access was approved, but Smokeless could not finish linking.',
+					);
 				}
 				return;
 			}
@@ -161,11 +180,13 @@ export function LinkerApp() {
 	const handleResolveCode = async () => {
 		const normalized = normalizeCode(codeInput);
 		if (normalized.length !== 10) {
+			setPostAuthError(false);
 			setPhase('error');
 			setMessage('Enter the full 10-character code shown in Smokeless.');
 			return;
 		}
 
+		setPostAuthError(false);
 		setPhase('authorizing');
 		setMessage('Checking pairing code...');
 		try {
@@ -180,6 +201,7 @@ export function LinkerApp() {
 			setMessage('Code verified. Continue with Google in this browser.');
 		} catch (error) {
 			console.error('[Smokeless Link] resolve failed', error);
+			setPostAuthError(false);
 			setPhase('error');
 			setMessage(error instanceof Error ? error.message : 'Pairing code not recognized.');
 		}
@@ -192,6 +214,7 @@ export function LinkerApp() {
 		provider.setCustomParameters({ prompt: 'select_account' });
 
 		writeStoredPairing(resolvedPairing);
+		setPostAuthError(false);
 		setPhase('authorizing');
 		setMessage('Opening Google sign-in...');
 
@@ -203,9 +226,11 @@ export function LinkerApp() {
 
 			const result = await signInWithPopup(auth, provider);
 			const completion = await completeGoogleLinkSession(resolvedPairing.sessionId);
-			setLinkedEmail(completion.targetGoogleEmail ?? result.user.email ?? '');
+			const migration = await finalizeGoogleLinkSession(resolvedPairing.sessionId);
+			setLinkedEmail(completion.targetGoogleEmail ?? migration.targetGoogleEmail ?? result.user.email ?? '');
+			setPostAuthError(false);
 			setPhase('success');
-			setMessage('Google account linked. Return to Smokeless to finish the switch.');
+			setMessage('Google account linked successfully. Return to Smokeless to finish the account switch.');
 			writeStoredPairing(null);
 			setResolvedPairing(null);
 			await signOut(auth);
@@ -216,10 +241,22 @@ export function LinkerApp() {
 			}
 
 			console.error('[Smokeless Link] google auth failed', error);
+			if (auth.currentUser) {
+				setLinkedEmail(auth.currentUser.email ?? linkedEmail);
+				setPostAuthError(true);
+			}
 			setPhase('error');
-			setMessage(error instanceof Error ? error.message : 'Could not complete Google sign-in.');
+			setMessage(
+				error instanceof Error
+					? error.message
+					: auth.currentUser
+						? 'Google access was approved, but Smokeless could not finish linking.'
+						: 'Could not complete Google sign-in.',
+			);
 		}
 	};
+
+	const showFinalState = phase === 'success' || postAuthError;
 
 	return (
 		<div className="linker-shell">
@@ -229,61 +266,66 @@ export function LinkerApp() {
 			<div className="linker-frame">
 				<Card padding="default" className="linker-card">
 					<div className="linker-eyebrow">Smokeless Pairing</div>
-					<h1 className="linker-title">Link your Google account in a normal browser.</h1>
+					<h1 className="linker-title">{phase === 'success' ? 'Google Account Linked!' : 'Link Google Account'}</h1>
 					<p className="linker-body">{message}</p>
 
-					{linkedEmail ? <div className="linker-chip">Authorized as {linkedEmail}</div> : null}
-
-					<div className="linker-section">
-						<label className="linker-label" htmlFor="pairing-code">
-							Pairing code
-						</label>
-						<input
-							id="pairing-code"
-							className="linker-input"
-							value={formatCodeInput(codeInput)}
-							onChange={(event) => setCodeInput(event.currentTarget.value)}
-							placeholder="ABCDE-FGHIJ"
-							autoComplete="one-time-code"
-							autoCapitalize="characters"
-							spellCheck={false}
-							disabled={phase === 'authorizing' || phase === 'success'}
-						/>
-						<Button
-							variant="secondary"
-							className="linker-button"
-							onClick={() => void handleResolveCode()}
-							disabled={phase === 'authorizing' || phase === 'success'}
-						>
-							Verify code
-						</Button>
-					</div>
-
-					{resolvedPairing ? (
-						<div className="linker-session">
-							<div>
-								<div className="linker-label">Session</div>
-								<div className="linker-meta">{resolvedPairing.sessionId}</div>
-							</div>
-							<div>
-								<div className="linker-label">Expires in</div>
-								<div className="linker-countdown">{formatExpiry(expiresInSeconds)}</div>
-							</div>
+					{linkedEmail ? (
+						<div className="linker-chip">
+							{phase === 'success' ? 'Linked as ' : 'Authorized as '}
+							{linkedEmail}
 						</div>
 					) : null}
 
-					<Button
-						variant="highlight"
-						className="linker-button linker-button-primary"
-						onClick={() => void handleGoogleContinue()}
-						disabled={!resolvedPairing || phase === 'authorizing' || phase === 'success' || expiresInSeconds === 0}
-					>
-						Continue with Google
-					</Button>
+					{showFinalState ? null : (
+						<>
+							<div className="linker-section">
+								<label className="linker-label" htmlFor="pairing-code">
+									Pairing code
+								</label>
+								<input
+									id="pairing-code"
+									className="linker-input"
+									value={formatCodeInput(codeInput)}
+									onChange={(event) => setCodeInput(event.currentTarget.value)}
+									placeholder="ABCDE-FGHIJ"
+									autoComplete="one-time-code"
+									autoCapitalize="characters"
+									spellCheck={false}
+									disabled={phase === 'authorizing'}
+								/>
+								<Button
+									variant="secondary"
+									className="linker-button"
+									onClick={() => void handleResolveCode()}
+									disabled={phase === 'authorizing'}
+								>
+									Verify code
+								</Button>
+							</div>
 
-					<div className="linker-footer">
-						After Google confirms access here, return to Smokeless on your phone to finish switching the app onto the linked account.
-					</div>
+							{resolvedPairing ? (
+								<div className="linker-session">
+									<div>
+										<div className="linker-label">Session</div>
+										<div className="linker-meta">{resolvedPairing.sessionId}</div>
+									</div>
+									<div>
+										<div className="linker-label">Expires in</div>
+										<div className="linker-countdown">{formatExpiry(expiresInSeconds)}</div>
+									</div>
+								</div>
+							) : null}
+
+							<Button
+								variant="highlight"
+								className="linker-button linker-button-primary !text-black"
+								onClick={() => void handleGoogleContinue()}
+								disabled={!resolvedPairing || phase === 'authorizing' || expiresInSeconds === 0}
+							>
+								Continue with Google
+							</Button>
+						</>
+					)}
 				</Card>
 			</div>
 		</div>

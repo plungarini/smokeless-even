@@ -24,8 +24,10 @@ export const getGoogleLinkSessionStatus = onCall(async (request) => {
 	return {
 		status: String(data.status ?? 'pending'),
 		expiresAt: (toDate(data.expiresAt) ?? new Date()).toISOString(),
+		targetGoogleUid: typeof data.targetGoogleUid === 'string' ? data.targetGoogleUid : undefined,
 		targetGoogleEmail: typeof data.targetGoogleEmail === 'string' ? data.targetGoogleEmail : undefined,
 		targetGoogleDisplayName: typeof data.targetGoogleDisplayName === 'string' ? data.targetGoogleDisplayName : undefined,
+		switchErrorAt: toDate(data.switchErrorAt)?.toISOString(),
 		errorCode: typeof data.errorCode === 'string' ? data.errorCode : undefined,
 		errorMessage: typeof data.errorMessage === 'string' ? data.errorMessage : undefined,
 	};

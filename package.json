@@ -11,9 +11,9 @@
 		"upng-js": "^2.1.0"
 	},
 	"devDependencies": {
-		"@evenrealities/even_hub_sdk": "^0.0.9",
-		"@evenrealities/evenhub-cli": "^0.1.11",
-		"@evenrealities/evenhub-simulator": "^0.6.2",
+		"@evenrealities/even_hub_sdk": "^0.0.10",
+		"@evenrealities/evenhub-cli": "^0.1.12",
+		"@evenrealities/evenhub-simulator": "^0.7.2",
 		"@tailwindcss/vite": "^4.2.2",
 		"@types/node": "^25.5.0",
 		"@types/react": "^19.2.14",
@@ -29,7 +29,9 @@
 		"build": "tsc && vite build",
 		"build:functions": "npm --prefix functions run build",
 		"build:link-site": "vite build --config vite.link.config.ts",
+		"deploy:firebase": "npm run deploy:functions && npm run deploy:rules",
 		"deploy:functions": "npm run build:functions && firebase deploy --only functions --project smokeless-eu",
+		"deploy:rules": "firebase deploy --only firestore:rules --project smokeless-eu",
 		"dev": "vite --host 0.0.0.0 --port 5173",
 		"dev:link-site": "vite --config vite.link.config.ts",
 		"emulator": "npx evenhub-simulator http://localhost:5173/",

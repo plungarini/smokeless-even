@@ -23,7 +23,6 @@ export function mergeUserDocuments(
 		longestEverCessation: target?.longestEverCessation ?? source?.longestEverCessation ?? 0,
 		todayMaxCessation: target?.todayMaxCessation ?? source?.todayMaxCessation ?? null,
 		preferences: target?.preferences ?? source?.preferences ?? {},
-		onboarding: target?.onboarding ?? source?.onboarding ?? null,
 		providers: {
 			google: targetGoogle,
 			even: target?.providers.even ?? source?.providers.even ?? null,
@@ -81,7 +80,6 @@ export async function applyMergedUserData(params: {
 			longestEverCessation: mergedDocument.longestEverCessation,
 			todayMaxCessation: mergedDocument.todayMaxCessation,
 			preferences: mergedDocument.preferences,
-			onboarding: mergedDocument.onboarding,
 			providers: mergedDocument.providers,
 			createdAt: targetDocument?.createdAt ?? sourceDocument?.createdAt ?? FieldValue.serverTimestamp(),
 			updatedAt: FieldValue.serverTimestamp(),

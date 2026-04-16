@@ -3,8 +3,8 @@ import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { GOOGLE_LINK_URL, SESSION_TTL_MS } from '../config';
 import { assertString } from '../lib/errors';
 import { generatePairingCode, hashPairingCode } from '../lib/pairing-code';
+import { newSessionRef } from '../repositories/refs';
 import { invalidateOpenSessions } from '../repositories/sessions';
-import { sessionRef } from '../repositories/refs';
 import { assertSourceUserNotGoogleLinked } from '../services/auth';
 import '../config';
 
@@ -17,11 +17,12 @@ export const createGoogleLinkSession = onCall(async (request) => {
 	await assertSourceUserNotGoogleLinked(request.auth.uid);
 	await invalidateOpenSessions(request.auth.uid);
 
-	const sessionId = sessionRef('').parent.doc().id;
+	const sessionDocument = newSessionRef();
+	const sessionId = sessionDocument.id;
 	const code = generatePairingCode();
 	const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
 
-	await sessionRef(sessionId).set({
+	await sessionDocument.set({
 		sessionId,
 		sourceUid: request.auth.uid,
 		sourceEvenUid,
@@ -31,6 +32,11 @@ export const createGoogleLinkSession = onCall(async (request) => {
 		createdAt: FieldValue.serverTimestamp(),
 		updatedAt: FieldValue.serverTimestamp(),
 		authorizedAt: null,
+		migrationStartedAt: null,
+		migrationCompletedAt: null,
+		switchClaimedAt: null,
+		switchErrorAt: null,
+		cleanupCompletedAt: null,
 		completedAt: null,
 		consumedAt: null,
 		targetGoogleUid: null,

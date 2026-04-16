@@ -1,7 +1,7 @@
-import { ListContainerProperty, ListItemContainerProperty, TextContainerProperty } from '@evenrealities/even_hub_sdk';
+import { TextContainerProperty } from '@evenrealities/even_hub_sdk';
 import type { HudHistoryDaySummary } from '../domain/types';
 import { formatDayLabel, formatHudLastSmoke, formatLongDate, formatTime } from '../lib/time';
-import { HUD_CREATE_TEXT_LIMIT, HUD_WIDTH } from './constants';
+import { HUD_CREATE_TEXT_LIMIT } from './constants';
 import type { HudLayoutDescriptor, HudTextDescriptor } from './types';
 
 export function clamp(value: number, min: number, max: number): number {
@@ -13,6 +13,8 @@ export function truncate(value: string, maxLength: number): string {
 	return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
 }
 
+const CONTAINER_CONTENT_LIMIT = 950;
+
 export function instantiateLayout(layout: HudLayoutDescriptor, textContents: Record<string, string>) {
 	return {
 		containerTotalNum: layout.textDescriptors.length + (layout.listObject?.length ?? 0),
@@ -20,7 +22,7 @@ export function instantiateLayout(layout: HudLayoutDescriptor, textContents: Rec
 			(descriptor) =>
 				new TextContainerProperty({
 					...descriptor,
-					content: textContents[descriptor.containerName] ?? '',
+					content: truncate(textContents[descriptor.containerName] ?? ' ', CONTAINER_CONTENT_LIMIT),
 				}),
 		),
 		listObject: layout.listObject,
@@ -40,26 +42,6 @@ export function createGhostEventDescriptor(containerID: number, containerName: s
 		borderWidth: 0,
 		isEventCapture: 1,
 	};
-}
-
-export function createMenuList(selectedLabels: string[]): ListContainerProperty {
-	return new ListContainerProperty({
-		xPosition: 60,
-		yPosition: 48,
-		width: HUD_WIDTH - 120,
-		height: 210,
-		containerID: 2,
-		containerName: 'hud-menu-list',
-		borderWidth: 0,
-		paddingLength: 0,
-		isEventCapture: 1,
-		itemContainer: new ListItemContainerProperty({
-			itemCount: selectedLabels.length,
-			itemWidth: HUD_WIDTH - 120,
-			isItemSelectBorderEn: 1,
-			itemName: selectedLabels,
-		}),
-	});
 }
 
 export function formatTargetStatus(todayCount: number, dailyTarget: number | null): string {
@@ -82,11 +64,10 @@ export function buildSparkline(counts: number[]): string {
 }
 
 export function buildStatusBox(title: string, body: string[]): string {
-	const lines = body.flatMap((line) => wrapText(line, 42));
-	const maxContentWidth = Math.max(title.length + 4, ...lines.map((line) => line.length), 20);
-	const top = `╭${`─ ${title} `.padEnd(maxContentWidth + 1, '─')}╮`;
-	const middle = lines.map((line) => `│ ${line.padEnd(maxContentWidth, ' ')} │`);
-	const bottom = `╰${''.padEnd(maxContentWidth + 2, '─')}╯`;
+	const lines = body.flatMap((line) => wrapText(line, 50));
+	const top = `╭${`─    ${title}    `.padEnd(36, '─')}╮\n│ `;
+	const middle = lines.map((line) => `│   ${line}`);
+	const bottom = `│ \n╰${''.padEnd(15, '─')}`;
 	const content = [top, ...middle, bottom].join('\n');
 	return content.length > HUD_CREATE_TEXT_LIMIT ? content.slice(0, HUD_CREATE_TEXT_LIMIT - 1) : content;
 }

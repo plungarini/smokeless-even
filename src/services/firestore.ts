@@ -18,19 +18,17 @@ import {
 	where,
 	writeBatch,
 } from 'firebase/firestore';
+import { computeLongestCessation } from '../domain/calculations';
 import type {
 	AuthAccountInfo,
 	EvenUserInfo,
 	HistoryDayGroup,
-	OnboardingDraft,
 	SmokeLogEntry,
 	UserDocument,
 	UserEvenProvider,
 	UserGoogleProvider,
-	UserOnboarding,
 	UserPreferences,
 } from '../domain/types';
-import { computeLongestCessation } from '../domain/calculations';
 import { db } from '../lib/firebase';
 import { addDays, diffCalendarDays, parseDayKey, startOfDay, toDayKey, toMonthKey } from '../lib/time';
 
@@ -52,7 +50,12 @@ function logsRef(uid: string) {
 
 function toDate(value: unknown): Date | null {
 	if (!value) return null;
-	if (typeof value === 'object' && value !== null && 'toDate' in value && typeof (value as Timestamp).toDate === 'function') {
+	if (
+		typeof value === 'object' &&
+		value !== null &&
+		'toDate' in value &&
+		typeof (value as Timestamp).toDate === 'function'
+	) {
 		return (value as Timestamp).toDate();
 	}
 	return null;
@@ -85,21 +88,6 @@ function mapGoogleProvider(value: unknown): UserGoogleProvider | null {
 	};
 }
 
-function mapOnboarding(value: unknown): UserOnboarding | null {
-	if (!value || typeof value !== 'object') return null;
-	const onboarding = value as Record<string, unknown>;
-	return {
-		cigarettesPerDay: Number(onboarding.cigarettesPerDay ?? 20),
-		packPrice: Number(onboarding.packPrice ?? 0),
-		cigarettesPerPack: Number(onboarding.cigarettesPerPack ?? 20),
-		quitProgram: (onboarding.quitProgram as UserOnboarding['quitProgram']) ?? 'minimum',
-		programStartDate: toDate(onboarding.programStartDate),
-		programTargetDate: toDate(onboarding.programTargetDate),
-		programTargetCigarettes: Number(onboarding.programTargetCigarettes ?? 0),
-		completedAt: toDate(onboarding.completedAt),
-	};
-}
-
 function mapUserDocument(snapshot: DocumentSnapshot): UserDocument | null {
 	if (!snapshot.exists()) return null;
 
@@ -111,18 +99,18 @@ function mapUserDocument(snapshot: DocumentSnapshot): UserDocument | null {
 		createdAt: toDate(data.createdAt),
 		updatedAt: toDate(data.updatedAt),
 		longestEverCessation: Number(data.longestEverCessation ?? 0),
-		todayMaxCessation: data.todayMaxCessation && typeof data.todayMaxCessation === 'object'
-			? {
-				value: Number((data.todayMaxCessation as Record<string, unknown>).value ?? 0),
-				lastUpdated: toDate((data.todayMaxCessation as Record<string, unknown>).lastUpdated),
-			}
-			: null,
+		todayMaxCessation:
+			data.todayMaxCessation && typeof data.todayMaxCessation === 'object'
+				? {
+						value: Number((data.todayMaxCessation as Record<string, unknown>).value ?? 0),
+						lastUpdated: toDate((data.todayMaxCessation as Record<string, unknown>).lastUpdated),
+					}
+				: null,
 		preferences: {
 			locale: String(preferences.locale ?? DEFAULT_PREFERENCES.locale),
 			themeMode: String(preferences.themeMode ?? DEFAULT_PREFERENCES.themeMode),
 			weekStart: String(preferences.weekStart ?? DEFAULT_PREFERENCES.weekStart),
 		},
-		onboarding: mapOnboarding(data.onboarding),
 		providers: {
 			google: mapGoogleProvider(providers.google),
 			even: mapEvenProvider(providers.even),
@@ -135,7 +123,10 @@ function mapLogSnapshot(snapshot: DocumentSnapshot | QueryDocumentSnapshot): Smo
 	return {
 		id: snapshot.id,
 		timestamp: toDate(data.timestamp) ?? new Date(),
-		intervalSincePrevious: typeof data.intervalSincePrevious === 'number' ? data.intervalSincePrevious : Number(data.intervalSincePrevious ?? null),
+		intervalSincePrevious:
+			typeof data.intervalSincePrevious === 'number'
+				? data.intervalSincePrevious
+				: Number(data.intervalSincePrevious ?? null),
 	};
 }
 
@@ -144,7 +135,6 @@ function buildDefaultUserDocument(evenUser: EvenUserInfo): Omit<UserDocument, 'c
 		longestEverCessation: 0,
 		todayMaxCessation: null,
 		preferences: DEFAULT_PREFERENCES,
-		onboarding: null,
 		providers: {
 			google: null,
 			even: {
@@ -155,19 +145,6 @@ function buildDefaultUserDocument(evenUser: EvenUserInfo): Omit<UserDocument, 'c
 				linkedAt: null,
 			},
 		},
-	};
-}
-
-function buildOnboardingFromDraft(draft: OnboardingDraft, existing: UserOnboarding | null): UserOnboarding {
-	return {
-		cigarettesPerDay: draft.cigarettesPerDay,
-		packPrice: draft.packPrice,
-		cigarettesPerPack: draft.cigarettesPerPack,
-		quitProgram: draft.quitProgram,
-		programStartDate: existing?.programStartDate ?? new Date(),
-		programTargetDate: draft.quitProgram === 'minimum' || !draft.programTargetDate ? null : new Date(`${draft.programTargetDate}T00:00:00`),
-		programTargetCigarettes: draft.quitProgram === 'minimum' ? 0 : draft.programTargetCigarettes,
-		completedAt: existing?.completedAt ?? new Date(),
 	};
 }
 
@@ -198,14 +175,14 @@ function mergeProviders(
 	account: AuthAccountInfo | null,
 ): UserDocument['providers'] {
 	return {
-		google: buildGoogleProvider(account ?? { uid: '', authProvider: 'anonymous', googleEmail: '', googleDisplayName: '', isAnonymous: true }) ?? target.google ?? source.google,
+		google:
+			buildGoogleProvider(
+				account ?? { uid: '', authProvider: 'anonymous', googleEmail: '', googleDisplayName: '', isAnonymous: true },
+			) ??
+			target.google ??
+			source.google,
 		even: buildEvenProvider(evenUser) ?? target.even ?? source.even,
 	};
-}
-
-function mergeOnboarding(target: UserOnboarding | null, source: UserOnboarding | null): UserOnboarding | null {
-	if (target) return target;
-	return source;
 }
 
 function mergeUserDocuments(
@@ -219,8 +196,12 @@ function mergeUserDocuments(
 		longestEverCessation: target?.longestEverCessation ?? source?.longestEverCessation ?? fallback.longestEverCessation,
 		todayMaxCessation: target?.todayMaxCessation ?? source?.todayMaxCessation ?? fallback.todayMaxCessation,
 		preferences: target?.preferences ?? source?.preferences ?? fallback.preferences,
-		onboarding: mergeOnboarding(target?.onboarding ?? null, source?.onboarding ?? null),
-		providers: mergeProviders(target?.providers ?? fallback.providers, source?.providers ?? fallback.providers, evenUser, account),
+		providers: mergeProviders(
+			target?.providers ?? fallback.providers,
+			source?.providers ?? fallback.providers,
+			evenUser,
+			account,
+		),
 	};
 }
 
@@ -244,15 +225,21 @@ function rebuildIntervals(entries: SmokeLogEntry[]): SmokeLogEntry[] {
 		return {
 			id: entry.id,
 			timestamp: entry.timestamp,
-			intervalSincePrevious: previous ? Math.max(0, Math.round((entry.timestamp.getTime() - previous.timestamp.getTime()) / 1000)) : null,
+			intervalSincePrevious: previous
+				? Math.max(0, Math.round((entry.timestamp.getTime() - previous.timestamp.getTime()) / 1000))
+				: null,
 		};
 	});
 }
 
-function buildTodayMaxCessation(entries: SmokeLogEntry[], now = new Date()): { value: number; lastUpdated: Date } | null {
+function buildTodayMaxCessation(
+	entries: SmokeLogEntry[],
+	now = new Date(),
+): { value: number; lastUpdated: Date } | null {
 	const dayStart = startOfDay(now);
 	const sorted = [...entries].sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime());
 	let maxSeconds = 0;
+	let hasSmokesToday = false;
 	let previousTimestamp: Date | null = null;
 
 	for (const entry of sorted) {
@@ -260,14 +247,18 @@ function buildTodayMaxCessation(entries: SmokeLogEntry[], now = new Date()): { v
 			previousTimestamp = entry.timestamp;
 			continue;
 		}
-		const intervalStart = previousTimestamp && previousTimestamp > dayStart ? previousTimestamp : dayStart;
-		const gapSeconds = Math.max(0, Math.round((entry.timestamp.getTime() - intervalStart.getTime()) / 1000));
-		maxSeconds = Math.max(maxSeconds, gapSeconds);
+		hasSmokesToday = true;
+		// Use the actual gap between consecutive smokes (matching Flutter's intervalSincePrevious logic).
+		// No tail included — the live running time is added in the display layer only.
+		if (previousTimestamp !== null) {
+			const gapSeconds = Math.max(0, Math.round((entry.timestamp.getTime() - previousTimestamp.getTime()) / 1000));
+			maxSeconds = Math.max(maxSeconds, gapSeconds);
+		}
 		previousTimestamp = entry.timestamp;
 	}
 
-	const tailStart = previousTimestamp && previousTimestamp > dayStart ? previousTimestamp : dayStart;
-	maxSeconds = Math.max(maxSeconds, Math.max(0, Math.round((now.getTime() - tailStart.getTime()) / 1000)));
+	// Only persist if there was at least one smoke today (produces a closed gap to store).
+	if (!hasSmokesToday) return null;
 
 	return {
 		value: maxSeconds,
@@ -293,7 +284,11 @@ function buildMonthlyCounts(entries: SmokeLogEntry[]): Record<string, number> {
 	return counts;
 }
 
-export function deriveStatsFromLogs(entries: SmokeLogEntry[]): { daily: Record<string, number>; monthly: Record<string, number>; lastSmokeAt: Date | null } {
+export function deriveStatsFromLogs(entries: SmokeLogEntry[]): {
+	daily: Record<string, number>;
+	monthly: Record<string, number>;
+	lastSmokeAt: Date | null;
+} {
 	const sorted = [...entries].sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime());
 	return {
 		daily: buildDailyCounts(sorted),
@@ -368,9 +363,9 @@ async function updateUserMetrics(uid: string, entries: SmokeLogEntry[]): Promise
 			longestEverCessation: Math.round((computeLongestCessation(entries, now) ?? 0) / 1000),
 			todayMaxCessation: buildTodayMaxCessation(entries, now)
 				? {
-					value: buildTodayMaxCessation(entries, now)!.value,
-					lastUpdated: buildTodayMaxCessation(entries, now)!.lastUpdated,
-				}
+						value: buildTodayMaxCessation(entries, now)!.value,
+						lastUpdated: buildTodayMaxCessation(entries, now)!.lastUpdated,
+					}
 				: null,
 			updatedAt: serverTimestamp(),
 		},
@@ -393,9 +388,12 @@ export function subscribeToTodayCount(uid: string, onValue: (count: number) => v
 	const now = new Date();
 	const dayStart = startOfDay(now);
 	const dayEnd = addDays(dayStart, 1);
-	return onSnapshot(query(logsRef(uid), where('timestamp', '>=', dayStart), where('timestamp', '<', dayEnd), orderBy('timestamp')), (snapshot) => {
-		onValue(snapshot.size);
-	});
+	return onSnapshot(
+		query(logsRef(uid), where('timestamp', '>=', dayStart), where('timestamp', '<', dayEnd), orderBy('timestamp')),
+		(snapshot) => {
+			onValue(snapshot.size);
+		},
+	);
 }
 
 export async function fetchAllLogEntries(uid: string): Promise<SmokeLogEntry[]> {
@@ -418,11 +416,14 @@ export async function fetchAllLogEntries(uid: string): Promise<SmokeLogEntry[]> 
 }
 
 export async function ensureCanonicalUserData(firebaseUid: string, evenUser: EvenUserInfo): Promise<void> {
-	const existing = await fetchUserDocument(firebaseUid);
-	if (!existing) {
-		const defaults = buildDefaultUserDocument(evenUser);
-		await setDoc(userRef(firebaseUid), {
-			...defaults,
+	const defaults = buildDefaultUserDocument(evenUser);
+	// NOTE: longestEverCessation and todayMaxCessation are intentionally excluded here.
+	// They are computed values managed exclusively by updateUserMetrics (called on every
+	// addSmokeEntry / deleteLogEntry). Writing defaults here would reset them on every boot.
+	await setDoc(
+		userRef(firebaseUid),
+		{
+			preferences: defaults.preferences,
 			providers: {
 				google: defaults.providers.google,
 				even: {
@@ -431,21 +432,6 @@ export async function ensureCanonicalUserData(firebaseUid: string, evenUser: Eve
 				},
 			},
 			createdAt: serverTimestamp(),
-			updatedAt: serverTimestamp(),
-		});
-		return;
-	}
-
-	await setDoc(
-		userRef(firebaseUid),
-		{
-			providers: {
-				...existing.providers,
-				even: {
-					...buildEvenProvider(evenUser),
-					linkedAt: serverTimestamp(),
-				},
-			},
 			updatedAt: serverTimestamp(),
 		},
 		{ merge: true },
@@ -487,41 +473,12 @@ export async function upsertAuthProviderFields(uid: string, account: AuthAccount
 	);
 }
 
-export async function saveOnboarding(uid: string, evenUser: EvenUserInfo, draft: OnboardingDraft, account: AuthAccountInfo | null = null): Promise<void> {
-	const existing = await fetchUserDocument(uid);
-	const onboarding = buildOnboardingFromDraft(draft, existing?.onboarding ?? null);
-
-	await setDoc(
-		userRef(uid),
-		{
-			preferences: existing?.preferences ?? DEFAULT_PREFERENCES,
-			onboarding: {
-				...onboarding,
-				programStartDate: onboarding.programStartDate ?? serverTimestamp(),
-				completedAt: onboarding.completedAt ?? serverTimestamp(),
-			},
-			providers: {
-				even: {
-					...buildEvenProvider(evenUser),
-					linkedAt: serverTimestamp(),
-				},
-				google: account?.authProvider === 'google'
-					? {
-						uid: account.uid,
-						email: account.googleEmail,
-						displayName: account.googleDisplayName,
-						linkedAt: serverTimestamp(),
-					}
-					: existing?.providers.google ?? null,
-			},
-			createdAt: existing?.createdAt ?? serverTimestamp(),
-			updatedAt: serverTimestamp(),
-		},
-		{ merge: true },
-	);
-}
-
-export async function mergeUserData(sourceUid: string, targetUid: string, evenUser: EvenUserInfo, account: AuthAccountInfo | null = null): Promise<void> {
+export async function mergeUserData(
+	sourceUid: string,
+	targetUid: string,
+	evenUser: EvenUserInfo,
+	account: AuthAccountInfo | null = null,
+): Promise<void> {
 	if (!sourceUid || !targetUid || sourceUid === targetUid) {
 		if (targetUid && account) {
 			await upsertAuthProviderFields(targetUid, account);
@@ -546,7 +503,6 @@ export async function mergeUserData(sourceUid: string, targetUid: string, evenUs
 			longestEverCessation: mergedDocument.longestEverCessation,
 			todayMaxCessation: mergedDocument.todayMaxCessation,
 			preferences: mergedDocument.preferences,
-			onboarding: mergedDocument.onboarding,
 			providers: mergedDocument.providers,
 			createdAt: targetDocument?.createdAt ?? sourceDocument?.createdAt ?? serverTimestamp(),
 			updatedAt: serverTimestamp(),
@@ -557,43 +513,34 @@ export async function mergeUserData(sourceUid: string, targetUid: string, evenUs
 	await deleteAllUserData(sourceUid);
 }
 
-export async function updateProgram(uid: string, updates: Partial<UserOnboarding>): Promise<void> {
-	const existing = await fetchUserDocument(uid);
-	const onboarding = existing?.onboarding ?? null;
-	const nextOnboarding: UserOnboarding = {
-		cigarettesPerDay: typeof updates.cigarettesPerDay === 'number' ? updates.cigarettesPerDay : onboarding?.cigarettesPerDay ?? 20,
-		packPrice: typeof updates.packPrice === 'number' ? updates.packPrice : onboarding?.packPrice ?? 0,
-		cigarettesPerPack: typeof updates.cigarettesPerPack === 'number' ? updates.cigarettesPerPack : onboarding?.cigarettesPerPack ?? 20,
-		quitProgram: updates.quitProgram ?? onboarding?.quitProgram ?? 'minimum',
-		programStartDate: updates.programStartDate !== undefined ? updates.programStartDate : onboarding?.programStartDate ?? new Date(),
-		programTargetDate: updates.programTargetDate !== undefined ? updates.programTargetDate : onboarding?.programTargetDate ?? null,
-		programTargetCigarettes: typeof updates.programTargetCigarettes === 'number' ? updates.programTargetCigarettes : onboarding?.programTargetCigarettes ?? 0,
-		completedAt: onboarding?.completedAt ?? new Date(),
-	};
-
-	await updateDoc(userRef(uid), {
-		onboarding: nextOnboarding,
-		updatedAt: serverTimestamp(),
-	});
-}
-
 export async function addSmokeEntry(uid: string, timestamp = new Date()): Promise<string> {
 	const entries = await fetchAllLogEntries(uid);
-	const previous = [...entries].filter((entry) => entry.timestamp.getTime() <= timestamp.getTime()).sort((left, right) => right.timestamp.getTime() - left.timestamp.getTime())[0] ?? null;
+	const previous =
+		[...entries]
+			.filter((entry) => entry.timestamp.getTime() <= timestamp.getTime())
+			.sort((left, right) => right.timestamp.getTime() - left.timestamp.getTime())[0] ?? null;
 	const logDoc = doc(logsRef(uid));
 	await setDoc(logDoc, {
 		timestamp,
-		intervalSincePrevious: previous ? Math.max(0, Math.round((timestamp.getTime() - previous.timestamp.getTime()) / 1000)) : null,
+		intervalSincePrevious: previous
+			? Math.max(0, Math.round((timestamp.getTime() - previous.timestamp.getTime()) / 1000))
+			: null,
 	});
 
-	const next = [...entries].filter((entry) => entry.timestamp.getTime() > timestamp.getTime()).sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime())[0] ?? null;
+	const next =
+		[...entries]
+			.filter((entry) => entry.timestamp.getTime() > timestamp.getTime())
+			.sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime())[0] ?? null;
 	if (next) {
 		await updateDoc(doc(db, 'users', uid, 'logs', next.id), {
 			intervalSincePrevious: Math.max(0, Math.round((next.timestamp.getTime() - timestamp.getTime()) / 1000)),
 		});
 	}
 
-	await updateUserMetrics(uid, rebuildIntervals([...entries, { id: logDoc.id, timestamp, intervalSincePrevious: null }]));
+	await updateUserMetrics(
+		uid,
+		rebuildIntervals([...entries, { id: logDoc.id, timestamp, intervalSincePrevious: null }]),
+	);
 	return logDoc.id;
 }
 
@@ -610,15 +557,23 @@ export async function deleteLogEntry(uid: string, logId: string): Promise<void> 
 
 	if (next) {
 		batch.update(doc(db, 'users', uid, 'logs', next.id), {
-			intervalSincePrevious: previous ? Math.max(0, Math.round((next.timestamp.getTime() - previous.timestamp.getTime()) / 1000)) : null,
+			intervalSincePrevious: previous
+				? Math.max(0, Math.round((next.timestamp.getTime() - previous.timestamp.getTime()) / 1000))
+				: null,
 		});
 	}
 
 	await batch.commit();
-	await updateUserMetrics(uid, sorted.filter((entry) => entry.id !== logId));
+	await updateUserMetrics(
+		uid,
+		sorted.filter((entry) => entry.id !== logId),
+	);
 }
 
-export async function fetchHistoryPage(uid: string, cursor: HistoryCursor): Promise<{ groups: HistoryDayGroup[]; cursor: HistoryCursor; hasMore: boolean }> {
+export async function fetchHistoryPage(
+	uid: string,
+	cursor: HistoryCursor,
+): Promise<{ groups: HistoryDayGroup[]; cursor: HistoryCursor; hasMore: boolean }> {
 	const groups: HistoryDayGroup[] = [];
 	let lastProcessed: QueryDocumentSnapshot | null = cursor;
 	let nextCursor: QueryDocumentSnapshot | null = cursor;
@@ -674,7 +629,9 @@ export async function fetchHistoryPage(uid: string, cursor: HistoryCursor): Prom
 	return { groups, cursor: nextCursor, hasMore };
 }
 
-export async function exportLogs(uid: string): Promise<{ exportedAt: string; logs: Array<Record<string, string | number | null>> }> {
+export async function exportLogs(
+	uid: string,
+): Promise<{ exportedAt: string; logs: Array<Record<string, string | number | null>> }> {
 	const entries = await fetchAllLogEntries(uid);
 	return {
 		exportedAt: new Date().toISOString(),

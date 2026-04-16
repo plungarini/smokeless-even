@@ -53,6 +53,8 @@ interface GoogleLinkClaimState {
 	lastError?: string;
 }
 
+const persistedGoogleLinkSessionCache = new Map<string, string>();
+
 function storageKey(sourceUid: string): string {
 	return `${GOOGLE_LINK_STORAGE_PREFIX}${sourceUid}`;
 }
@@ -85,11 +87,59 @@ function normalizeSession(
 	};
 }
 
-function writeActiveGooglePairing(session: GoogleLinkPairingSession): void {
-	void bridgeStorageSet(storageKey(session.sourceUid), JSON.stringify(session));
-	if (session.targetGoogleUid) {
-		void bridgeStorageSet(targetStorageKey(session.targetGoogleUid), JSON.stringify(session));
+function getSessionPersistenceSnapshot(session: GoogleLinkPairingSession): string {
+	return JSON.stringify({
+		sessionId: session.sessionId,
+		sourceUid: session.sourceUid,
+		code: session.code,
+		linkUrl: session.linkUrl,
+		expiresAt: session.expiresAt,
+		status: session.status,
+		targetGoogleUid: session.targetGoogleUid ?? null,
+		targetGoogleEmail: session.targetGoogleEmail ?? null,
+		targetGoogleDisplayName: session.targetGoogleDisplayName ?? null,
+		switchErrorAt: session.switchErrorAt ?? null,
+		errorCode: session.errorCode ?? null,
+		errorMessage: session.errorMessage ?? null,
+	});
+}
+
+export function isSameGoogleLinkSession(
+	left: GoogleLinkPairingSession | null,
+	right: GoogleLinkPairingSession | null,
+): boolean {
+	if (left === right) return true;
+	if (!left || !right) return false;
+	return getSessionPersistenceSnapshot(left) === getSessionPersistenceSnapshot(right);
+}
+
+function getPersistedKeys(session: GoogleLinkPairingSession): string[] {
+	return session.targetGoogleUid
+		? [storageKey(session.sourceUid), targetStorageKey(session.targetGoogleUid)]
+		: [storageKey(session.sourceUid)];
+}
+
+function writeBridgeStorageIfChanged(key: string, serialized: string): void {
+	if (persistedGoogleLinkSessionCache.get(key) === serialized) {
+		return;
 	}
+	persistedGoogleLinkSessionCache.set(key, serialized);
+	void bridgeStorageSet(key, serialized);
+}
+
+function writeActiveGooglePairing(session: GoogleLinkPairingSession): void {
+	const serialized = getSessionPersistenceSnapshot(session);
+	for (const key of getPersistedKeys(session)) {
+		writeBridgeStorageIfChanged(key, serialized);
+	}
+}
+
+function didSessionMateriallyChange(
+	current: GoogleLinkPairingSession | null,
+	next: GoogleLinkPairingSession,
+): boolean {
+	if (!current) return true;
+	return getSessionPersistenceSnapshot(current) !== getSessionPersistenceSnapshot(next);
 }
 
 function readStoredSession(raw: string | null): GoogleLinkPairingSession | null {
@@ -127,14 +177,18 @@ function readStoredSession(raw: string | null): GoogleLinkPairingSession | null 
 }
 
 export function clearActiveGooglePairing(sourceUid: string): void {
-	void bridgeStorageRemove(storageKey(sourceUid));
+	const key = storageKey(sourceUid);
+	persistedGoogleLinkSessionCache.delete(key);
+	void bridgeStorageRemove(key);
 }
 
 export function clearGooglePairingSession(session: GoogleLinkPairingSession | null): void {
 	if (!session) return;
 	clearActiveGooglePairing(session.sourceUid);
 	if (session.targetGoogleUid) {
-		void bridgeStorageRemove(targetStorageKey(session.targetGoogleUid));
+		const key = targetStorageKey(session.targetGoogleUid);
+		persistedGoogleLinkSessionCache.delete(key);
+		void bridgeStorageRemove(key);
 	}
 	clearGoogleLinkClaimAttempt(session.sessionId);
 }
@@ -175,9 +229,22 @@ export async function canRetryGoogleLinkClaim(sessionId: string, now = Date.now(
 }
 
 export async function loadActiveGooglePairingAsync(sourceUid: string): Promise<GoogleLinkPairingSession | null> {
-	const direct = readStoredSession(await bridgeStorageGet(storageKey(sourceUid)));
-	if (direct) return direct;
-	return readStoredSession(await bridgeStorageGet(targetStorageKey(sourceUid)));
+	const directKey = storageKey(sourceUid);
+	const direct = readStoredSession(await bridgeStorageGet(directKey));
+	if (direct) {
+		persistedGoogleLinkSessionCache.set(directKey, getSessionPersistenceSnapshot(direct));
+		if (direct.targetGoogleUid) {
+			persistedGoogleLinkSessionCache.set(targetStorageKey(direct.targetGoogleUid), getSessionPersistenceSnapshot(direct));
+		}
+		return direct;
+	}
+	const targetKey = targetStorageKey(sourceUid);
+	const target = readStoredSession(await bridgeStorageGet(targetKey));
+	if (target) {
+		persistedGoogleLinkSessionCache.set(targetKey, getSessionPersistenceSnapshot(target));
+		persistedGoogleLinkSessionCache.set(storageKey(target.sourceUid), getSessionPersistenceSnapshot(target));
+	}
+	return target;
 }
 
 export async function startGooglePairing(sourceUid: string, sourceEvenUid: string): Promise<GoogleLinkPairingSession> {
@@ -200,10 +267,19 @@ export async function startGooglePairing(sourceUid: string, sourceEvenUid: strin
 function mapSessionSnapshot(
 	sourceUid: string,
 	current: GoogleLinkPairingSession | null,
-	value: Record<string, unknown>,
-): GoogleLinkPairingSession {
+	value: Record<string, unknown> | undefined,
+): GoogleLinkPairingSession | null {
+	if (!value) {
+		return current;
+	}
+
+	const sessionId = typeof value.sessionId === 'string' ? value.sessionId : current?.sessionId;
+	if (!sessionId) {
+		return current;
+	}
+
 	const next = normalizeSession(sourceUid, {
-		sessionId: String(value.sessionId ?? current?.sessionId ?? ''),
+		sessionId,
 		code: current?.code ?? '',
 		linkUrl: current?.linkUrl ?? '',
 		expiresAt: toIsoString(value.expiresAt ?? current?.expiresAt ?? new Date()),
@@ -217,18 +293,35 @@ function mapSessionSnapshot(
 		errorCode: typeof value.errorCode === 'string' ? value.errorCode : current?.errorCode,
 		errorMessage: typeof value.errorMessage === 'string' ? value.errorMessage : current?.errorMessage,
 	});
-	writeActiveGooglePairing(next);
+	if (didSessionMateriallyChange(current, next)) {
+		writeActiveGooglePairing(next);
+	}
 	return next;
 }
 
-export async function refreshGooglePairingStatus(current: GoogleLinkPairingSession): Promise<GoogleLinkPairingSession | null> {
-	const snapshot = await getDoc(doc(db, 'googleLinkSessions', current.sessionId));
+export async function refreshGooglePairingStatus(
+	current: GoogleLinkPairingSession,
+	viewerUid?: string | null,
+): Promise<GoogleLinkPairingSession | null> {
+	let snapshot;
+	try {
+		snapshot = await getDoc(doc(db, 'googleLinkSessions', current.sessionId));
+	} catch (error) {
+		if (isGoogleLinkPermissionDeniedError(error)) {
+			if (viewerUid && viewerUid === current.targetGoogleUid && viewerUid !== current.sourceUid) {
+				return current;
+			}
+			clearGooglePairingSession(current);
+			return null;
+		}
+		throw error;
+	}
 	if (!snapshot.exists()) {
 		clearGooglePairingSession(current);
 		return null;
 	}
 
-	return mapSessionSnapshot(current.sourceUid, current, snapshot.data() as Record<string, unknown>);
+	return mapSessionSnapshot(current.sourceUid, current, snapshot.data() as Record<string, unknown> | undefined);
 }
 
 export function watchGooglePairingStatus(
@@ -239,17 +332,34 @@ export function watchGooglePairingStatus(
 		doc(db, 'googleLinkSessions', current.sessionId),
 		(snapshot) => {
 			if (!snapshot.exists()) {
-				clearActiveGooglePairing(current.sourceUid);
+				clearGooglePairingSession(current);
 				onValue(null);
 				return;
 			}
 
-			onValue(mapSessionSnapshot(current.sourceUid, current, snapshot.data() as Record<string, unknown>));
+			onValue(mapSessionSnapshot(current.sourceUid, current, snapshot.data() as Record<string, unknown> | undefined));
 		},
 		() => {
 			onValue(current);
 		},
 	);
+}
+
+function getFirebaseErrorCode(error: unknown): string | null {
+	if (typeof error === 'object' && error !== null && 'code' in error && typeof error.code === 'string') {
+		return error.code;
+	}
+	return null;
+}
+
+export function isGoogleLinkNotFoundError(error: unknown): boolean {
+	const code = getFirebaseErrorCode(error);
+	return code === 'functions/not-found' || code === 'not-found';
+}
+
+export function isGoogleLinkPermissionDeniedError(error: unknown): boolean {
+	const code = getFirebaseErrorCode(error);
+	return code === 'functions/permission-denied' || code === 'permission-denied';
 }
 
 export async function resolveGoogleLinkCode(code: string): Promise<ResolveGoogleLinkCodeResponse> {
@@ -299,6 +409,10 @@ export async function claimReadyGooglePairing(
 			session,
 		};
 	} catch (error) {
+		if (isGoogleLinkNotFoundError(error)) {
+			clearGooglePairingSession(current);
+			throw error;
+		}
 		recordGoogleLinkClaimAttempt(
 			current.sessionId,
 			error instanceof Error ? error.message : 'Could not claim the Google link session.',
@@ -311,7 +425,15 @@ export async function completeGoogleLinkCleanup(
 	current: GoogleLinkPairingSession,
 ): Promise<{ targetUid: string; account: AuthAccountInfo }> {
 	const callable = httpsCallable<{ sessionId: string }, CompleteGoogleLinkCleanupResponse>(functions, 'completeGoogleLinkCleanup');
-	const result = await callable({ sessionId: current.sessionId });
+	let result: Awaited<ReturnType<typeof callable>>;
+	try {
+		result = await callable({ sessionId: current.sessionId });
+	} catch (error) {
+		if (isGoogleLinkNotFoundError(error)) {
+			clearGooglePairingSession(current);
+		}
+		throw error;
+	}
 	clearGoogleLinkClaimAttempt(current.sessionId);
 	clearGooglePairingSession(current);
 	return {

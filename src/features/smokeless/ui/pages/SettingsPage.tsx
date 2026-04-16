@@ -187,13 +187,13 @@ export function SettingsPage({
 											</Button>
 										</div>
 									</>
-								) : googleLinkSession?.status === 'ready_to_switch' && googleLinkSession.targetGoogleEmail ? (
-									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">
-										Ready to switch to <span className="text-text">{googleLinkSession.targetGoogleEmail}</span>
-									</div>
 								) : googleLinkSession?.status === 'ready_to_switch' && googleLinkSession.errorCode === 'custom-token-mint-failed' ? (
 									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">
 										Smokeless is waiting for Firebase Functions IAM permission to mint the switch token.
+									</div>
+								) : googleLinkSession?.status === 'ready_to_switch' && googleLinkSession.targetGoogleEmail ? (
+									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">
+										Ready to switch to <span className="text-text">{googleLinkSession.targetGoogleEmail}</span>
 									</div>
 								) : googleLinkSession?.status === 'migrating' || googleLinkSession?.status === 'switched' || googleLinkSession?.status === 'authorized' ? (
 									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">

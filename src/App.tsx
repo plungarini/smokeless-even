@@ -70,6 +70,8 @@ import {
 	claimReadyGooglePairing,
 	canRetryGoogleLinkClaim,
 	completeGoogleLinkCleanup,
+	isSameGoogleLinkSession,
+	isGoogleLinkNotFoundError,
 	loadGoogleLinkClaimStateAsync,
 	loadActiveGooglePairingAsync,
 	refreshGooglePairingStatus,
@@ -166,6 +168,9 @@ export default function App() {
 	const hudSmokeLockRef = useRef(false);
 	const googleSwitchLockRef = useRef(false);
 	const googleCleanupLockRef = useRef(false);
+	const googleLinkStatusKeyRef = useRef<string | null>(null);
+	const googleLinkErrorKeyRef = useRef<string | null>(null);
+	const googleLinkTerminalKeyRef = useRef<string | null>(null);
 
 	useEffect(() => {
 		const timer = setInterval(() => setClock(Date.now()), 1_000);
@@ -491,6 +496,11 @@ export default function App() {
 				return { targetUid, account, session: switchedSession };
 			} catch (error) {
 				console.error('[Smokeless] google link claim failed', error);
+				if (isGoogleLinkNotFoundError(error)) {
+					clearGooglePairingSession(session);
+					startTransition(() => setGoogleLinkSession(null));
+					return null;
+				}
 				if (options.showToast !== false) {
 					const claimState = await loadGoogleLinkClaimStateAsync(session.sessionId);
 					pushToast(claimState?.lastError || 'Could not finish Google linking');
@@ -518,6 +528,10 @@ export default function App() {
 				return result;
 			} catch (error) {
 				console.error('[Smokeless] google link cleanup failed', error);
+				if (isGoogleLinkNotFoundError(error)) {
+					startTransition(() => setGoogleLinkSession(null));
+					return null;
+				}
 				if (options.showToast !== false) {
 					pushToast('Could not finish Google cleanup');
 				}
@@ -556,26 +570,16 @@ export default function App() {
 			setEvenUser(normalized);
 
 			let firebaseUid = await ensureFirebaseSession();
-			let activeAccount = getCurrentAccountInfo();
+			const activeAccount = getCurrentAccountInfo();
 			let activePairing = await loadActiveGooglePairingAsync(firebaseUid);
 
 			if (activePairing) {
-				activePairing = await refreshGooglePairingStatus(activePairing);
+				activePairing = await refreshGooglePairingStatus(activePairing, firebaseUid);
 				startTransition(() => setGoogleLinkSession(activePairing));
-
-				if (activePairing?.status === 'ready_to_switch' && firebaseUid === activePairing.sourceUid) {
-					const finalized = await claimReadyGoogleLink(activePairing, { showToast: false });
-					if (finalized) {
-						firebaseUid = finalized.targetUid;
-						activeAccount = finalized.account;
-						activePairing = finalized.session;
-					}
-				}
 			} else {
 				startTransition(() => setGoogleLinkSession(null));
 			}
 
-			activeAccount = activeAccount ?? getCurrentAccountInfo();
 			observedAuthUidRef.current = firebaseUid;
 
 			setAccountInfo(activeAccount);
@@ -614,13 +618,6 @@ export default function App() {
 			];
 
 			await refreshDerivedData(firebaseUid, true);
-
-			if (activePairing?.status === 'switched' && firebaseUid === activePairing.targetGoogleUid) {
-				const cleaned = await cleanupSwitchedGoogleLink(activePairing, { showToast: false });
-				if (cleaned) {
-					activePairing = null;
-				}
-			}
 
 			if (activePairing && isTerminalGoogleLinkStatus(activePairing.status)) {
 				clearGooglePairingSession(activePairing);
@@ -673,57 +670,89 @@ export default function App() {
 	}, [bootstrap]);
 
 	useEffect(() => {
-		if (!googleLinkSession) return;
+		if (!googleLinkSession?.sessionId) return;
 
 		return watchGooglePairingStatus(googleLinkSession, (nextSession) => {
-			startTransition(() => setGoogleLinkSession(nextSession));
+			startTransition(() =>
+				setGoogleLinkSession((current) => (isSameGoogleLinkSession(current, nextSession) ? current : nextSession)),
+			);
+		});
+	}, [googleLinkSession?.sessionId, googleLinkSession?.sourceUid]);
 
-			if (!nextSession) {
-				return;
-			}
+	useEffect(() => {
+		if (!googleLinkSession) {
+			googleLinkStatusKeyRef.current = null;
+			googleLinkErrorKeyRef.current = null;
+			googleLinkTerminalKeyRef.current = null;
+			return;
+		}
 
-			if (nextSession.status === 'ready_to_switch') {
-				void (async () => {
-					const currentUid = await ensureFirebaseSession();
-					if (currentUid !== nextSession.sourceUid) return;
-					if (!(await canRetryGoogleLinkClaim(nextSession.sessionId))) return;
-					const finalized = await claimReadyGoogleLink(nextSession);
-					if (!finalized) return;
-					setBootState('booting');
-					await bootstrap();
-				})();
-				return;
-			}
+		const nextStatusKey = [
+			googleLinkSession.sessionId,
+			googleLinkSession.status,
+			googleLinkSession.targetGoogleUid ?? '',
+			googleLinkSession.errorCode ?? '',
+			googleLinkSession.switchErrorAt ?? '',
+		].join(':');
+		const previousStatusKey = googleLinkStatusKeyRef.current;
+		googleLinkStatusKeyRef.current = nextStatusKey;
 
-			if (nextSession.status === 'switched') {
-				void (async () => {
-					const currentUid = await ensureFirebaseSession();
-					if (currentUid !== nextSession.targetGoogleUid) return;
-					const cleaned = await cleanupSwitchedGoogleLink(nextSession);
-					if (!cleaned) return;
-					setBootState('booting');
-					await bootstrap();
-				})();
-				return;
-			}
+		if (googleLinkSession.status === 'ready_to_switch') {
+			void (async () => {
+				const currentUid = await ensureFirebaseSession();
+				if (currentUid !== googleLinkSession.sourceUid) return;
+				const transitionedIntoReady =
+					previousStatusKey === null ||
+					!previousStatusKey.startsWith(`${googleLinkSession.sessionId}:ready_to_switch:`);
+				if (!transitionedIntoReady && !(await canRetryGoogleLinkClaim(googleLinkSession.sessionId))) return;
+				const finalized = await claimReadyGoogleLink(googleLinkSession, { showToast: false });
+				if (!finalized) return;
+				startTransition(() => setBootState('booting'));
+			})();
+		}
 
-			if (nextSession.status === 'expired') {
-				clearGooglePairingSession(nextSession);
-				pushToast('Google link code expired');
-			}
+		if (googleLinkSession.status === 'switched') {
+			void (async () => {
+				const currentUid = await ensureFirebaseSession();
+				if (currentUid !== googleLinkSession.targetGoogleUid) return;
+				const cleaned = await cleanupSwitchedGoogleLink(googleLinkSession, { showToast: false });
+				if (!cleaned) return;
+				startTransition(() => setBootState('booting'));
+				await bootstrap();
+			})();
+		}
 
-			if (nextSession.status === 'failed') {
+		const nextErrorKey =
+			googleLinkSession.errorCode || googleLinkSession.errorMessage
+				? [
+					googleLinkSession.sessionId,
+					googleLinkSession.status,
+					googleLinkSession.errorCode ?? '',
+					googleLinkSession.switchErrorAt ?? '',
+					googleLinkSession.errorMessage ?? '',
+				].join(':')
+				: null;
+		if (nextErrorKey && nextErrorKey !== googleLinkErrorKeyRef.current) {
+			googleLinkErrorKeyRef.current = nextErrorKey;
+			if (googleLinkSession.status === 'failed' || googleLinkSession.errorCode === 'custom-token-mint-failed') {
 				pushToast(
-					nextSession.errorCode === 'custom-token-mint-failed'
+					googleLinkSession.errorCode === 'custom-token-mint-failed'
 						? 'Google account is ready, but Firebase custom token minting is blocked. Check Functions IAM.'
-						: nextSession.errorMessage || 'Google linking failed',
+						: googleLinkSession.errorMessage || 'Google linking failed',
 				);
 			}
+		}
 
-			if (isTerminalGoogleLinkStatus(nextSession.status)) {
-				clearGooglePairingSession(nextSession);
+		if (googleLinkSession.status === 'expired' || isTerminalGoogleLinkStatus(googleLinkSession.status)) {
+			const terminalKey = `${googleLinkSession.sessionId}:${googleLinkSession.status}:${googleLinkSession.errorCode ?? ''}`;
+			if (terminalKey !== googleLinkTerminalKeyRef.current) {
+				googleLinkTerminalKeyRef.current = terminalKey;
+				if (googleLinkSession.status === 'expired') {
+					pushToast('Google link code expired');
+				}
 			}
-		});
+			clearGooglePairingSession(googleLinkSession);
+		}
 	}, [bootstrap, claimReadyGoogleLink, cleanupSwitchedGoogleLink, googleLinkSession, pushToast]);
 
 	const handleOnboardingSubmit = useEffectEvent(async () => {

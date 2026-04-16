@@ -24,6 +24,8 @@ export const claimGoogleLinkSession = onCall(async (request) => {
 	const targetUid = String(session.targetGoogleUid ?? '');
 	const targetGoogleEmail = String(session.targetGoogleEmail ?? '');
 	const targetGoogleDisplayName = String(session.targetGoogleDisplayName ?? '');
+	const existingErrorCode = typeof session.errorCode === 'string' ? session.errorCode : '';
+	const existingErrorMessage = typeof session.errorMessage === 'string' ? session.errorMessage : '';
 
 	if (requestUid !== sourceUid) {
 		throw new HttpsError('permission-denied', 'Only the original Smokeless session can claim this Google link.');
@@ -41,24 +43,32 @@ export const claimGoogleLinkSession = onCall(async (request) => {
 	try {
 		customToken = await adminAuth.createCustomToken(targetUid);
 	} catch (error) {
+		const errorMessage =
+			error instanceof Error
+				? error.message
+				: 'Could not mint a Firebase custom token for the linked Google account.';
+		const nextErrorCode = 'custom-token-mint-failed';
+		const errorChanged = existingErrorCode !== nextErrorCode || existingErrorMessage !== errorMessage;
+
 		await sessionRef(sessionId).set(
 			{
 				status: 'ready_to_switch',
-				errorCode: 'custom-token-mint-failed',
-				errorMessage:
-					error instanceof Error
-						? error.message
-						: 'Could not mint a Firebase custom token for the linked Google account.',
-				switchErrorAt: FieldValue.serverTimestamp(),
+				errorCode: nextErrorCode,
+				errorMessage,
+				...(errorChanged ? { switchErrorAt: FieldValue.serverTimestamp() } : {}),
 				updatedAt: FieldValue.serverTimestamp(),
 			},
 			{ merge: true },
 		);
 
 		logger.error('custom-token-mint-failed', {
+			category: 'custom-token-mint-failed',
 			sessionId,
 			sourceUid,
 			targetUid,
+			projectId: process.env.GCLOUD_PROJECT ?? process.env.GOOGLE_CLOUD_PROJECT ?? null,
+			signerIdentityHint: process.env.GCLOUD_PROJECT ? `${process.env.GCLOUD_PROJECT}@appspot.gserviceaccount.com` : null,
+			errorChanged,
 			error,
 		});
 

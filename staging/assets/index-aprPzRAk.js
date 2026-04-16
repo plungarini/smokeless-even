@@ -1,0 +1,3315 @@
+(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const l of document.querySelectorAll('link[rel="modulepreload"]'))n(l);new MutationObserver(l=>{for(const s of l)if(s.type==="childList")for(const a of s.addedNodes)a.tagName==="LINK"&&a.rel==="modulepreload"&&n(a)}).observe(document,{childList:!0,subtree:!0});function i(l){const s={};return l.integrity&&(s.integrity=l.integrity),l.referrerPolicy&&(s.referrerPolicy=l.referrerPolicy),l.crossOrigin==="use-credentials"?s.credentials="include":l.crossOrigin==="anonymous"?s.credentials="omit":s.credentials="same-origin",s}function n(l){if(l.ep)return;l.ep=!0;const s=i(l);fetch(l.href,s)}})();var kd={exports:{}},ko={};/**
+ * @license React
+ * react-jsx-runtime.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */var jp=Symbol.for("react.transitional.element"),Pp=Symbol.for("react.fragment");function Id(e,t,i){var n=null;if(i!==void 0&&(n=""+i),t.key!==void 0&&(n=""+t.key),"key"in t){i={};for(var l in t)l!=="key"&&(i[l]=t[l])}else i=t;return t=i.ref,{$$typeof:jp,type:e,key:n,ref:t!==void 0?t:null,props:i}}ko.Fragment=Pp;ko.jsx=Id;ko.jsxs=Id;kd.exports=ko;var Y=kd.exports,zd={exports:{}},Io={},Ud={exports:{}},jd={};/**
+ * @license React
+ * scheduler.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */(function(e){function t(D,j){var P=D.length;D.push(j);t:for(;0<P;){var at=P-1>>>1,k=D[at];if(0<l(k,j))D[at]=j,D[P]=k,P=at;else break t}}function i(D){return D.length===0?null:D[0]}function n(D){if(D.length===0)return null;var j=D[0],P=D.pop();if(P!==j){D[0]=P;t:for(var at=0,k=D.length,oi=k>>>1;at<oi;){var Kt=2*(at+1)-1,Zt=D[Kt],Ve=Kt+1,Ht=D[Ve];if(0>l(Zt,P))Ve<k&&0>l(Ht,Zt)?(D[at]=Ht,D[Ve]=P,at=Ve):(D[at]=Zt,D[Kt]=P,at=Kt);else if(Ve<k&&0>l(Ht,P))D[at]=Ht,D[Ve]=P,at=Ve;else break t}}return j}function l(D,j){var P=D.sortIndex-j.sortIndex;return P!==0?P:D.id-j.id}if(e.unstable_now=void 0,typeof performance=="object"&&typeof performance.now=="function"){var s=performance;e.unstable_now=function(){return s.now()}}else{var a=Date,o=a.now();e.unstable_now=function(){return a.now()-o}}var c=[],d=[],v=1,Z=null,V=3,b=!1,C=!1,O=!1,R=!1,w=typeof setTimeout=="function"?setTimeout:null,m=typeof clearTimeout=="function"?clearTimeout:null,_=typeof setImmediate<"u"?setImmediate:null;function A(D){for(var j=i(d);j!==null;){if(j.callback===null)n(d);else if(j.startTime<=D)n(d),j.sortIndex=j.expirationTime,t(c,j);else break;j=i(d)}}function L(D){if(O=!1,A(D),!C)if(i(c)!==null)C=!0,U||(U=!0,E());else{var j=i(d);j!==null&&Ft(L,j.startTime-D)}}var U=!1,p=-1,f=5,g=-1;function M(){return R?!0:!(e.unstable_now()-g<f)}function S(){if(R=!1,U){var D=e.unstable_now();g=D;var j=!0;try{t:{C=!1,O&&(O=!1,m(p),p=-1),b=!0;var P=V;try{e:{for(A(D),Z=i(c);Z!==null&&!(Z.expirationTime>D&&M());){var at=Z.callback;if(typeof at=="function"){Z.callback=null,V=Z.priorityLevel;var k=at(Z.expirationTime<=D);if(D=e.unstable_now(),typeof k=="function"){Z.callback=k,A(D),j=!0;break e}Z===i(c)&&n(c),A(D)}else n(c);Z=i(c)}if(Z!==null)j=!0;else{var oi=i(d);oi!==null&&Ft(L,oi.startTime-D),j=!1}}break t}finally{Z=null,V=P,b=!1}j=void 0}}finally{j?E():U=!1}}}var E;if(typeof _=="function")E=function(){_(S)};else if(typeof MessageChannel<"u"){var y=new MessageChannel,Wt=y.port2;y.port1.onmessage=S,E=function(){Wt.postMessage(null)}}else E=function(){w(S,0)};function Ft(D,j){p=w(function(){D(e.unstable_now())},j)}e.unstable_IdlePriority=5,e.unstable_ImmediatePriority=1,e.unstable_LowPriority=4,e.unstable_NormalPriority=3,e.unstable_Profiling=null,e.unstable_UserBlockingPriority=2,e.unstable_cancelCallback=function(D){D.callback=null},e.unstable_forceFrameRate=function(D){0>D||125<D?console.error("forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"):f=0<D?Math.floor(1e3/D):5},e.unstable_getCurrentPriorityLevel=function(){return V},e.unstable_next=function(D){switch(V){case 1:case 2:case 3:var j=3;break;default:j=V}var P=V;V=j;try{return D()}finally{V=P}},e.unstable_requestPaint=function(){R=!0},e.unstable_runWithPriority=function(D,j){switch(D){case 1:case 2:case 3:case 4:case 5:break;default:D=3}var P=V;V=D;try{return j()}finally{V=P}},e.unstable_scheduleCallback=function(D,j,P){var at=e.unstable_now();switch(typeof P=="object"&&P!==null?(P=P.delay,P=typeof P=="number"&&0<P?at+P:at):P=at,D){case 1:var k=-1;break;case 2:k=250;break;case 5:k=1073741823;break;case 4:k=1e4;break;default:k=5e3}return k=P+k,D={id:v++,callback:j,priorityLevel:D,startTime:P,expirationTime:k,sortIndex:-1},P>at?(D.sortIndex=P,t(d,D),i(c)===null&&D===i(d)&&(O?(m(p),p=-1):O=!0,Ft(L,P-at))):(D.sortIndex=k,t(c,D),C||b||(C=!0,U||(U=!0,E()))),D},e.unstable_shouldYield=M,e.unstable_wrapCallback=function(D){var j=V;return function(){var P=V;V=j;try{return D.apply(this,arguments)}finally{V=P}}}})(jd);Ud.exports=jd;var Gp=Ud.exports,Pd={exports:{}},X={};/**
+ * @license React
+ * react.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */var xc=Symbol.for("react.transitional.element"),qp=Symbol.for("react.portal"),Yp=Symbol.for("react.fragment"),Xp=Symbol.for("react.strict_mode"),Fp=Symbol.for("react.profiler"),Kp=Symbol.for("react.consumer"),Qp=Symbol.for("react.context"),Jp=Symbol.for("react.forward_ref"),$p=Symbol.for("react.suspense"),Wp=Symbol.for("react.memo"),Gd=Symbol.for("react.lazy"),tm=Symbol.for("react.activity"),tf=Symbol.iterator;function em(e){return e===null||typeof e!="object"?null:(e=tf&&e[tf]||e["@@iterator"],typeof e=="function"?e:null)}var qd={isMounted:function(){return!1},enqueueForceUpdate:function(){},enqueueReplaceState:function(){},enqueueSetState:function(){}},Yd=Object.assign,Xd={};function as(e,t,i){this.props=e,this.context=t,this.refs=Xd,this.updater=i||qd}as.prototype.isReactComponent={};as.prototype.setState=function(e,t){if(typeof e!="object"&&typeof e!="function"&&e!=null)throw Error("takes an object of state variables to update or a function which returns an object of state variables.");this.updater.enqueueSetState(this,e,t,"setState")};as.prototype.forceUpdate=function(e){this.updater.enqueueForceUpdate(this,e,"forceUpdate")};function Fd(){}Fd.prototype=as.prototype;function Cc(e,t,i){this.props=e,this.context=t,this.refs=Xd,this.updater=i||qd}var Oc=Cc.prototype=new Fd;Oc.constructor=Cc;Yd(Oc,as.prototype);Oc.isPureReactComponent=!0;var ef=Array.isArray;function yu(){}var Mt={H:null,A:null,T:null,S:null},Kd=Object.prototype.hasOwnProperty;function Nc(e,t,i){var n=i.ref;return{$$typeof:xc,type:e,key:t,ref:n!==void 0?n:null,props:i}}function im(e,t){return Nc(e.type,t,e.props)}function Rc(e){return typeof e=="object"&&e!==null&&e.$$typeof===xc}function nm(e){var t={"=":"=0",":":"=2"};return"$"+e.replace(/[=:]/g,function(i){return t[i]})}var nf=/\/+/g;function A2(e,t){return typeof e=="object"&&e!==null&&e.key!=null?nm(""+e.key):t.toString(36)}function lm(e){switch(e.status){case"fulfilled":return e.value;case"rejected":throw e.reason;default:switch(typeof e.status=="string"?e.then(yu,yu):(e.status="pending",e.then(function(t){e.status==="pending"&&(e.status="fulfilled",e.value=t)},function(t){e.status==="pending"&&(e.status="rejected",e.reason=t)})),e.status){case"fulfilled":return e.value;case"rejected":throw e.reason}}throw e}function yl(e,t,i,n,l){var s=typeof e;(s==="undefined"||s==="boolean")&&(e=null);var a=!1;if(e===null)a=!0;else switch(s){case"bigint":case"string":case"number":a=!0;break;case"object":switch(e.$$typeof){case xc:case qp:a=!0;break;case Gd:return a=e._init,yl(a(e._payload),t,i,n,l)}}if(a)return l=l(e),a=n===""?"."+A2(e,0):n,ef(l)?(i="",a!=null&&(i=a.replace(nf,"$&/")+"/"),yl(l,t,i,"",function(d){return d})):l!=null&&(Rc(l)&&(l=im(l,i+(l.key==null||e&&e.key===l.key?"":(""+l.key).replace(nf,"$&/")+"/")+a)),t.push(l)),1;a=0;var o=n===""?".":n+":";if(ef(e))for(var c=0;c<e.length;c++)n=e[c],s=o+A2(n,c),a+=yl(n,t,i,s,l);else if(c=em(e),typeof c=="function")for(e=c.call(e),c=0;!(n=e.next()).done;)n=n.value,s=o+A2(n,c++),a+=yl(n,t,i,s,l);else if(s==="object"){if(typeof e.then=="function")return yl(lm(e),t,i,n,l);throw t=String(e),Error("Objects are not valid as a React child (found: "+(t==="[object Object]"?"object with keys {"+Object.keys(e).join(", ")+"}":t)+"). If you meant to render a collection of children, use an array instead.")}return a}function oa(e,t,i){if(e==null)return e;var n=[],l=0;return yl(e,n,"","",function(s){return t.call(i,s,l++)}),n}function sm(e){if(e._status===-1){var t=e._result;t=t(),t.then(function(i){(e._status===0||e._status===-1)&&(e._status=1,e._result=i)},function(i){(e._status===0||e._status===-1)&&(e._status=2,e._result=i)}),e._status===-1&&(e._status=0,e._result=t)}if(e._status===1)return e._result.default;throw e._result}var lf=typeof reportError=="function"?reportError:function(e){if(typeof window=="object"&&typeof window.ErrorEvent=="function"){var t=new window.ErrorEvent("error",{bubbles:!0,cancelable:!0,message:typeof e=="object"&&e!==null&&typeof e.message=="string"?String(e.message):String(e),error:e});if(!window.dispatchEvent(t))return}else if(typeof process=="object"&&typeof process.emit=="function"){process.emit("uncaughtException",e);return}console.error(e)},rm={map:oa,forEach:function(e,t,i){oa(e,function(){t.apply(this,arguments)},i)},count:function(e){var t=0;return oa(e,function(){t++}),t},toArray:function(e){return oa(e,function(t){return t})||[]},only:function(e){if(!Rc(e))throw Error("React.Children.only expected to receive a single React element child.");return e}};X.Activity=tm;X.Children=rm;X.Component=as;X.Fragment=Yp;X.Profiler=Fp;X.PureComponent=Cc;X.StrictMode=Xp;X.Suspense=$p;X.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=Mt;X.__COMPILER_RUNTIME={__proto__:null,c:function(e){return Mt.H.useMemoCache(e)}};X.cache=function(e){return function(){return e.apply(null,arguments)}};X.cacheSignal=function(){return null};X.cloneElement=function(e,t,i){if(e==null)throw Error("The argument must be a React element, but you passed "+e+".");var n=Yd({},e.props),l=e.key;if(t!=null)for(s in t.key!==void 0&&(l=""+t.key),t)!Kd.call(t,s)||s==="key"||s==="__self"||s==="__source"||s==="ref"&&t.ref===void 0||(n[s]=t[s]);var s=arguments.length-2;if(s===1)n.children=i;else if(1<s){for(var a=Array(s),o=0;o<s;o++)a[o]=arguments[o+2];n.children=a}return Nc(e.type,l,n)};X.createContext=function(e){return e={$$typeof:Qp,_currentValue:e,_currentValue2:e,_threadCount:0,Provider:null,Consumer:null},e.Provider=e,e.Consumer={$$typeof:Kp,_context:e},e};X.createElement=function(e,t,i){var n,l={},s=null;if(t!=null)for(n in t.key!==void 0&&(s=""+t.key),t)Kd.call(t,n)&&n!=="key"&&n!=="__self"&&n!=="__source"&&(l[n]=t[n]);var a=arguments.length-2;if(a===1)l.children=i;else if(1<a){for(var o=Array(a),c=0;c<a;c++)o[c]=arguments[c+2];l.children=o}if(e&&e.defaultProps)for(n in a=e.defaultProps,a)l[n]===void 0&&(l[n]=a[n]);return Nc(e,s,l)};X.createRef=function(){return{current:null}};X.forwardRef=function(e){return{$$typeof:Jp,render:e}};X.isValidElement=Rc;X.lazy=function(e){return{$$typeof:Gd,_payload:{_status:-1,_result:e},_init:sm}};X.memo=function(e,t){return{$$typeof:Wp,type:e,compare:t===void 0?null:t}};X.startTransition=function(e){var t=Mt.T,i={};Mt.T=i;try{var n=e(),l=Mt.S;l!==null&&l(i,n),typeof n=="object"&&n!==null&&typeof n.then=="function"&&n.then(yu,lf)}catch(s){lf(s)}finally{t!==null&&i.types!==null&&(t.types=i.types),Mt.T=t}};X.unstable_useCacheRefresh=function(){return Mt.H.useCacheRefresh()};X.use=function(e){return Mt.H.use(e)};X.useActionState=function(e,t,i){return Mt.H.useActionState(e,t,i)};X.useCallback=function(e,t){return Mt.H.useCallback(e,t)};X.useContext=function(e){return Mt.H.useContext(e)};X.useDebugValue=function(){};X.useDeferredValue=function(e,t){return Mt.H.useDeferredValue(e,t)};X.useEffect=function(e,t){return Mt.H.useEffect(e,t)};X.useEffectEvent=function(e){return Mt.H.useEffectEvent(e)};X.useId=function(){return Mt.H.useId()};X.useImperativeHandle=function(e,t,i){return Mt.H.useImperativeHandle(e,t,i)};X.useInsertionEffect=function(e,t){return Mt.H.useInsertionEffect(e,t)};X.useLayoutEffect=function(e,t){return Mt.H.useLayoutEffect(e,t)};X.useMemo=function(e,t){return Mt.H.useMemo(e,t)};X.useOptimistic=function(e,t){return Mt.H.useOptimistic(e,t)};X.useReducer=function(e,t,i){return Mt.H.useReducer(e,t,i)};X.useRef=function(e){return Mt.H.useRef(e)};X.useState=function(e){return Mt.H.useState(e)};X.useSyncExternalStore=function(e,t,i){return Mt.H.useSyncExternalStore(e,t,i)};X.useTransition=function(){return Mt.H.useTransition()};X.version="19.2.4";Pd.exports=X;var mt=Pd.exports,Qd={exports:{}},re={};/**
+ * @license React
+ * react-dom.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */var am=mt;function Jd(e){var t="https://react.dev/errors/"+e;if(1<arguments.length){t+="?args[]="+encodeURIComponent(arguments[1]);for(var i=2;i<arguments.length;i++)t+="&args[]="+encodeURIComponent(arguments[i])}return"Minified React error #"+e+"; visit "+t+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function Gi(){}var le={d:{f:Gi,r:function(){throw Error(Jd(522))},D:Gi,C:Gi,L:Gi,m:Gi,X:Gi,S:Gi,M:Gi},p:0,findDOMNode:null},om=Symbol.for("react.portal");function um(e,t,i){var n=3<arguments.length&&arguments[3]!==void 0?arguments[3]:null;return{$$typeof:om,key:n==null?null:""+n,children:e,containerInfo:t,implementation:i}}var Gs=am.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;function zo(e,t){if(e==="font")return"";if(typeof t=="string")return t==="use-credentials"?t:""}re.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE=le;re.createPortal=function(e,t){var i=2<arguments.length&&arguments[2]!==void 0?arguments[2]:null;if(!t||t.nodeType!==1&&t.nodeType!==9&&t.nodeType!==11)throw Error(Jd(299));return um(e,t,null,i)};re.flushSync=function(e){var t=Gs.T,i=le.p;try{if(Gs.T=null,le.p=2,e)return e()}finally{Gs.T=t,le.p=i,le.d.f()}};re.preconnect=function(e,t){typeof e=="string"&&(t?(t=t.crossOrigin,t=typeof t=="string"?t==="use-credentials"?t:"":void 0):t=null,le.d.C(e,t))};re.prefetchDNS=function(e){typeof e=="string"&&le.d.D(e)};re.preinit=function(e,t){if(typeof e=="string"&&t&&typeof t.as=="string"){var i=t.as,n=zo(i,t.crossOrigin),l=typeof t.integrity=="string"?t.integrity:void 0,s=typeof t.fetchPriority=="string"?t.fetchPriority:void 0;i==="style"?le.d.S(e,typeof t.precedence=="string"?t.precedence:void 0,{crossOrigin:n,integrity:l,fetchPriority:s}):i==="script"&&le.d.X(e,{crossOrigin:n,integrity:l,fetchPriority:s,nonce:typeof t.nonce=="string"?t.nonce:void 0})}};re.preinitModule=function(e,t){if(typeof e=="string")if(typeof t=="object"&&t!==null){if(t.as==null||t.as==="script"){var i=zo(t.as,t.crossOrigin);le.d.M(e,{crossOrigin:i,integrity:typeof t.integrity=="string"?t.integrity:void 0,nonce:typeof t.nonce=="string"?t.nonce:void 0})}}else t==null&&le.d.M(e)};re.preload=function(e,t){if(typeof e=="string"&&typeof t=="object"&&t!==null&&typeof t.as=="string"){var i=t.as,n=zo(i,t.crossOrigin);le.d.L(e,i,{crossOrigin:n,integrity:typeof t.integrity=="string"?t.integrity:void 0,nonce:typeof t.nonce=="string"?t.nonce:void 0,type:typeof t.type=="string"?t.type:void 0,fetchPriority:typeof t.fetchPriority=="string"?t.fetchPriority:void 0,referrerPolicy:typeof t.referrerPolicy=="string"?t.referrerPolicy:void 0,imageSrcSet:typeof t.imageSrcSet=="string"?t.imageSrcSet:void 0,imageSizes:typeof t.imageSizes=="string"?t.imageSizes:void 0,media:typeof t.media=="string"?t.media:void 0})}};re.preloadModule=function(e,t){if(typeof e=="string")if(t){var i=zo(t.as,t.crossOrigin);le.d.m(e,{as:typeof t.as=="string"&&t.as!=="script"?t.as:void 0,crossOrigin:i,integrity:typeof t.integrity=="string"?t.integrity:void 0})}else le.d.m(e)};re.requestFormReset=function(e){le.d.r(e)};re.unstable_batchedUpdates=function(e,t){return e(t)};re.useFormState=function(e,t,i){return Gs.H.useFormState(e,t,i)};re.useFormStatus=function(){return Gs.H.useHostTransitionStatus()};re.version="19.2.4";function $d(){if(!(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__>"u"||typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE!="function"))try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE($d)}catch(e){console.error(e)}}$d(),Qd.exports=re;var cm=Qd.exports;/**
+ * @license React
+ * react-dom-client.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */var Lt=Gp,Wd=mt,hm=cm;function N(e){var t="https://react.dev/errors/"+e;if(1<arguments.length){t+="?args[]="+encodeURIComponent(arguments[1]);for(var i=2;i<arguments.length;i++)t+="&args[]="+encodeURIComponent(arguments[i])}return"Minified React error #"+e+"; visit "+t+" for the full message or use the non-minified dev environment for full errors and additional helpful warnings."}function tH(e){return!(!e||e.nodeType!==1&&e.nodeType!==9&&e.nodeType!==11)}function Tr(e){var t=e,i=e;if(e.alternate)for(;t.return;)t=t.return;else{e=t;do t=e,t.flags&4098&&(i=t.return),e=t.return;while(e)}return t.tag===3?i:null}function eH(e){if(e.tag===13){var t=e.memoizedState;if(t===null&&(e=e.alternate,e!==null&&(t=e.memoizedState)),t!==null)return t.dehydrated}return null}function iH(e){if(e.tag===31){var t=e.memoizedState;if(t===null&&(e=e.alternate,e!==null&&(t=e.memoizedState)),t!==null)return t.dehydrated}return null}function sf(e){if(Tr(e)!==e)throw Error(N(188))}function fm(e){var t=e.alternate;if(!t){if(t=Tr(e),t===null)throw Error(N(188));return t!==e?null:e}for(var i=e,n=t;;){var l=i.return;if(l===null)break;var s=l.alternate;if(s===null){if(n=l.return,n!==null){i=n;continue}break}if(l.child===s.child){for(s=l.child;s;){if(s===i)return sf(l),e;if(s===n)return sf(l),t;s=s.sibling}throw Error(N(188))}if(i.return!==n.return)i=l,n=s;else{for(var a=!1,o=l.child;o;){if(o===i){a=!0,i=l,n=s;break}if(o===n){a=!0,n=l,i=s;break}o=o.sibling}if(!a){for(o=s.child;o;){if(o===i){a=!0,i=s,n=l;break}if(o===n){a=!0,n=s,i=l;break}o=o.sibling}if(!a)throw Error(N(189))}}if(i.alternate!==n)throw Error(N(190))}if(i.tag!==3)throw Error(N(188));return i.stateNode.current===i?e:t}function nH(e){var t=e.tag;if(t===5||t===26||t===27||t===6)return e;for(e=e.child;e!==null;){if(t=nH(e),t!==null)return t;e=e.sibling}return null}var yt=Object.assign,dm=Symbol.for("react.element"),ua=Symbol.for("react.transitional.element"),Is=Symbol.for("react.portal"),_l=Symbol.for("react.fragment"),lH=Symbol.for("react.strict_mode"),wu=Symbol.for("react.profiler"),sH=Symbol.for("react.consumer"),Zi=Symbol.for("react.context"),Bc=Symbol.for("react.forward_ref"),Zu=Symbol.for("react.suspense"),_u=Symbol.for("react.suspense_list"),Dc=Symbol.for("react.memo"),Ki=Symbol.for("react.lazy"),bu=Symbol.for("react.activity"),Hm=Symbol.for("react.memo_cache_sentinel"),rf=Symbol.iterator;function Cs(e){return e===null||typeof e!="object"?null:(e=rf&&e[rf]||e["@@iterator"],typeof e=="function"?e:null)}var Vm=Symbol.for("react.client.reference");function Su(e){if(e==null)return null;if(typeof e=="function")return e.$$typeof===Vm?null:e.displayName||e.name||null;if(typeof e=="string")return e;switch(e){case _l:return"Fragment";case wu:return"Profiler";case lH:return"StrictMode";case Zu:return"Suspense";case _u:return"SuspenseList";case bu:return"Activity"}if(typeof e=="object")switch(e.$$typeof){case Is:return"Portal";case Zi:return e.displayName||"Context";case sH:return(e._context.displayName||"Context")+".Consumer";case Bc:var t=e.render;return e=e.displayName,e||(e=t.displayName||t.name||"",e=e!==""?"ForwardRef("+e+")":"ForwardRef"),e;case Dc:return t=e.displayName||null,t!==null?t:Su(e.type)||"Memo";case Ki:t=e._payload,e=e._init;try{return Su(e(t))}catch{}}return null}var zs=Array.isArray,G=Wd.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,st=hm.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE,Yn={pending:!1,data:null,method:null,action:null},Eu=[],bl=-1;function si(e){return{current:e}}function zt(e){0>bl||(e.current=Eu[bl],Eu[bl]=null,bl--)}function Vt(e,t){bl++,Eu[bl]=e.current,e.current=t}var ei=si(null),ur=si(null),cn=si(null),Qa=si(null);function Ja(e,t){switch(Vt(cn,t),Vt(ur,e),Vt(ei,null),t.nodeType){case 9:case 11:e=(e=t.documentElement)&&(e=e.namespaceURI)?f0(e):0;break;default:if(e=t.tagName,t=t.namespaceURI)t=f0(t),e=bg(t,e);else switch(e){case"svg":e=1;break;case"math":e=2;break;default:e=0}}zt(ei),Vt(ei,e)}function Xl(){zt(ei),zt(ur),zt(cn)}function Tu(e){e.memoizedState!==null&&Vt(Qa,e);var t=ei.current,i=bg(t,e.type);t!==i&&(Vt(ur,e),Vt(ei,i))}function $a(e){ur.current===e&&(zt(ei),zt(ur)),Qa.current===e&&(zt(Qa),Mr._currentValue=Yn)}var x2,af;function kn(e){if(x2===void 0)try{throw Error()}catch(i){var t=i.stack.trim().match(/\n( *(at )?)/);x2=t&&t[1]||"",af=-1<i.stack.indexOf(`
+    at`)?" (<anonymous>)":-1<i.stack.indexOf("@")?"@unknown:0:0":""}return`
+`+x2+e+af}var C2=!1;function O2(e,t){if(!e||C2)return"";C2=!0;var i=Error.prepareStackTrace;Error.prepareStackTrace=void 0;try{var n={DetermineComponentFrameRoot:function(){try{if(t){var Z=function(){throw Error()};if(Object.defineProperty(Z.prototype,"props",{set:function(){throw Error()}}),typeof Reflect=="object"&&Reflect.construct){try{Reflect.construct(Z,[])}catch(b){var V=b}Reflect.construct(e,[],Z)}else{try{Z.call()}catch(b){V=b}e.call(Z.prototype)}}else{try{throw Error()}catch(b){V=b}(Z=e())&&typeof Z.catch=="function"&&Z.catch(function(){})}}catch(b){if(b&&V&&typeof b.stack=="string")return[b.stack,V.stack]}return[null,null]}};n.DetermineComponentFrameRoot.displayName="DetermineComponentFrameRoot";var l=Object.getOwnPropertyDescriptor(n.DetermineComponentFrameRoot,"name");l&&l.configurable&&Object.defineProperty(n.DetermineComponentFrameRoot,"name",{value:"DetermineComponentFrameRoot"});var s=n.DetermineComponentFrameRoot(),a=s[0],o=s[1];if(a&&o){var c=a.split(`
+`),d=o.split(`
+`);for(l=n=0;n<c.length&&!c[n].includes("DetermineComponentFrameRoot");)n++;for(;l<d.length&&!d[l].includes("DetermineComponentFrameRoot");)l++;if(n===c.length||l===d.length)for(n=c.length-1,l=d.length-1;1<=n&&0<=l&&c[n]!==d[l];)l--;for(;1<=n&&0<=l;n--,l--)if(c[n]!==d[l]){if(n!==1||l!==1)do if(n--,l--,0>l||c[n]!==d[l]){var v=`
+`+c[n].replace(" at new "," at ");return e.displayName&&v.includes("<anonymous>")&&(v=v.replace("<anonymous>",e.displayName)),v}while(1<=n&&0<=l);break}}}finally{C2=!1,Error.prepareStackTrace=i}return(i=e?e.displayName||e.name:"")?kn(i):""}function gm(e,t){switch(e.tag){case 26:case 27:case 5:return kn(e.type);case 16:return kn("Lazy");case 13:return e.child!==t&&t!==null?kn("Suspense Fallback"):kn("Suspense");case 19:return kn("SuspenseList");case 0:case 15:return O2(e.type,!1);case 11:return O2(e.type.render,!1);case 1:return O2(e.type,!0);case 31:return kn("Activity");default:return""}}function of(e){try{var t="",i=null;do t+=gm(e,i),i=e,e=e.return;while(e);return t}catch(n){return`
+Error generating stack: `+n.message+`
+`+n.stack}}var Au=Object.prototype.hasOwnProperty,Lc=Lt.unstable_scheduleCallback,N2=Lt.unstable_cancelCallback,pm=Lt.unstable_shouldYield,mm=Lt.unstable_requestPaint,ye=Lt.unstable_now,vm=Lt.unstable_getCurrentPriorityLevel,rH=Lt.unstable_ImmediatePriority,aH=Lt.unstable_UserBlockingPriority,Wa=Lt.unstable_NormalPriority,Mm=Lt.unstable_LowPriority,oH=Lt.unstable_IdlePriority,ym=Lt.log,wm=Lt.unstable_setDisableYieldValue,Ar=null,we=null;function sn(e){if(typeof ym=="function"&&wm(e),we&&typeof we.setStrictMode=="function")try{we.setStrictMode(Ar,e)}catch{}}var Ze=Math.clz32?Math.clz32:bm,Zm=Math.log,_m=Math.LN2;function bm(e){return e>>>=0,e===0?32:31-(Zm(e)/_m|0)|0}var ca=256,ha=262144,fa=4194304;function In(e){var t=e&42;if(t!==0)return t;switch(e&-e){case 1:return 1;case 2:return 2;case 4:return 4;case 8:return 8;case 16:return 16;case 32:return 32;case 64:return 64;case 128:return 128;case 256:case 512:case 1024:case 2048:case 4096:case 8192:case 16384:case 32768:case 65536:case 131072:return e&261888;case 262144:case 524288:case 1048576:case 2097152:return e&3932160;case 4194304:case 8388608:case 16777216:case 33554432:return e&62914560;case 67108864:return 67108864;case 134217728:return 134217728;case 268435456:return 268435456;case 536870912:return 536870912;case 1073741824:return 0;default:return e}}function Uo(e,t,i){var n=e.pendingLanes;if(n===0)return 0;var l=0,s=e.suspendedLanes,a=e.pingedLanes;e=e.warmLanes;var o=n&134217727;return o!==0?(n=o&~s,n!==0?l=In(n):(a&=o,a!==0?l=In(a):i||(i=o&~e,i!==0&&(l=In(i))))):(o=n&~s,o!==0?l=In(o):a!==0?l=In(a):i||(i=n&~e,i!==0&&(l=In(i)))),l===0?0:t!==0&&t!==l&&!(t&s)&&(s=l&-l,i=t&-t,s>=i||s===32&&(i&4194048)!==0)?t:l}function xr(e,t){return(e.pendingLanes&~(e.suspendedLanes&~e.pingedLanes)&t)===0}function Sm(e,t){switch(e){case 1:case 2:case 4:case 8:case 64:return t+250;case 16:case 32:case 128:case 256:case 512:case 1024:case 2048:case 4096:case 8192:case 16384:case 32768:case 65536:case 131072:case 262144:case 524288:case 1048576:case 2097152:return t+5e3;case 4194304:case 8388608:case 16777216:case 33554432:return-1;case 67108864:case 134217728:case 268435456:case 536870912:case 1073741824:return-1;default:return-1}}function uH(){var e=fa;return fa<<=1,!(fa&62914560)&&(fa=4194304),e}function R2(e){for(var t=[],i=0;31>i;i++)t.push(e);return t}function Cr(e,t){e.pendingLanes|=t,t!==268435456&&(e.suspendedLanes=0,e.pingedLanes=0,e.warmLanes=0)}function Em(e,t,i,n,l,s){var a=e.pendingLanes;e.pendingLanes=i,e.suspendedLanes=0,e.pingedLanes=0,e.warmLanes=0,e.expiredLanes&=i,e.entangledLanes&=i,e.errorRecoveryDisabledLanes&=i,e.shellSuspendCounter=0;var o=e.entanglements,c=e.expirationTimes,d=e.hiddenUpdates;for(i=a&~i;0<i;){var v=31-Ze(i),Z=1<<v;o[v]=0,c[v]=-1;var V=d[v];if(V!==null)for(d[v]=null,v=0;v<V.length;v++){var b=V[v];b!==null&&(b.lane&=-536870913)}i&=~Z}n!==0&&cH(e,n,0),s!==0&&l===0&&e.tag!==0&&(e.suspendedLanes|=s&~(a&~t))}function cH(e,t,i){e.pendingLanes|=t,e.suspendedLanes&=~t;var n=31-Ze(t);e.entangledLanes|=t,e.entanglements[n]=e.entanglements[n]|1073741824|i&261930}function hH(e,t){var i=e.entangledLanes|=t;for(e=e.entanglements;i;){var n=31-Ze(i),l=1<<n;l&t|e[n]&t&&(e[n]|=t),i&=~l}}function fH(e,t){var i=t&-t;return i=i&42?1:kc(i),i&(e.suspendedLanes|t)?0:i}function kc(e){switch(e){case 2:e=1;break;case 8:e=4;break;case 32:e=16;break;case 256:case 512:case 1024:case 2048:case 4096:case 8192:case 16384:case 32768:case 65536:case 131072:case 262144:case 524288:case 1048576:case 2097152:case 4194304:case 8388608:case 16777216:case 33554432:e=128;break;case 268435456:e=134217728;break;default:e=0}return e}function Ic(e){return e&=-e,2<e?8<e?e&134217727?32:268435456:8:2}function dH(){var e=st.p;return e!==0?e:(e=window.event,e===void 0?32:Dg(e.type))}function uf(e,t){var i=st.p;try{return st.p=e,t()}finally{st.p=i}}var Tn=Math.random().toString(36).slice(2),Gt="__reactFiber$"+Tn,de="__reactProps$"+Tn,os="__reactContainer$"+Tn,xu="__reactEvents$"+Tn,Tm="__reactListeners$"+Tn,Am="__reactHandles$"+Tn,cf="__reactResources$"+Tn,Or="__reactMarker$"+Tn;function zc(e){delete e[Gt],delete e[de],delete e[xu],delete e[Tm],delete e[Am]}function Sl(e){var t=e[Gt];if(t)return t;for(var i=e.parentNode;i;){if(t=i[os]||i[Gt]){if(i=t.alternate,t.child!==null||i!==null&&i.child!==null)for(e=p0(e);e!==null;){if(i=e[Gt])return i;e=p0(e)}return t}e=i,i=e.parentNode}return null}function us(e){if(e=e[Gt]||e[os]){var t=e.tag;if(t===5||t===6||t===13||t===31||t===26||t===27||t===3)return e}return null}function Us(e){var t=e.tag;if(t===5||t===26||t===27||t===6)return e.stateNode;throw Error(N(33))}function Dl(e){var t=e[cf];return t||(t=e[cf]={hoistableStyles:new Map,hoistableScripts:new Map}),t}function It(e){e[Or]=!0}var HH=new Set,VH={};function al(e,t){Fl(e,t),Fl(e+"Capture",t)}function Fl(e,t){for(VH[e]=t,e=0;e<t.length;e++)HH.add(t[e])}var xm=RegExp("^[:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD][:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$"),hf={},ff={};function Cm(e){return Au.call(ff,e)?!0:Au.call(hf,e)?!1:xm.test(e)?ff[e]=!0:(hf[e]=!0,!1)}function xa(e,t,i){if(Cm(t))if(i===null)e.removeAttribute(t);else{switch(typeof i){case"undefined":case"function":case"symbol":e.removeAttribute(t);return;case"boolean":var n=t.toLowerCase().slice(0,5);if(n!=="data-"&&n!=="aria-"){e.removeAttribute(t);return}}e.setAttribute(t,""+i)}}function da(e,t,i){if(i===null)e.removeAttribute(t);else{switch(typeof i){case"undefined":case"function":case"symbol":case"boolean":e.removeAttribute(t);return}e.setAttribute(t,""+i)}}function di(e,t,i,n){if(n===null)e.removeAttribute(i);else{switch(typeof n){case"undefined":case"function":case"symbol":case"boolean":e.removeAttribute(i);return}e.setAttributeNS(t,i,""+n)}}function xe(e){switch(typeof e){case"bigint":case"boolean":case"number":case"string":case"undefined":return e;case"object":return e;default:return""}}function gH(e){var t=e.type;return(e=e.nodeName)&&e.toLowerCase()==="input"&&(t==="checkbox"||t==="radio")}function Om(e,t,i){var n=Object.getOwnPropertyDescriptor(e.constructor.prototype,t);if(!e.hasOwnProperty(t)&&typeof n<"u"&&typeof n.get=="function"&&typeof n.set=="function"){var l=n.get,s=n.set;return Object.defineProperty(e,t,{configurable:!0,get:function(){return l.call(this)},set:function(a){i=""+a,s.call(this,a)}}),Object.defineProperty(e,t,{enumerable:n.enumerable}),{getValue:function(){return i},setValue:function(a){i=""+a},stopTracking:function(){e._valueTracker=null,delete e[t]}}}}function Cu(e){if(!e._valueTracker){var t=gH(e)?"checked":"value";e._valueTracker=Om(e,t,""+e[t])}}function pH(e){if(!e)return!1;var t=e._valueTracker;if(!t)return!0;var i=t.getValue(),n="";return e&&(n=gH(e)?e.checked?"true":"false":e.value),e=n,e!==i?(t.setValue(e),!0):!1}function to(e){if(e=e||(typeof document<"u"?document:void 0),typeof e>"u")return null;try{return e.activeElement||e.body}catch{return e.body}}var Nm=/[\n"\\]/g;function Ne(e){return e.replace(Nm,function(t){return"\\"+t.charCodeAt(0).toString(16)+" "})}function Ou(e,t,i,n,l,s,a,o){e.name="",a!=null&&typeof a!="function"&&typeof a!="symbol"&&typeof a!="boolean"?e.type=a:e.removeAttribute("type"),t!=null?a==="number"?(t===0&&e.value===""||e.value!=t)&&(e.value=""+xe(t)):e.value!==""+xe(t)&&(e.value=""+xe(t)):a!=="submit"&&a!=="reset"||e.removeAttribute("value"),t!=null?Nu(e,a,xe(t)):i!=null?Nu(e,a,xe(i)):n!=null&&e.removeAttribute("value"),l==null&&s!=null&&(e.defaultChecked=!!s),l!=null&&(e.checked=l&&typeof l!="function"&&typeof l!="symbol"),o!=null&&typeof o!="function"&&typeof o!="symbol"&&typeof o!="boolean"?e.name=""+xe(o):e.removeAttribute("name")}function mH(e,t,i,n,l,s,a,o){if(s!=null&&typeof s!="function"&&typeof s!="symbol"&&typeof s!="boolean"&&(e.type=s),t!=null||i!=null){if(!(s!=="submit"&&s!=="reset"||t!=null)){Cu(e);return}i=i!=null?""+xe(i):"",t=t!=null?""+xe(t):i,o||t===e.value||(e.value=t),e.defaultValue=t}n=n??l,n=typeof n!="function"&&typeof n!="symbol"&&!!n,e.checked=o?e.checked:!!n,e.defaultChecked=!!n,a!=null&&typeof a!="function"&&typeof a!="symbol"&&typeof a!="boolean"&&(e.name=a),Cu(e)}function Nu(e,t,i){t==="number"&&to(e.ownerDocument)===e||e.defaultValue===""+i||(e.defaultValue=""+i)}function Ll(e,t,i,n){if(e=e.options,t){t={};for(var l=0;l<i.length;l++)t["$"+i[l]]=!0;for(i=0;i<e.length;i++)l=t.hasOwnProperty("$"+e[i].value),e[i].selected!==l&&(e[i].selected=l),l&&n&&(e[i].defaultSelected=!0)}else{for(i=""+xe(i),t=null,l=0;l<e.length;l++){if(e[l].value===i){e[l].selected=!0,n&&(e[l].defaultSelected=!0);return}t!==null||e[l].disabled||(t=e[l])}t!==null&&(t.selected=!0)}}function vH(e,t,i){if(t!=null&&(t=""+xe(t),t!==e.value&&(e.value=t),i==null)){e.defaultValue!==t&&(e.defaultValue=t);return}e.defaultValue=i!=null?""+xe(i):""}function MH(e,t,i,n){if(t==null){if(n!=null){if(i!=null)throw Error(N(92));if(zs(n)){if(1<n.length)throw Error(N(93));n=n[0]}i=n}i==null&&(i=""),t=i}i=xe(t),e.defaultValue=i,n=e.textContent,n===i&&n!==""&&n!==null&&(e.value=n),Cu(e)}function Kl(e,t){if(t){var i=e.firstChild;if(i&&i===e.lastChild&&i.nodeType===3){i.nodeValue=t;return}}e.textContent=t}var Rm=new Set("animationIterationCount aspectRatio borderImageOutset borderImageSlice borderImageWidth boxFlex boxFlexGroup boxOrdinalGroup columnCount columns flex flexGrow flexPositive flexShrink flexNegative flexOrder gridArea gridRow gridRowEnd gridRowSpan gridRowStart gridColumn gridColumnEnd gridColumnSpan gridColumnStart fontWeight lineClamp lineHeight opacity order orphans scale tabSize widows zIndex zoom fillOpacity floodOpacity stopOpacity strokeDasharray strokeDashoffset strokeMiterlimit strokeOpacity strokeWidth MozAnimationIterationCount MozBoxFlex MozBoxFlexGroup MozLineClamp msAnimationIterationCount msFlex msZoom msFlexGrow msFlexNegative msFlexOrder msFlexPositive msFlexShrink msGridColumn msGridColumnSpan msGridRow msGridRowSpan WebkitAnimationIterationCount WebkitBoxFlex WebKitBoxFlexGroup WebkitBoxOrdinalGroup WebkitColumnCount WebkitColumns WebkitFlex WebkitFlexGrow WebkitFlexPositive WebkitFlexShrink WebkitLineClamp".split(" "));function df(e,t,i){var n=t.indexOf("--")===0;i==null||typeof i=="boolean"||i===""?n?e.setProperty(t,""):t==="float"?e.cssFloat="":e[t]="":n?e.setProperty(t,i):typeof i!="number"||i===0||Rm.has(t)?t==="float"?e.cssFloat=i:e[t]=(""+i).trim():e[t]=i+"px"}function yH(e,t,i){if(t!=null&&typeof t!="object")throw Error(N(62));if(e=e.style,i!=null){for(var n in i)!i.hasOwnProperty(n)||t!=null&&t.hasOwnProperty(n)||(n.indexOf("--")===0?e.setProperty(n,""):n==="float"?e.cssFloat="":e[n]="");for(var l in t)n=t[l],t.hasOwnProperty(l)&&i[l]!==n&&df(e,l,n)}else for(var s in t)t.hasOwnProperty(s)&&df(e,s,t[s])}function Uc(e){if(e.indexOf("-")===-1)return!1;switch(e){case"annotation-xml":case"color-profile":case"font-face":case"font-face-src":case"font-face-uri":case"font-face-format":case"font-face-name":case"missing-glyph":return!1;default:return!0}}var Bm=new Map([["acceptCharset","accept-charset"],["htmlFor","for"],["httpEquiv","http-equiv"],["crossOrigin","crossorigin"],["accentHeight","accent-height"],["alignmentBaseline","alignment-baseline"],["arabicForm","arabic-form"],["baselineShift","baseline-shift"],["capHeight","cap-height"],["clipPath","clip-path"],["clipRule","clip-rule"],["colorInterpolation","color-interpolation"],["colorInterpolationFilters","color-interpolation-filters"],["colorProfile","color-profile"],["colorRendering","color-rendering"],["dominantBaseline","dominant-baseline"],["enableBackground","enable-background"],["fillOpacity","fill-opacity"],["fillRule","fill-rule"],["floodColor","flood-color"],["floodOpacity","flood-opacity"],["fontFamily","font-family"],["fontSize","font-size"],["fontSizeAdjust","font-size-adjust"],["fontStretch","font-stretch"],["fontStyle","font-style"],["fontVariant","font-variant"],["fontWeight","font-weight"],["glyphName","glyph-name"],["glyphOrientationHorizontal","glyph-orientation-horizontal"],["glyphOrientationVertical","glyph-orientation-vertical"],["horizAdvX","horiz-adv-x"],["horizOriginX","horiz-origin-x"],["imageRendering","image-rendering"],["letterSpacing","letter-spacing"],["lightingColor","lighting-color"],["markerEnd","marker-end"],["markerMid","marker-mid"],["markerStart","marker-start"],["overlinePosition","overline-position"],["overlineThickness","overline-thickness"],["paintOrder","paint-order"],["panose-1","panose-1"],["pointerEvents","pointer-events"],["renderingIntent","rendering-intent"],["shapeRendering","shape-rendering"],["stopColor","stop-color"],["stopOpacity","stop-opacity"],["strikethroughPosition","strikethrough-position"],["strikethroughThickness","strikethrough-thickness"],["strokeDasharray","stroke-dasharray"],["strokeDashoffset","stroke-dashoffset"],["strokeLinecap","stroke-linecap"],["strokeLinejoin","stroke-linejoin"],["strokeMiterlimit","stroke-miterlimit"],["strokeOpacity","stroke-opacity"],["strokeWidth","stroke-width"],["textAnchor","text-anchor"],["textDecoration","text-decoration"],["textRendering","text-rendering"],["transformOrigin","transform-origin"],["underlinePosition","underline-position"],["underlineThickness","underline-thickness"],["unicodeBidi","unicode-bidi"],["unicodeRange","unicode-range"],["unitsPerEm","units-per-em"],["vAlphabetic","v-alphabetic"],["vHanging","v-hanging"],["vIdeographic","v-ideographic"],["vMathematical","v-mathematical"],["vectorEffect","vector-effect"],["vertAdvY","vert-adv-y"],["vertOriginX","vert-origin-x"],["vertOriginY","vert-origin-y"],["wordSpacing","word-spacing"],["writingMode","writing-mode"],["xmlnsXlink","xmlns:xlink"],["xHeight","x-height"]]),Dm=/^[\u0000-\u001F ]*j[\r\n\t]*a[\r\n\t]*v[\r\n\t]*a[\r\n\t]*s[\r\n\t]*c[\r\n\t]*r[\r\n\t]*i[\r\n\t]*p[\r\n\t]*t[\r\n\t]*:/i;function Ca(e){return Dm.test(""+e)?"javascript:throw new Error('React has blocked a javascript: URL as a security precaution.')":e}function _i(){}var Ru=null;function jc(e){return e=e.target||e.srcElement||window,e.correspondingUseElement&&(e=e.correspondingUseElement),e.nodeType===3?e.parentNode:e}var El=null,kl=null;function Hf(e){var t=us(e);if(t&&(e=t.stateNode)){var i=e[de]||null;t:switch(e=t.stateNode,t.type){case"input":if(Ou(e,i.value,i.defaultValue,i.defaultValue,i.checked,i.defaultChecked,i.type,i.name),t=i.name,i.type==="radio"&&t!=null){for(i=e;i.parentNode;)i=i.parentNode;for(i=i.querySelectorAll('input[name="'+Ne(""+t)+'"][type="radio"]'),t=0;t<i.length;t++){var n=i[t];if(n!==e&&n.form===e.form){var l=n[de]||null;if(!l)throw Error(N(90));Ou(n,l.value,l.defaultValue,l.defaultValue,l.checked,l.defaultChecked,l.type,l.name)}}for(t=0;t<i.length;t++)n=i[t],n.form===e.form&&pH(n)}break t;case"textarea":vH(e,i.value,i.defaultValue);break t;case"select":t=i.value,t!=null&&Ll(e,!!i.multiple,t,!1)}}}var B2=!1;function wH(e,t,i){if(B2)return e(t,i);B2=!0;try{var n=e(t);return n}finally{if(B2=!1,(El!==null||kl!==null)&&(Wo(),El&&(t=El,e=kl,kl=El=null,Hf(t),e)))for(t=0;t<e.length;t++)Hf(e[t])}}function cr(e,t){var i=e.stateNode;if(i===null)return null;var n=i[de]||null;if(n===null)return null;i=n[t];t:switch(t){case"onClick":case"onClickCapture":case"onDoubleClick":case"onDoubleClickCapture":case"onMouseDown":case"onMouseDownCapture":case"onMouseMove":case"onMouseMoveCapture":case"onMouseUp":case"onMouseUpCapture":case"onMouseEnter":(n=!n.disabled)||(e=e.type,n=!(e==="button"||e==="input"||e==="select"||e==="textarea")),e=!n;break t;default:e=!1}if(e)return null;if(i&&typeof i!="function")throw Error(N(231,t,typeof i));return i}var Ci=!(typeof window>"u"||typeof window.document>"u"||typeof window.document.createElement>"u"),Bu=!1;if(Ci)try{var Os={};Object.defineProperty(Os,"passive",{get:function(){Bu=!0}}),window.addEventListener("test",Os,Os),window.removeEventListener("test",Os,Os)}catch{Bu=!1}var rn=null,Pc=null,Oa=null;function ZH(){if(Oa)return Oa;var e,t=Pc,i=t.length,n,l="value"in rn?rn.value:rn.textContent,s=l.length;for(e=0;e<i&&t[e]===l[e];e++);var a=i-e;for(n=1;n<=a&&t[i-n]===l[s-n];n++);return Oa=l.slice(e,1<n?1-n:void 0)}function Na(e){var t=e.keyCode;return"charCode"in e?(e=e.charCode,e===0&&t===13&&(e=13)):e=t,e===10&&(e=13),32<=e||e===13?e:0}function Ha(){return!0}function Vf(){return!1}function He(e){function t(i,n,l,s,a){this._reactName=i,this._targetInst=l,this.type=n,this.nativeEvent=s,this.target=a,this.currentTarget=null;for(var o in e)e.hasOwnProperty(o)&&(i=e[o],this[o]=i?i(s):s[o]);return this.isDefaultPrevented=(s.defaultPrevented!=null?s.defaultPrevented:s.returnValue===!1)?Ha:Vf,this.isPropagationStopped=Vf,this}return yt(t.prototype,{preventDefault:function(){this.defaultPrevented=!0;var i=this.nativeEvent;i&&(i.preventDefault?i.preventDefault():typeof i.returnValue!="unknown"&&(i.returnValue=!1),this.isDefaultPrevented=Ha)},stopPropagation:function(){var i=this.nativeEvent;i&&(i.stopPropagation?i.stopPropagation():typeof i.cancelBubble!="unknown"&&(i.cancelBubble=!0),this.isPropagationStopped=Ha)},persist:function(){},isPersistent:Ha}),t}var ol={eventPhase:0,bubbles:0,cancelable:0,timeStamp:function(e){return e.timeStamp||Date.now()},defaultPrevented:0,isTrusted:0},jo=He(ol),Nr=yt({},ol,{view:0,detail:0}),Lm=He(Nr),D2,L2,Ns,Po=yt({},Nr,{screenX:0,screenY:0,clientX:0,clientY:0,pageX:0,pageY:0,ctrlKey:0,shiftKey:0,altKey:0,metaKey:0,getModifierState:Gc,button:0,buttons:0,relatedTarget:function(e){return e.relatedTarget===void 0?e.fromElement===e.srcElement?e.toElement:e.fromElement:e.relatedTarget},movementX:function(e){return"movementX"in e?e.movementX:(e!==Ns&&(Ns&&e.type==="mousemove"?(D2=e.screenX-Ns.screenX,L2=e.screenY-Ns.screenY):L2=D2=0,Ns=e),D2)},movementY:function(e){return"movementY"in e?e.movementY:L2}}),gf=He(Po),km=yt({},Po,{dataTransfer:0}),Im=He(km),zm=yt({},Nr,{relatedTarget:0}),k2=He(zm),Um=yt({},ol,{animationName:0,elapsedTime:0,pseudoElement:0}),jm=He(Um),Pm=yt({},ol,{clipboardData:function(e){return"clipboardData"in e?e.clipboardData:window.clipboardData}}),Gm=He(Pm),qm=yt({},ol,{data:0}),pf=He(qm),Ym={Esc:"Escape",Spacebar:" ",Left:"ArrowLeft",Up:"ArrowUp",Right:"ArrowRight",Down:"ArrowDown",Del:"Delete",Win:"OS",Menu:"ContextMenu",Apps:"ContextMenu",Scroll:"ScrollLock",MozPrintableKey:"Unidentified"},Xm={8:"Backspace",9:"Tab",12:"Clear",13:"Enter",16:"Shift",17:"Control",18:"Alt",19:"Pause",20:"CapsLock",27:"Escape",32:" ",33:"PageUp",34:"PageDown",35:"End",36:"Home",37:"ArrowLeft",38:"ArrowUp",39:"ArrowRight",40:"ArrowDown",45:"Insert",46:"Delete",112:"F1",113:"F2",114:"F3",115:"F4",116:"F5",117:"F6",118:"F7",119:"F8",120:"F9",121:"F10",122:"F11",123:"F12",144:"NumLock",145:"ScrollLock",224:"Meta"},Fm={Alt:"altKey",Control:"ctrlKey",Meta:"metaKey",Shift:"shiftKey"};function Km(e){var t=this.nativeEvent;return t.getModifierState?t.getModifierState(e):(e=Fm[e])?!!t[e]:!1}function Gc(){return Km}var Qm=yt({},Nr,{key:function(e){if(e.key){var t=Ym[e.key]||e.key;if(t!=="Unidentified")return t}return e.type==="keypress"?(e=Na(e),e===13?"Enter":String.fromCharCode(e)):e.type==="keydown"||e.type==="keyup"?Xm[e.keyCode]||"Unidentified":""},code:0,location:0,ctrlKey:0,shiftKey:0,altKey:0,metaKey:0,repeat:0,locale:0,getModifierState:Gc,charCode:function(e){return e.type==="keypress"?Na(e):0},keyCode:function(e){return e.type==="keydown"||e.type==="keyup"?e.keyCode:0},which:function(e){return e.type==="keypress"?Na(e):e.type==="keydown"||e.type==="keyup"?e.keyCode:0}}),Jm=He(Qm),$m=yt({},Po,{pointerId:0,width:0,height:0,pressure:0,tangentialPressure:0,tiltX:0,tiltY:0,twist:0,pointerType:0,isPrimary:0}),mf=He($m),Wm=yt({},Nr,{touches:0,targetTouches:0,changedTouches:0,altKey:0,metaKey:0,ctrlKey:0,shiftKey:0,getModifierState:Gc}),tv=He(Wm),ev=yt({},ol,{propertyName:0,elapsedTime:0,pseudoElement:0}),iv=He(ev),nv=yt({},Po,{deltaX:function(e){return"deltaX"in e?e.deltaX:"wheelDeltaX"in e?-e.wheelDeltaX:0},deltaY:function(e){return"deltaY"in e?e.deltaY:"wheelDeltaY"in e?-e.wheelDeltaY:"wheelDelta"in e?-e.wheelDelta:0},deltaZ:0,deltaMode:0}),lv=He(nv),sv=yt({},ol,{newState:0,oldState:0}),rv=He(sv),av=[9,13,27,32],qc=Ci&&"CompositionEvent"in window,qs=null;Ci&&"documentMode"in document&&(qs=document.documentMode);var ov=Ci&&"TextEvent"in window&&!qs,_H=Ci&&(!qc||qs&&8<qs&&11>=qs),vf=" ",Mf=!1;function bH(e,t){switch(e){case"keyup":return av.indexOf(t.keyCode)!==-1;case"keydown":return t.keyCode!==229;case"keypress":case"mousedown":case"focusout":return!0;default:return!1}}function SH(e){return e=e.detail,typeof e=="object"&&"data"in e?e.data:null}var Tl=!1;function uv(e,t){switch(e){case"compositionend":return SH(t);case"keypress":return t.which!==32?null:(Mf=!0,vf);case"textInput":return e=t.data,e===vf&&Mf?null:e;default:return null}}function cv(e,t){if(Tl)return e==="compositionend"||!qc&&bH(e,t)?(e=ZH(),Oa=Pc=rn=null,Tl=!1,e):null;switch(e){case"paste":return null;case"keypress":if(!(t.ctrlKey||t.altKey||t.metaKey)||t.ctrlKey&&t.altKey){if(t.char&&1<t.char.length)return t.char;if(t.which)return String.fromCharCode(t.which)}return null;case"compositionend":return _H&&t.locale!=="ko"?null:t.data;default:return null}}var hv={color:!0,date:!0,datetime:!0,"datetime-local":!0,email:!0,month:!0,number:!0,password:!0,range:!0,search:!0,tel:!0,text:!0,time:!0,url:!0,week:!0};function yf(e){var t=e&&e.nodeName&&e.nodeName.toLowerCase();return t==="input"?!!hv[e.type]:t==="textarea"}function EH(e,t,i,n){El?kl?kl.push(n):kl=[n]:El=n,t=vo(t,"onChange"),0<t.length&&(i=new jo("onChange","change",null,i,n),e.push({event:i,listeners:t}))}var Ys=null,hr=null;function fv(e){wg(e,0)}function Go(e){var t=Us(e);if(pH(t))return e}function wf(e,t){if(e==="change")return t}var TH=!1;if(Ci){var I2;if(Ci){var z2="oninput"in document;if(!z2){var Zf=document.createElement("div");Zf.setAttribute("oninput","return;"),z2=typeof Zf.oninput=="function"}I2=z2}else I2=!1;TH=I2&&(!document.documentMode||9<document.documentMode)}function _f(){Ys&&(Ys.detachEvent("onpropertychange",AH),hr=Ys=null)}function AH(e){if(e.propertyName==="value"&&Go(hr)){var t=[];EH(t,hr,e,jc(e)),wH(fv,t)}}function dv(e,t,i){e==="focusin"?(_f(),Ys=t,hr=i,Ys.attachEvent("onpropertychange",AH)):e==="focusout"&&_f()}function Hv(e){if(e==="selectionchange"||e==="keyup"||e==="keydown")return Go(hr)}function Vv(e,t){if(e==="click")return Go(t)}function gv(e,t){if(e==="input"||e==="change")return Go(t)}function pv(e,t){return e===t&&(e!==0||1/e===1/t)||e!==e&&t!==t}var be=typeof Object.is=="function"?Object.is:pv;function fr(e,t){if(be(e,t))return!0;if(typeof e!="object"||e===null||typeof t!="object"||t===null)return!1;var i=Object.keys(e),n=Object.keys(t);if(i.length!==n.length)return!1;for(n=0;n<i.length;n++){var l=i[n];if(!Au.call(t,l)||!be(e[l],t[l]))return!1}return!0}function bf(e){for(;e&&e.firstChild;)e=e.firstChild;return e}function Sf(e,t){var i=bf(e);e=0;for(var n;i;){if(i.nodeType===3){if(n=e+i.textContent.length,e<=t&&n>=t)return{node:i,offset:t-e};e=n}t:{for(;i;){if(i.nextSibling){i=i.nextSibling;break t}i=i.parentNode}i=void 0}i=bf(i)}}function xH(e,t){return e&&t?e===t?!0:e&&e.nodeType===3?!1:t&&t.nodeType===3?xH(e,t.parentNode):"contains"in e?e.contains(t):e.compareDocumentPosition?!!(e.compareDocumentPosition(t)&16):!1:!1}function CH(e){e=e!=null&&e.ownerDocument!=null&&e.ownerDocument.defaultView!=null?e.ownerDocument.defaultView:window;for(var t=to(e.document);t instanceof e.HTMLIFrameElement;){try{var i=typeof t.contentWindow.location.href=="string"}catch{i=!1}if(i)e=t.contentWindow;else break;t=to(e.document)}return t}function Yc(e){var t=e&&e.nodeName&&e.nodeName.toLowerCase();return t&&(t==="input"&&(e.type==="text"||e.type==="search"||e.type==="tel"||e.type==="url"||e.type==="password")||t==="textarea"||e.contentEditable==="true")}var mv=Ci&&"documentMode"in document&&11>=document.documentMode,Al=null,Du=null,Xs=null,Lu=!1;function Ef(e,t,i){var n=i.window===i?i.document:i.nodeType===9?i:i.ownerDocument;Lu||Al==null||Al!==to(n)||(n=Al,"selectionStart"in n&&Yc(n)?n={start:n.selectionStart,end:n.selectionEnd}:(n=(n.ownerDocument&&n.ownerDocument.defaultView||window).getSelection(),n={anchorNode:n.anchorNode,anchorOffset:n.anchorOffset,focusNode:n.focusNode,focusOffset:n.focusOffset}),Xs&&fr(Xs,n)||(Xs=n,n=vo(Du,"onSelect"),0<n.length&&(t=new jo("onSelect","select",null,t,i),e.push({event:t,listeners:n}),t.target=Al)))}function Dn(e,t){var i={};return i[e.toLowerCase()]=t.toLowerCase(),i["Webkit"+e]="webkit"+t,i["Moz"+e]="moz"+t,i}var xl={animationend:Dn("Animation","AnimationEnd"),animationiteration:Dn("Animation","AnimationIteration"),animationstart:Dn("Animation","AnimationStart"),transitionrun:Dn("Transition","TransitionRun"),transitionstart:Dn("Transition","TransitionStart"),transitioncancel:Dn("Transition","TransitionCancel"),transitionend:Dn("Transition","TransitionEnd")},U2={},OH={};Ci&&(OH=document.createElement("div").style,"AnimationEvent"in window||(delete xl.animationend.animation,delete xl.animationiteration.animation,delete xl.animationstart.animation),"TransitionEvent"in window||delete xl.transitionend.transition);function ul(e){if(U2[e])return U2[e];if(!xl[e])return e;var t=xl[e],i;for(i in t)if(t.hasOwnProperty(i)&&i in OH)return U2[e]=t[i];return e}var NH=ul("animationend"),RH=ul("animationiteration"),BH=ul("animationstart"),vv=ul("transitionrun"),Mv=ul("transitionstart"),yv=ul("transitioncancel"),DH=ul("transitionend"),LH=new Map,ku="abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel".split(" ");ku.push("scrollEnd");function Xe(e,t){LH.set(e,t),al(t,[e])}var eo=typeof reportError=="function"?reportError:function(e){if(typeof window=="object"&&typeof window.ErrorEvent=="function"){var t=new window.ErrorEvent("error",{bubbles:!0,cancelable:!0,message:typeof e=="object"&&e!==null&&typeof e.message=="string"?String(e.message):String(e),error:e});if(!window.dispatchEvent(t))return}else if(typeof process=="object"&&typeof process.emit=="function"){process.emit("uncaughtException",e);return}console.error(e)},Ae=[],Cl=0,Xc=0;function qo(){for(var e=Cl,t=Xc=Cl=0;t<e;){var i=Ae[t];Ae[t++]=null;var n=Ae[t];Ae[t++]=null;var l=Ae[t];Ae[t++]=null;var s=Ae[t];if(Ae[t++]=null,n!==null&&l!==null){var a=n.pending;a===null?l.next=l:(l.next=a.next,a.next=l),n.pending=l}s!==0&&kH(i,l,s)}}function Yo(e,t,i,n){Ae[Cl++]=e,Ae[Cl++]=t,Ae[Cl++]=i,Ae[Cl++]=n,Xc|=n,e.lanes|=n,e=e.alternate,e!==null&&(e.lanes|=n)}function Fc(e,t,i,n){return Yo(e,t,i,n),io(e)}function cl(e,t){return Yo(e,null,null,t),io(e)}function kH(e,t,i){e.lanes|=i;var n=e.alternate;n!==null&&(n.lanes|=i);for(var l=!1,s=e.return;s!==null;)s.childLanes|=i,n=s.alternate,n!==null&&(n.childLanes|=i),s.tag===22&&(e=s.stateNode,e===null||e._visibility&1||(l=!0)),e=s,s=s.return;return e.tag===3?(s=e.stateNode,l&&t!==null&&(l=31-Ze(i),e=s.hiddenUpdates,n=e[l],n===null?e[l]=[t]:n.push(t),t.lane=i|536870912),s):null}function io(e){if(50<ir)throw ir=0,sc=null,Error(N(185));for(var t=e.return;t!==null;)e=t,t=e.return;return e.tag===3?e.stateNode:null}var Ol={};function wv(e,t,i,n){this.tag=e,this.key=i,this.sibling=this.child=this.return=this.stateNode=this.type=this.elementType=null,this.index=0,this.refCleanup=this.ref=null,this.pendingProps=t,this.dependencies=this.memoizedState=this.updateQueue=this.memoizedProps=null,this.mode=n,this.subtreeFlags=this.flags=0,this.deletions=null,this.childLanes=this.lanes=0,this.alternate=null}function me(e,t,i,n){return new wv(e,t,i,n)}function Kc(e){return e=e.prototype,!(!e||!e.isReactComponent)}function Ti(e,t){var i=e.alternate;return i===null?(i=me(e.tag,t,e.key,e.mode),i.elementType=e.elementType,i.type=e.type,i.stateNode=e.stateNode,i.alternate=e,e.alternate=i):(i.pendingProps=t,i.type=e.type,i.flags=0,i.subtreeFlags=0,i.deletions=null),i.flags=e.flags&65011712,i.childLanes=e.childLanes,i.lanes=e.lanes,i.child=e.child,i.memoizedProps=e.memoizedProps,i.memoizedState=e.memoizedState,i.updateQueue=e.updateQueue,t=e.dependencies,i.dependencies=t===null?null:{lanes:t.lanes,firstContext:t.firstContext},i.sibling=e.sibling,i.index=e.index,i.ref=e.ref,i.refCleanup=e.refCleanup,i}function IH(e,t){e.flags&=65011714;var i=e.alternate;return i===null?(e.childLanes=0,e.lanes=t,e.child=null,e.subtreeFlags=0,e.memoizedProps=null,e.memoizedState=null,e.updateQueue=null,e.dependencies=null,e.stateNode=null):(e.childLanes=i.childLanes,e.lanes=i.lanes,e.child=i.child,e.subtreeFlags=0,e.deletions=null,e.memoizedProps=i.memoizedProps,e.memoizedState=i.memoizedState,e.updateQueue=i.updateQueue,e.type=i.type,t=i.dependencies,e.dependencies=t===null?null:{lanes:t.lanes,firstContext:t.firstContext}),e}function Ra(e,t,i,n,l,s){var a=0;if(n=e,typeof e=="function")Kc(e)&&(a=1);else if(typeof e=="string")a=E9(e,i,ei.current)?26:e==="html"||e==="head"||e==="body"?27:5;else t:switch(e){case bu:return e=me(31,i,t,l),e.elementType=bu,e.lanes=s,e;case _l:return Xn(i.children,l,s,t);case lH:a=8,l|=24;break;case wu:return e=me(12,i,t,l|2),e.elementType=wu,e.lanes=s,e;case Zu:return e=me(13,i,t,l),e.elementType=Zu,e.lanes=s,e;case _u:return e=me(19,i,t,l),e.elementType=_u,e.lanes=s,e;default:if(typeof e=="object"&&e!==null)switch(e.$$typeof){case Zi:a=10;break t;case sH:a=9;break t;case Bc:a=11;break t;case Dc:a=14;break t;case Ki:a=16,n=null;break t}a=29,i=Error(N(130,e===null?"null":typeof e,"")),n=null}return t=me(a,i,t,l),t.elementType=e,t.type=n,t.lanes=s,t}function Xn(e,t,i,n){return e=me(7,e,n,t),e.lanes=i,e}function j2(e,t,i){return e=me(6,e,null,t),e.lanes=i,e}function zH(e){var t=me(18,null,null,0);return t.stateNode=e,t}function P2(e,t,i){return t=me(4,e.children!==null?e.children:[],e.key,t),t.lanes=i,t.stateNode={containerInfo:e.containerInfo,pendingChildren:null,implementation:e.implementation},t}var Tf=new WeakMap;function Re(e,t){if(typeof e=="object"&&e!==null){var i=Tf.get(e);return i!==void 0?i:(t={value:e,source:t,stack:of(t)},Tf.set(e,t),t)}return{value:e,source:t,stack:of(t)}}var Nl=[],Rl=0,no=null,dr=0,Ce=[],Oe=0,wn=null,Je=1,$e="";function vi(e,t){Nl[Rl++]=dr,Nl[Rl++]=no,no=e,dr=t}function UH(e,t,i){Ce[Oe++]=Je,Ce[Oe++]=$e,Ce[Oe++]=wn,wn=e;var n=Je;e=$e;var l=32-Ze(n)-1;n&=~(1<<l),i+=1;var s=32-Ze(t)+l;if(30<s){var a=l-l%5;s=(n&(1<<a)-1).toString(32),n>>=a,l-=a,Je=1<<32-Ze(t)+l|i<<l|n,$e=s+e}else Je=1<<s|i<<l|n,$e=e}function Qc(e){e.return!==null&&(vi(e,1),UH(e,1,0))}function Jc(e){for(;e===no;)no=Nl[--Rl],Nl[Rl]=null,dr=Nl[--Rl],Nl[Rl]=null;for(;e===wn;)wn=Ce[--Oe],Ce[Oe]=null,$e=Ce[--Oe],Ce[Oe]=null,Je=Ce[--Oe],Ce[Oe]=null}function jH(e,t){Ce[Oe++]=Je,Ce[Oe++]=$e,Ce[Oe++]=wn,Je=t.id,$e=t.overflow,wn=e}var qt=null,vt=null,et=!1,hn=null,Be=!1,Iu=Error(N(519));function Zn(e){var t=Error(N(418,1<arguments.length&&arguments[1]!==void 0&&arguments[1]?"text":"HTML",""));throw Hr(Re(t,e)),Iu}function Af(e){var t=e.stateNode,i=e.type,n=e.memoizedProps;switch(t[Gt]=e,t[de]=n,i){case"dialog":Q("cancel",t),Q("close",t);break;case"iframe":case"object":case"embed":Q("load",t);break;case"video":case"audio":for(i=0;i<mr.length;i++)Q(mr[i],t);break;case"source":Q("error",t);break;case"img":case"image":case"link":Q("error",t),Q("load",t);break;case"details":Q("toggle",t);break;case"input":Q("invalid",t),mH(t,n.value,n.defaultValue,n.checked,n.defaultChecked,n.type,n.name,!0);break;case"select":Q("invalid",t);break;case"textarea":Q("invalid",t),MH(t,n.value,n.defaultValue,n.children)}i=n.children,typeof i!="string"&&typeof i!="number"&&typeof i!="bigint"||t.textContent===""+i||n.suppressHydrationWarning===!0||_g(t.textContent,i)?(n.popover!=null&&(Q("beforetoggle",t),Q("toggle",t)),n.onScroll!=null&&Q("scroll",t),n.onScrollEnd!=null&&Q("scrollend",t),n.onClick!=null&&(t.onclick=_i),t=!0):t=!1,t||Zn(e,!0)}function xf(e){for(qt=e.return;qt;)switch(qt.tag){case 5:case 31:case 13:Be=!1;return;case 27:case 3:Be=!0;return;default:qt=qt.return}}function vl(e){if(e!==qt)return!1;if(!et)return xf(e),et=!0,!1;var t=e.tag,i;if((i=t!==3&&t!==27)&&((i=t===5)&&(i=e.type,i=!(i!=="form"&&i!=="button")||cc(e.type,e.memoizedProps)),i=!i),i&&vt&&Zn(e),xf(e),t===13){if(e=e.memoizedState,e=e!==null?e.dehydrated:null,!e)throw Error(N(317));vt=g0(e)}else if(t===31){if(e=e.memoizedState,e=e!==null?e.dehydrated:null,!e)throw Error(N(317));vt=g0(e)}else t===27?(t=vt,An(e.type)?(e=Hc,Hc=null,vt=e):vt=t):vt=qt?Le(e.stateNode.nextSibling):null;return!0}function Wn(){vt=qt=null,et=!1}function G2(){var e=hn;return e!==null&&(ce===null?ce=e:ce.push.apply(ce,e),hn=null),e}function Hr(e){hn===null?hn=[e]:hn.push(e)}var zu=si(null),hl=null,bi=null;function Ji(e,t,i){Vt(zu,t._currentValue),t._currentValue=i}function Ai(e){e._currentValue=zu.current,zt(zu)}function Uu(e,t,i){for(;e!==null;){var n=e.alternate;if((e.childLanes&t)!==t?(e.childLanes|=t,n!==null&&(n.childLanes|=t)):n!==null&&(n.childLanes&t)!==t&&(n.childLanes|=t),e===i)break;e=e.return}}function ju(e,t,i,n){var l=e.child;for(l!==null&&(l.return=e);l!==null;){var s=l.dependencies;if(s!==null){var a=l.child;s=s.firstContext;t:for(;s!==null;){var o=s;s=l;for(var c=0;c<t.length;c++)if(o.context===t[c]){s.lanes|=i,o=s.alternate,o!==null&&(o.lanes|=i),Uu(s.return,i,e),n||(a=null);break t}s=o.next}}else if(l.tag===18){if(a=l.return,a===null)throw Error(N(341));a.lanes|=i,s=a.alternate,s!==null&&(s.lanes|=i),Uu(a,i,e),a=null}else a=l.child;if(a!==null)a.return=l;else for(a=l;a!==null;){if(a===e){a=null;break}if(l=a.sibling,l!==null){l.return=a.return,a=l;break}a=a.return}l=a}}function cs(e,t,i,n){e=null;for(var l=t,s=!1;l!==null;){if(!s){if(l.flags&524288)s=!0;else if(l.flags&262144)break}if(l.tag===10){var a=l.alternate;if(a===null)throw Error(N(387));if(a=a.memoizedProps,a!==null){var o=l.type;be(l.pendingProps.value,a.value)||(e!==null?e.push(o):e=[o])}}else if(l===Qa.current){if(a=l.alternate,a===null)throw Error(N(387));a.memoizedState.memoizedState!==l.memoizedState.memoizedState&&(e!==null?e.push(Mr):e=[Mr])}l=l.return}e!==null&&ju(t,e,i,n),t.flags|=262144}function lo(e){for(e=e.firstContext;e!==null;){if(!be(e.context._currentValue,e.memoizedValue))return!0;e=e.next}return!1}function tl(e){hl=e,bi=null,e=e.dependencies,e!==null&&(e.firstContext=null)}function Yt(e){return PH(hl,e)}function Va(e,t){return hl===null&&tl(e),PH(e,t)}function PH(e,t){var i=t._currentValue;if(t={context:t,memoizedValue:i,next:null},bi===null){if(e===null)throw Error(N(308));bi=t,e.dependencies={lanes:0,firstContext:t},e.flags|=524288}else bi=bi.next=t;return i}var Zv=typeof AbortController<"u"?AbortController:function(){var e=[],t=this.signal={aborted:!1,addEventListener:function(i,n){e.push(n)}};this.abort=function(){t.aborted=!0,e.forEach(function(i){return i()})}},_v=Lt.unstable_scheduleCallback,bv=Lt.unstable_NormalPriority,Ot={$$typeof:Zi,Consumer:null,Provider:null,_currentValue:null,_currentValue2:null,_threadCount:0};function $c(){return{controller:new Zv,data:new Map,refCount:0}}function Rr(e){e.refCount--,e.refCount===0&&_v(bv,function(){e.controller.abort()})}var Fs=null,Pu=0,Ql=0,Il=null;function Sv(e,t){if(Fs===null){var i=Fs=[];Pu=0,Ql=Z1(),Il={status:"pending",value:void 0,then:function(n){i.push(n)}}}return Pu++,t.then(Cf,Cf),t}function Cf(){if(--Pu===0&&Fs!==null){Il!==null&&(Il.status="fulfilled");var e=Fs;Fs=null,Ql=0,Il=null;for(var t=0;t<e.length;t++)(0,e[t])()}}function Ev(e,t){var i=[],n={status:"pending",value:null,reason:null,then:function(l){i.push(l)}};return e.then(function(){n.status="fulfilled",n.value=t;for(var l=0;l<i.length;l++)(0,i[l])(t)},function(l){for(n.status="rejected",n.reason=l,l=0;l<i.length;l++)(0,i[l])(void 0)}),n}var Of=G.S;G.S=function(e,t){ng=ye(),typeof t=="object"&&t!==null&&typeof t.then=="function"&&Sv(e,t),Of!==null&&Of(e,t)};var Fn=si(null);function Wc(){var e=Fn.current;return e!==null?e:dt.pooledCache}function Ba(e,t){t===null?Vt(Fn,Fn.current):Vt(Fn,t.pool)}function GH(){var e=Wc();return e===null?null:{parent:Ot._currentValue,pool:e}}var hs=Error(N(460)),t1=Error(N(474)),Xo=Error(N(542)),so={then:function(){}};function Nf(e){return e=e.status,e==="fulfilled"||e==="rejected"}function qH(e,t,i){switch(i=e[i],i===void 0?e.push(t):i!==t&&(t.then(_i,_i),t=i),t.status){case"fulfilled":return t.value;case"rejected":throw e=t.reason,Bf(e),e;default:if(typeof t.status=="string")t.then(_i,_i);else{if(e=dt,e!==null&&100<e.shellSuspendCounter)throw Error(N(482));e=t,e.status="pending",e.then(function(n){if(t.status==="pending"){var l=t;l.status="fulfilled",l.value=n}},function(n){if(t.status==="pending"){var l=t;l.status="rejected",l.reason=n}})}switch(t.status){case"fulfilled":return t.value;case"rejected":throw e=t.reason,Bf(e),e}throw Kn=t,hs}}function zn(e){try{var t=e._init;return t(e._payload)}catch(i){throw i!==null&&typeof i=="object"&&typeof i.then=="function"?(Kn=i,hs):i}}var Kn=null;function Rf(){if(Kn===null)throw Error(N(459));var e=Kn;return Kn=null,e}function Bf(e){if(e===hs||e===Xo)throw Error(N(483))}var zl=null,Vr=0;function ga(e){var t=Vr;return Vr+=1,zl===null&&(zl=[]),qH(zl,e,t)}function Rs(e,t){t=t.props.ref,e.ref=t!==void 0?t:null}function pa(e,t){throw t.$$typeof===dm?Error(N(525)):(e=Object.prototype.toString.call(t),Error(N(31,e==="[object Object]"?"object with keys {"+Object.keys(t).join(", ")+"}":e)))}function YH(e){function t(w,m){if(e){var _=w.deletions;_===null?(w.deletions=[m],w.flags|=16):_.push(m)}}function i(w,m){if(!e)return null;for(;m!==null;)t(w,m),m=m.sibling;return null}function n(w){for(var m=new Map;w!==null;)w.key!==null?m.set(w.key,w):m.set(w.index,w),w=w.sibling;return m}function l(w,m){return w=Ti(w,m),w.index=0,w.sibling=null,w}function s(w,m,_){return w.index=_,e?(_=w.alternate,_!==null?(_=_.index,_<m?(w.flags|=67108866,m):_):(w.flags|=67108866,m)):(w.flags|=1048576,m)}function a(w){return e&&w.alternate===null&&(w.flags|=67108866),w}function o(w,m,_,A){return m===null||m.tag!==6?(m=j2(_,w.mode,A),m.return=w,m):(m=l(m,_),m.return=w,m)}function c(w,m,_,A){var L=_.type;return L===_l?v(w,m,_.props.children,A,_.key):m!==null&&(m.elementType===L||typeof L=="object"&&L!==null&&L.$$typeof===Ki&&zn(L)===m.type)?(m=l(m,_.props),Rs(m,_),m.return=w,m):(m=Ra(_.type,_.key,_.props,null,w.mode,A),Rs(m,_),m.return=w,m)}function d(w,m,_,A){return m===null||m.tag!==4||m.stateNode.containerInfo!==_.containerInfo||m.stateNode.implementation!==_.implementation?(m=P2(_,w.mode,A),m.return=w,m):(m=l(m,_.children||[]),m.return=w,m)}function v(w,m,_,A,L){return m===null||m.tag!==7?(m=Xn(_,w.mode,A,L),m.return=w,m):(m=l(m,_),m.return=w,m)}function Z(w,m,_){if(typeof m=="string"&&m!==""||typeof m=="number"||typeof m=="bigint")return m=j2(""+m,w.mode,_),m.return=w,m;if(typeof m=="object"&&m!==null){switch(m.$$typeof){case ua:return _=Ra(m.type,m.key,m.props,null,w.mode,_),Rs(_,m),_.return=w,_;case Is:return m=P2(m,w.mode,_),m.return=w,m;case Ki:return m=zn(m),Z(w,m,_)}if(zs(m)||Cs(m))return m=Xn(m,w.mode,_,null),m.return=w,m;if(typeof m.then=="function")return Z(w,ga(m),_);if(m.$$typeof===Zi)return Z(w,Va(w,m),_);pa(w,m)}return null}function V(w,m,_,A){var L=m!==null?m.key:null;if(typeof _=="string"&&_!==""||typeof _=="number"||typeof _=="bigint")return L!==null?null:o(w,m,""+_,A);if(typeof _=="object"&&_!==null){switch(_.$$typeof){case ua:return _.key===L?c(w,m,_,A):null;case Is:return _.key===L?d(w,m,_,A):null;case Ki:return _=zn(_),V(w,m,_,A)}if(zs(_)||Cs(_))return L!==null?null:v(w,m,_,A,null);if(typeof _.then=="function")return V(w,m,ga(_),A);if(_.$$typeof===Zi)return V(w,m,Va(w,_),A);pa(w,_)}return null}function b(w,m,_,A,L){if(typeof A=="string"&&A!==""||typeof A=="number"||typeof A=="bigint")return w=w.get(_)||null,o(m,w,""+A,L);if(typeof A=="object"&&A!==null){switch(A.$$typeof){case ua:return w=w.get(A.key===null?_:A.key)||null,c(m,w,A,L);case Is:return w=w.get(A.key===null?_:A.key)||null,d(m,w,A,L);case Ki:return A=zn(A),b(w,m,_,A,L)}if(zs(A)||Cs(A))return w=w.get(_)||null,v(m,w,A,L,null);if(typeof A.then=="function")return b(w,m,_,ga(A),L);if(A.$$typeof===Zi)return b(w,m,_,Va(m,A),L);pa(m,A)}return null}function C(w,m,_,A){for(var L=null,U=null,p=m,f=m=0,g=null;p!==null&&f<_.length;f++){p.index>f?(g=p,p=null):g=p.sibling;var M=V(w,p,_[f],A);if(M===null){p===null&&(p=g);break}e&&p&&M.alternate===null&&t(w,p),m=s(M,m,f),U===null?L=M:U.sibling=M,U=M,p=g}if(f===_.length)return i(w,p),et&&vi(w,f),L;if(p===null){for(;f<_.length;f++)p=Z(w,_[f],A),p!==null&&(m=s(p,m,f),U===null?L=p:U.sibling=p,U=p);return et&&vi(w,f),L}for(p=n(p);f<_.length;f++)g=b(p,w,f,_[f],A),g!==null&&(e&&g.alternate!==null&&p.delete(g.key===null?f:g.key),m=s(g,m,f),U===null?L=g:U.sibling=g,U=g);return e&&p.forEach(function(S){return t(w,S)}),et&&vi(w,f),L}function O(w,m,_,A){if(_==null)throw Error(N(151));for(var L=null,U=null,p=m,f=m=0,g=null,M=_.next();p!==null&&!M.done;f++,M=_.next()){p.index>f?(g=p,p=null):g=p.sibling;var S=V(w,p,M.value,A);if(S===null){p===null&&(p=g);break}e&&p&&S.alternate===null&&t(w,p),m=s(S,m,f),U===null?L=S:U.sibling=S,U=S,p=g}if(M.done)return i(w,p),et&&vi(w,f),L;if(p===null){for(;!M.done;f++,M=_.next())M=Z(w,M.value,A),M!==null&&(m=s(M,m,f),U===null?L=M:U.sibling=M,U=M);return et&&vi(w,f),L}for(p=n(p);!M.done;f++,M=_.next())M=b(p,w,f,M.value,A),M!==null&&(e&&M.alternate!==null&&p.delete(M.key===null?f:M.key),m=s(M,m,f),U===null?L=M:U.sibling=M,U=M);return e&&p.forEach(function(E){return t(w,E)}),et&&vi(w,f),L}function R(w,m,_,A){if(typeof _=="object"&&_!==null&&_.type===_l&&_.key===null&&(_=_.props.children),typeof _=="object"&&_!==null){switch(_.$$typeof){case ua:t:{for(var L=_.key;m!==null;){if(m.key===L){if(L=_.type,L===_l){if(m.tag===7){i(w,m.sibling),A=l(m,_.props.children),A.return=w,w=A;break t}}else if(m.elementType===L||typeof L=="object"&&L!==null&&L.$$typeof===Ki&&zn(L)===m.type){i(w,m.sibling),A=l(m,_.props),Rs(A,_),A.return=w,w=A;break t}i(w,m);break}else t(w,m);m=m.sibling}_.type===_l?(A=Xn(_.props.children,w.mode,A,_.key),A.return=w,w=A):(A=Ra(_.type,_.key,_.props,null,w.mode,A),Rs(A,_),A.return=w,w=A)}return a(w);case Is:t:{for(L=_.key;m!==null;){if(m.key===L)if(m.tag===4&&m.stateNode.containerInfo===_.containerInfo&&m.stateNode.implementation===_.implementation){i(w,m.sibling),A=l(m,_.children||[]),A.return=w,w=A;break t}else{i(w,m);break}else t(w,m);m=m.sibling}A=P2(_,w.mode,A),A.return=w,w=A}return a(w);case Ki:return _=zn(_),R(w,m,_,A)}if(zs(_))return C(w,m,_,A);if(Cs(_)){if(L=Cs(_),typeof L!="function")throw Error(N(150));return _=L.call(_),O(w,m,_,A)}if(typeof _.then=="function")return R(w,m,ga(_),A);if(_.$$typeof===Zi)return R(w,m,Va(w,_),A);pa(w,_)}return typeof _=="string"&&_!==""||typeof _=="number"||typeof _=="bigint"?(_=""+_,m!==null&&m.tag===6?(i(w,m.sibling),A=l(m,_),A.return=w,w=A):(i(w,m),A=j2(_,w.mode,A),A.return=w,w=A),a(w)):i(w,m)}return function(w,m,_,A){try{Vr=0;var L=R(w,m,_,A);return zl=null,L}catch(p){if(p===hs||p===Xo)throw p;var U=me(29,p,null,w.mode);return U.lanes=A,U.return=w,U}finally{}}}var el=YH(!0),XH=YH(!1),Qi=!1;function e1(e){e.updateQueue={baseState:e.memoizedState,firstBaseUpdate:null,lastBaseUpdate:null,shared:{pending:null,lanes:0,hiddenCallbacks:null},callbacks:null}}function Gu(e,t){e=e.updateQueue,t.updateQueue===e&&(t.updateQueue={baseState:e.baseState,firstBaseUpdate:e.firstBaseUpdate,lastBaseUpdate:e.lastBaseUpdate,shared:e.shared,callbacks:null})}function fn(e){return{lane:e,tag:0,payload:null,callback:null,next:null}}function dn(e,t,i){var n=e.updateQueue;if(n===null)return null;if(n=n.shared,lt&2){var l=n.pending;return l===null?t.next=t:(t.next=l.next,l.next=t),n.pending=t,t=io(e),kH(e,null,i),t}return Yo(e,n,t,i),io(e)}function Ks(e,t,i){if(t=t.updateQueue,t!==null&&(t=t.shared,(i&4194048)!==0)){var n=t.lanes;n&=e.pendingLanes,i|=n,t.lanes=i,hH(e,i)}}function q2(e,t){var i=e.updateQueue,n=e.alternate;if(n!==null&&(n=n.updateQueue,i===n)){var l=null,s=null;if(i=i.firstBaseUpdate,i!==null){do{var a={lane:i.lane,tag:i.tag,payload:i.payload,callback:null,next:null};s===null?l=s=a:s=s.next=a,i=i.next}while(i!==null);s===null?l=s=t:s=s.next=t}else l=s=t;i={baseState:n.baseState,firstBaseUpdate:l,lastBaseUpdate:s,shared:n.shared,callbacks:n.callbacks},e.updateQueue=i;return}e=i.lastBaseUpdate,e===null?i.firstBaseUpdate=t:e.next=t,i.lastBaseUpdate=t}var qu=!1;function Qs(){if(qu){var e=Il;if(e!==null)throw e}}function Js(e,t,i,n){qu=!1;var l=e.updateQueue;Qi=!1;var s=l.firstBaseUpdate,a=l.lastBaseUpdate,o=l.shared.pending;if(o!==null){l.shared.pending=null;var c=o,d=c.next;c.next=null,a===null?s=d:a.next=d,a=c;var v=e.alternate;v!==null&&(v=v.updateQueue,o=v.lastBaseUpdate,o!==a&&(o===null?v.firstBaseUpdate=d:o.next=d,v.lastBaseUpdate=c))}if(s!==null){var Z=l.baseState;a=0,v=d=c=null,o=s;do{var V=o.lane&-536870913,b=V!==o.lane;if(b?(tt&V)===V:(n&V)===V){V!==0&&V===Ql&&(qu=!0),v!==null&&(v=v.next={lane:0,tag:o.tag,payload:o.payload,callback:null,next:null});t:{var C=e,O=o;V=t;var R=i;switch(O.tag){case 1:if(C=O.payload,typeof C=="function"){Z=C.call(R,Z,V);break t}Z=C;break t;case 3:C.flags=C.flags&-65537|128;case 0:if(C=O.payload,V=typeof C=="function"?C.call(R,Z,V):C,V==null)break t;Z=yt({},Z,V);break t;case 2:Qi=!0}}V=o.callback,V!==null&&(e.flags|=64,b&&(e.flags|=8192),b=l.callbacks,b===null?l.callbacks=[V]:b.push(V))}else b={lane:V,tag:o.tag,payload:o.payload,callback:o.callback,next:null},v===null?(d=v=b,c=Z):v=v.next=b,a|=V;if(o=o.next,o===null){if(o=l.shared.pending,o===null)break;b=o,o=b.next,b.next=null,l.lastBaseUpdate=b,l.shared.pending=null}}while(!0);v===null&&(c=Z),l.baseState=c,l.firstBaseUpdate=d,l.lastBaseUpdate=v,s===null&&(l.shared.lanes=0),bn|=a,e.lanes=a,e.memoizedState=Z}}function FH(e,t){if(typeof e!="function")throw Error(N(191,e));e.call(t)}function KH(e,t){var i=e.callbacks;if(i!==null)for(e.callbacks=null,e=0;e<i.length;e++)FH(i[e],t)}var Jl=si(null),ro=si(0);function Df(e,t){e=Bi,Vt(ro,e),Vt(Jl,t),Bi=e|t.baseLanes}function Yu(){Vt(ro,Bi),Vt(Jl,Jl.current)}function i1(){Bi=ro.current,zt(Jl),zt(ro)}var Se=si(null),De=null;function $i(e){var t=e.alternate;Vt(Et,Et.current&1),Vt(Se,e),De===null&&(t===null||Jl.current!==null||t.memoizedState!==null)&&(De=e)}function Xu(e){Vt(Et,Et.current),Vt(Se,e),De===null&&(De=e)}function QH(e){e.tag===22?(Vt(Et,Et.current),Vt(Se,e),De===null&&(De=e)):Wi()}function Wi(){Vt(Et,Et.current),Vt(Se,Se.current)}function pe(e){zt(Se),De===e&&(De=null),zt(Et)}var Et=si(0);function ao(e){for(var t=e;t!==null;){if(t.tag===13){var i=t.memoizedState;if(i!==null&&(i=i.dehydrated,i===null||fc(i)||dc(i)))return t}else if(t.tag===19&&(t.memoizedProps.revealOrder==="forwards"||t.memoizedProps.revealOrder==="backwards"||t.memoizedProps.revealOrder==="unstable_legacy-backwards"||t.memoizedProps.revealOrder==="together")){if(t.flags&128)return t}else if(t.child!==null){t.child.return=t,t=t.child;continue}if(t===e)break;for(;t.sibling===null;){if(t.return===null||t.return===e)return null;t=t.return}t.sibling.return=t.return,t=t.sibling}return null}var Oi=0,F=null,ht=null,xt=null,oo=!1,Ul=!1,il=!1,uo=0,gr=0,jl=null,Tv=0;function _t(){throw Error(N(321))}function n1(e,t){if(t===null)return!1;for(var i=0;i<t.length&&i<e.length;i++)if(!be(e[i],t[i]))return!1;return!0}function l1(e,t,i,n,l,s){return Oi=s,F=t,t.memoizedState=null,t.updateQueue=null,t.lanes=0,G.H=e===null||e.memoizedState===null?EV:V1,il=!1,s=i(n,l),il=!1,Ul&&(s=$H(t,i,n,l)),JH(e),s}function JH(e){G.H=pr;var t=ht!==null&&ht.next!==null;if(Oi=0,xt=ht=F=null,oo=!1,gr=0,jl=null,t)throw Error(N(300));e===null||Nt||(e=e.dependencies,e!==null&&lo(e)&&(Nt=!0))}function $H(e,t,i,n){F=e;var l=0;do{if(Ul&&(jl=null),gr=0,Ul=!1,25<=l)throw Error(N(301));if(l+=1,xt=ht=null,e.updateQueue!=null){var s=e.updateQueue;s.lastEffect=null,s.events=null,s.stores=null,s.memoCache!=null&&(s.memoCache.index=0)}G.H=TV,s=t(i,n)}while(Ul);return s}function Av(){var e=G.H,t=e.useState()[0];return t=typeof t.then=="function"?Br(t):t,e=e.useState()[0],(ht!==null?ht.memoizedState:null)!==e&&(F.flags|=1024),t}function s1(){var e=uo!==0;return uo=0,e}function r1(e,t,i){t.updateQueue=e.updateQueue,t.flags&=-2053,e.lanes&=~i}function a1(e){if(oo){for(e=e.memoizedState;e!==null;){var t=e.queue;t!==null&&(t.pending=null),e=e.next}oo=!1}Oi=0,xt=ht=F=null,Ul=!1,gr=uo=0,jl=null}function ie(){var e={memoizedState:null,baseState:null,baseQueue:null,queue:null,next:null};return xt===null?F.memoizedState=xt=e:xt=xt.next=e,xt}function Tt(){if(ht===null){var e=F.alternate;e=e!==null?e.memoizedState:null}else e=ht.next;var t=xt===null?F.memoizedState:xt.next;if(t!==null)xt=t,ht=e;else{if(e===null)throw F.alternate===null?Error(N(467)):Error(N(310));ht=e,e={memoizedState:ht.memoizedState,baseState:ht.baseState,baseQueue:ht.baseQueue,queue:ht.queue,next:null},xt===null?F.memoizedState=xt=e:xt=xt.next=e}return xt}function Fo(){return{lastEffect:null,events:null,stores:null,memoCache:null}}function Br(e){var t=gr;return gr+=1,jl===null&&(jl=[]),e=qH(jl,e,t),t=F,(xt===null?t.memoizedState:xt.next)===null&&(t=t.alternate,G.H=t===null||t.memoizedState===null?EV:V1),e}function Ko(e){if(e!==null&&typeof e=="object"){if(typeof e.then=="function")return Br(e);if(e.$$typeof===Zi)return Yt(e)}throw Error(N(438,String(e)))}function o1(e){var t=null,i=F.updateQueue;if(i!==null&&(t=i.memoCache),t==null){var n=F.alternate;n!==null&&(n=n.updateQueue,n!==null&&(n=n.memoCache,n!=null&&(t={data:n.data.map(function(l){return l.slice()}),index:0})))}if(t==null&&(t={data:[],index:0}),i===null&&(i=Fo(),F.updateQueue=i),i.memoCache=t,i=t.data[t.index],i===void 0)for(i=t.data[t.index]=Array(e),n=0;n<e;n++)i[n]=Hm;return t.index++,i}function Ni(e,t){return typeof t=="function"?t(e):t}function Da(e){var t=Tt();return u1(t,ht,e)}function u1(e,t,i){var n=e.queue;if(n===null)throw Error(N(311));n.lastRenderedReducer=i;var l=e.baseQueue,s=n.pending;if(s!==null){if(l!==null){var a=l.next;l.next=s.next,s.next=a}t.baseQueue=l=s,n.pending=null}if(s=e.baseState,l===null)e.memoizedState=s;else{t=l.next;var o=a=null,c=null,d=t,v=!1;do{var Z=d.lane&-536870913;if(Z!==d.lane?(tt&Z)===Z:(Oi&Z)===Z){var V=d.revertLane;if(V===0)c!==null&&(c=c.next={lane:0,revertLane:0,gesture:null,action:d.action,hasEagerState:d.hasEagerState,eagerState:d.eagerState,next:null}),Z===Ql&&(v=!0);else if((Oi&V)===V){d=d.next,V===Ql&&(v=!0);continue}else Z={lane:0,revertLane:d.revertLane,gesture:null,action:d.action,hasEagerState:d.hasEagerState,eagerState:d.eagerState,next:null},c===null?(o=c=Z,a=s):c=c.next=Z,F.lanes|=V,bn|=V;Z=d.action,il&&i(s,Z),s=d.hasEagerState?d.eagerState:i(s,Z)}else V={lane:Z,revertLane:d.revertLane,gesture:d.gesture,action:d.action,hasEagerState:d.hasEagerState,eagerState:d.eagerState,next:null},c===null?(o=c=V,a=s):c=c.next=V,F.lanes|=Z,bn|=Z;d=d.next}while(d!==null&&d!==t);if(c===null?a=s:c.next=o,!be(s,e.memoizedState)&&(Nt=!0,v&&(i=Il,i!==null)))throw i;e.memoizedState=s,e.baseState=a,e.baseQueue=c,n.lastRenderedState=s}return l===null&&(n.lanes=0),[e.memoizedState,n.dispatch]}function Y2(e){var t=Tt(),i=t.queue;if(i===null)throw Error(N(311));i.lastRenderedReducer=e;var n=i.dispatch,l=i.pending,s=t.memoizedState;if(l!==null){i.pending=null;var a=l=l.next;do s=e(s,a.action),a=a.next;while(a!==l);be(s,t.memoizedState)||(Nt=!0),t.memoizedState=s,t.baseQueue===null&&(t.baseState=s),i.lastRenderedState=s}return[s,n]}function WH(e,t,i){var n=F,l=Tt(),s=et;if(s){if(i===void 0)throw Error(N(407));i=i()}else i=t();var a=!be((ht||l).memoizedState,i);if(a&&(l.memoizedState=i,Nt=!0),l=l.queue,c1(iV.bind(null,n,l,e),[e]),l.getSnapshot!==t||a||xt!==null&&xt.memoizedState.tag&1){if(n.flags|=2048,$l(9,{destroy:void 0},eV.bind(null,n,l,i,t),null),dt===null)throw Error(N(349));s||Oi&127||tV(n,t,i)}return i}function tV(e,t,i){e.flags|=16384,e={getSnapshot:t,value:i},t=F.updateQueue,t===null?(t=Fo(),F.updateQueue=t,t.stores=[e]):(i=t.stores,i===null?t.stores=[e]:i.push(e))}function eV(e,t,i,n){t.value=i,t.getSnapshot=n,nV(t)&&lV(e)}function iV(e,t,i){return i(function(){nV(t)&&lV(e)})}function nV(e){var t=e.getSnapshot;e=e.value;try{var i=t();return!be(e,i)}catch{return!0}}function lV(e){var t=cl(e,2);t!==null&&fe(t,e,2)}function Fu(e){var t=ie();if(typeof e=="function"){var i=e;if(e=i(),il){sn(!0);try{i()}finally{sn(!1)}}}return t.memoizedState=t.baseState=e,t.queue={pending:null,lanes:0,dispatch:null,lastRenderedReducer:Ni,lastRenderedState:e},t}function sV(e,t,i,n){return e.baseState=i,u1(e,ht,typeof n=="function"?n:Ni)}function xv(e,t,i,n,l){if(Jo(e))throw Error(N(485));if(e=t.action,e!==null){var s={payload:l,action:e,next:null,isTransition:!0,status:"pending",value:null,reason:null,listeners:[],then:function(a){s.listeners.push(a)}};G.T!==null?i(!0):s.isTransition=!1,n(s),i=t.pending,i===null?(s.next=t.pending=s,rV(t,s)):(s.next=i.next,t.pending=i.next=s)}}function rV(e,t){var i=t.action,n=t.payload,l=e.state;if(t.isTransition){var s=G.T,a={};G.T=a;try{var o=i(l,n),c=G.S;c!==null&&c(a,o),Lf(e,t,o)}catch(d){Ku(e,t,d)}finally{s!==null&&a.types!==null&&(s.types=a.types),G.T=s}}else try{s=i(l,n),Lf(e,t,s)}catch(d){Ku(e,t,d)}}function Lf(e,t,i){i!==null&&typeof i=="object"&&typeof i.then=="function"?i.then(function(n){kf(e,t,n)},function(n){return Ku(e,t,n)}):kf(e,t,i)}function kf(e,t,i){t.status="fulfilled",t.value=i,aV(t),e.state=i,t=e.pending,t!==null&&(i=t.next,i===t?e.pending=null:(i=i.next,t.next=i,rV(e,i)))}function Ku(e,t,i){var n=e.pending;if(e.pending=null,n!==null){n=n.next;do t.status="rejected",t.reason=i,aV(t),t=t.next;while(t!==n)}e.action=null}function aV(e){e=e.listeners;for(var t=0;t<e.length;t++)(0,e[t])()}function oV(e,t){return t}function If(e,t){if(et){var i=dt.formState;if(i!==null){t:{var n=F;if(et){if(vt){e:{for(var l=vt,s=Be;l.nodeType!==8;){if(!s){l=null;break e}if(l=Le(l.nextSibling),l===null){l=null;break e}}s=l.data,l=s==="F!"||s==="F"?l:null}if(l){vt=Le(l.nextSibling),n=l.data==="F!";break t}}Zn(n)}n=!1}n&&(t=i[0])}}return i=ie(),i.memoizedState=i.baseState=t,n={pending:null,lanes:0,dispatch:null,lastRenderedReducer:oV,lastRenderedState:t},i.queue=n,i=_V.bind(null,F,n),n.dispatch=i,n=Fu(!1),s=H1.bind(null,F,!1,n.queue),n=ie(),l={state:t,dispatch:null,action:e,pending:null},n.queue=l,i=xv.bind(null,F,l,s,i),l.dispatch=i,n.memoizedState=e,[t,i,!1]}function zf(e){var t=Tt();return uV(t,ht,e)}function uV(e,t,i){if(t=u1(e,t,oV)[0],e=Da(Ni)[0],typeof t=="object"&&t!==null&&typeof t.then=="function")try{var n=Br(t)}catch(a){throw a===hs?Xo:a}else n=t;t=Tt();var l=t.queue,s=l.dispatch;return i!==t.memoizedState&&(F.flags|=2048,$l(9,{destroy:void 0},Cv.bind(null,l,i),null)),[n,s,e]}function Cv(e,t){e.action=t}function Uf(e){var t=Tt(),i=ht;if(i!==null)return uV(t,i,e);Tt(),t=t.memoizedState,i=Tt();var n=i.queue.dispatch;return i.memoizedState=e,[t,n,!1]}function $l(e,t,i,n){return e={tag:e,create:i,deps:n,inst:t,next:null},t=F.updateQueue,t===null&&(t=Fo(),F.updateQueue=t),i=t.lastEffect,i===null?t.lastEffect=e.next=e:(n=i.next,i.next=e,e.next=n,t.lastEffect=e),e}function cV(){return Tt().memoizedState}function La(e,t,i,n){var l=ie();F.flags|=e,l.memoizedState=$l(1|t,{destroy:void 0},i,n===void 0?null:n)}function Qo(e,t,i,n){var l=Tt();n=n===void 0?null:n;var s=l.memoizedState.inst;ht!==null&&n!==null&&n1(n,ht.memoizedState.deps)?l.memoizedState=$l(t,s,i,n):(F.flags|=e,l.memoizedState=$l(1|t,s,i,n))}function jf(e,t){La(8390656,8,e,t)}function c1(e,t){Qo(2048,8,e,t)}function Ov(e){F.flags|=4;var t=F.updateQueue;if(t===null)t=Fo(),F.updateQueue=t,t.events=[e];else{var i=t.events;i===null?t.events=[e]:i.push(e)}}function hV(e){var t=Tt().memoizedState;return Ov({ref:t,nextImpl:e}),function(){if(lt&2)throw Error(N(440));return t.impl.apply(void 0,arguments)}}function fV(e,t){return Qo(4,2,e,t)}function dV(e,t){return Qo(4,4,e,t)}function HV(e,t){if(typeof t=="function"){e=e();var i=t(e);return function(){typeof i=="function"?i():t(null)}}if(t!=null)return e=e(),t.current=e,function(){t.current=null}}function VV(e,t,i){i=i!=null?i.concat([e]):null,Qo(4,4,HV.bind(null,t,e),i)}function h1(){}function gV(e,t){var i=Tt();t=t===void 0?null:t;var n=i.memoizedState;return t!==null&&n1(t,n[1])?n[0]:(i.memoizedState=[e,t],e)}function pV(e,t){var i=Tt();t=t===void 0?null:t;var n=i.memoizedState;if(t!==null&&n1(t,n[1]))return n[0];if(n=e(),il){sn(!0);try{e()}finally{sn(!1)}}return i.memoizedState=[n,t],n}function f1(e,t,i){return i===void 0||Oi&1073741824&&!(tt&261930)?e.memoizedState=t:(e.memoizedState=i,e=sg(),F.lanes|=e,bn|=e,i)}function mV(e,t,i,n){return be(i,t)?i:Jl.current!==null?(e=f1(e,i,n),be(e,t)||(Nt=!0),e):!(Oi&42)||Oi&1073741824&&!(tt&261930)?(Nt=!0,e.memoizedState=i):(e=sg(),F.lanes|=e,bn|=e,t)}function vV(e,t,i,n,l){var s=st.p;st.p=s!==0&&8>s?s:8;var a=G.T,o={};G.T=o,H1(e,!1,t,i);try{var c=l(),d=G.S;if(d!==null&&d(o,c),c!==null&&typeof c=="object"&&typeof c.then=="function"){var v=Ev(c,n);$s(e,t,v,_e(e))}else $s(e,t,n,_e(e))}catch(Z){$s(e,t,{then:function(){},status:"rejected",reason:Z},_e())}finally{st.p=s,a!==null&&o.types!==null&&(a.types=o.types),G.T=a}}function Nv(){}function Qu(e,t,i,n){if(e.tag!==5)throw Error(N(476));var l=MV(e).queue;vV(e,l,t,Yn,i===null?Nv:function(){return yV(e),i(n)})}function MV(e){var t=e.memoizedState;if(t!==null)return t;t={memoizedState:Yn,baseState:Yn,baseQueue:null,queue:{pending:null,lanes:0,dispatch:null,lastRenderedReducer:Ni,lastRenderedState:Yn},next:null};var i={};return t.next={memoizedState:i,baseState:i,baseQueue:null,queue:{pending:null,lanes:0,dispatch:null,lastRenderedReducer:Ni,lastRenderedState:i},next:null},e.memoizedState=t,e=e.alternate,e!==null&&(e.memoizedState=t),t}function yV(e){var t=MV(e);t.next===null&&(t=e.alternate.memoizedState),$s(e,t.next.queue,{},_e())}function d1(){return Yt(Mr)}function wV(){return Tt().memoizedState}function ZV(){return Tt().memoizedState}function Rv(e){for(var t=e.return;t!==null;){switch(t.tag){case 24:case 3:var i=_e();e=fn(i);var n=dn(t,e,i);n!==null&&(fe(n,t,i),Ks(n,t,i)),t={cache:$c()},e.payload=t;return}t=t.return}}function Bv(e,t,i){var n=_e();i={lane:n,revertLane:0,gesture:null,action:i,hasEagerState:!1,eagerState:null,next:null},Jo(e)?bV(t,i):(i=Fc(e,t,i,n),i!==null&&(fe(i,e,n),SV(i,t,n)))}function _V(e,t,i){var n=_e();$s(e,t,i,n)}function $s(e,t,i,n){var l={lane:n,revertLane:0,gesture:null,action:i,hasEagerState:!1,eagerState:null,next:null};if(Jo(e))bV(t,l);else{var s=e.alternate;if(e.lanes===0&&(s===null||s.lanes===0)&&(s=t.lastRenderedReducer,s!==null))try{var a=t.lastRenderedState,o=s(a,i);if(l.hasEagerState=!0,l.eagerState=o,be(o,a))return Yo(e,t,l,0),dt===null&&qo(),!1}catch{}finally{}if(i=Fc(e,t,l,n),i!==null)return fe(i,e,n),SV(i,t,n),!0}return!1}function H1(e,t,i,n){if(n={lane:2,revertLane:Z1(),gesture:null,action:n,hasEagerState:!1,eagerState:null,next:null},Jo(e)){if(t)throw Error(N(479))}else t=Fc(e,i,n,2),t!==null&&fe(t,e,2)}function Jo(e){var t=e.alternate;return e===F||t!==null&&t===F}function bV(e,t){Ul=oo=!0;var i=e.pending;i===null?t.next=t:(t.next=i.next,i.next=t),e.pending=t}function SV(e,t,i){if(i&4194048){var n=t.lanes;n&=e.pendingLanes,i|=n,t.lanes=i,hH(e,i)}}var pr={readContext:Yt,use:Ko,useCallback:_t,useContext:_t,useEffect:_t,useImperativeHandle:_t,useLayoutEffect:_t,useInsertionEffect:_t,useMemo:_t,useReducer:_t,useRef:_t,useState:_t,useDebugValue:_t,useDeferredValue:_t,useTransition:_t,useSyncExternalStore:_t,useId:_t,useHostTransitionStatus:_t,useFormState:_t,useActionState:_t,useOptimistic:_t,useMemoCache:_t,useCacheRefresh:_t};pr.useEffectEvent=_t;var EV={readContext:Yt,use:Ko,useCallback:function(e,t){return ie().memoizedState=[e,t===void 0?null:t],e},useContext:Yt,useEffect:jf,useImperativeHandle:function(e,t,i){i=i!=null?i.concat([e]):null,La(4194308,4,HV.bind(null,t,e),i)},useLayoutEffect:function(e,t){return La(4194308,4,e,t)},useInsertionEffect:function(e,t){La(4,2,e,t)},useMemo:function(e,t){var i=ie();t=t===void 0?null:t;var n=e();if(il){sn(!0);try{e()}finally{sn(!1)}}return i.memoizedState=[n,t],n},useReducer:function(e,t,i){var n=ie();if(i!==void 0){var l=i(t);if(il){sn(!0);try{i(t)}finally{sn(!1)}}}else l=t;return n.memoizedState=n.baseState=l,e={pending:null,lanes:0,dispatch:null,lastRenderedReducer:e,lastRenderedState:l},n.queue=e,e=e.dispatch=Bv.bind(null,F,e),[n.memoizedState,e]},useRef:function(e){var t=ie();return e={current:e},t.memoizedState=e},useState:function(e){e=Fu(e);var t=e.queue,i=_V.bind(null,F,t);return t.dispatch=i,[e.memoizedState,i]},useDebugValue:h1,useDeferredValue:function(e,t){var i=ie();return f1(i,e,t)},useTransition:function(){var e=Fu(!1);return e=vV.bind(null,F,e.queue,!0,!1),ie().memoizedState=e,[!1,e]},useSyncExternalStore:function(e,t,i){var n=F,l=ie();if(et){if(i===void 0)throw Error(N(407));i=i()}else{if(i=t(),dt===null)throw Error(N(349));tt&127||tV(n,t,i)}l.memoizedState=i;var s={value:i,getSnapshot:t};return l.queue=s,jf(iV.bind(null,n,s,e),[e]),n.flags|=2048,$l(9,{destroy:void 0},eV.bind(null,n,s,i,t),null),i},useId:function(){var e=ie(),t=dt.identifierPrefix;if(et){var i=$e,n=Je;i=(n&~(1<<32-Ze(n)-1)).toString(32)+i,t="_"+t+"R_"+i,i=uo++,0<i&&(t+="H"+i.toString(32)),t+="_"}else i=Tv++,t="_"+t+"r_"+i.toString(32)+"_";return e.memoizedState=t},useHostTransitionStatus:d1,useFormState:If,useActionState:If,useOptimistic:function(e){var t=ie();t.memoizedState=t.baseState=e;var i={pending:null,lanes:0,dispatch:null,lastRenderedReducer:null,lastRenderedState:null};return t.queue=i,t=H1.bind(null,F,!0,i),i.dispatch=t,[e,t]},useMemoCache:o1,useCacheRefresh:function(){return ie().memoizedState=Rv.bind(null,F)},useEffectEvent:function(e){var t=ie(),i={impl:e};return t.memoizedState=i,function(){if(lt&2)throw Error(N(440));return i.impl.apply(void 0,arguments)}}},V1={readContext:Yt,use:Ko,useCallback:gV,useContext:Yt,useEffect:c1,useImperativeHandle:VV,useInsertionEffect:fV,useLayoutEffect:dV,useMemo:pV,useReducer:Da,useRef:cV,useState:function(){return Da(Ni)},useDebugValue:h1,useDeferredValue:function(e,t){var i=Tt();return mV(i,ht.memoizedState,e,t)},useTransition:function(){var e=Da(Ni)[0],t=Tt().memoizedState;return[typeof e=="boolean"?e:Br(e),t]},useSyncExternalStore:WH,useId:wV,useHostTransitionStatus:d1,useFormState:zf,useActionState:zf,useOptimistic:function(e,t){var i=Tt();return sV(i,ht,e,t)},useMemoCache:o1,useCacheRefresh:ZV};V1.useEffectEvent=hV;var TV={readContext:Yt,use:Ko,useCallback:gV,useContext:Yt,useEffect:c1,useImperativeHandle:VV,useInsertionEffect:fV,useLayoutEffect:dV,useMemo:pV,useReducer:Y2,useRef:cV,useState:function(){return Y2(Ni)},useDebugValue:h1,useDeferredValue:function(e,t){var i=Tt();return ht===null?f1(i,e,t):mV(i,ht.memoizedState,e,t)},useTransition:function(){var e=Y2(Ni)[0],t=Tt().memoizedState;return[typeof e=="boolean"?e:Br(e),t]},useSyncExternalStore:WH,useId:wV,useHostTransitionStatus:d1,useFormState:Uf,useActionState:Uf,useOptimistic:function(e,t){var i=Tt();return ht!==null?sV(i,ht,e,t):(i.baseState=e,[e,i.queue.dispatch])},useMemoCache:o1,useCacheRefresh:ZV};TV.useEffectEvent=hV;function X2(e,t,i,n){t=e.memoizedState,i=i(n,t),i=i==null?t:yt({},t,i),e.memoizedState=i,e.lanes===0&&(e.updateQueue.baseState=i)}var Ju={enqueueSetState:function(e,t,i){e=e._reactInternals;var n=_e(),l=fn(n);l.payload=t,i!=null&&(l.callback=i),t=dn(e,l,n),t!==null&&(fe(t,e,n),Ks(t,e,n))},enqueueReplaceState:function(e,t,i){e=e._reactInternals;var n=_e(),l=fn(n);l.tag=1,l.payload=t,i!=null&&(l.callback=i),t=dn(e,l,n),t!==null&&(fe(t,e,n),Ks(t,e,n))},enqueueForceUpdate:function(e,t){e=e._reactInternals;var i=_e(),n=fn(i);n.tag=2,t!=null&&(n.callback=t),t=dn(e,n,i),t!==null&&(fe(t,e,i),Ks(t,e,i))}};function Pf(e,t,i,n,l,s,a){return e=e.stateNode,typeof e.shouldComponentUpdate=="function"?e.shouldComponentUpdate(n,s,a):t.prototype&&t.prototype.isPureReactComponent?!fr(i,n)||!fr(l,s):!0}function Gf(e,t,i,n){e=t.state,typeof t.componentWillReceiveProps=="function"&&t.componentWillReceiveProps(i,n),typeof t.UNSAFE_componentWillReceiveProps=="function"&&t.UNSAFE_componentWillReceiveProps(i,n),t.state!==e&&Ju.enqueueReplaceState(t,t.state,null)}function nl(e,t){var i=t;if("ref"in t){i={};for(var n in t)n!=="ref"&&(i[n]=t[n])}if(e=e.defaultProps){i===t&&(i=yt({},i));for(var l in e)i[l]===void 0&&(i[l]=e[l])}return i}function AV(e){eo(e)}function xV(e){console.error(e)}function CV(e){eo(e)}function co(e,t){try{var i=e.onUncaughtError;i(t.value,{componentStack:t.stack})}catch(n){setTimeout(function(){throw n})}}function qf(e,t,i){try{var n=e.onCaughtError;n(i.value,{componentStack:i.stack,errorBoundary:t.tag===1?t.stateNode:null})}catch(l){setTimeout(function(){throw l})}}function $u(e,t,i){return i=fn(i),i.tag=3,i.payload={element:null},i.callback=function(){co(e,t)},i}function OV(e){return e=fn(e),e.tag=3,e}function NV(e,t,i,n){var l=i.type.getDerivedStateFromError;if(typeof l=="function"){var s=n.value;e.payload=function(){return l(s)},e.callback=function(){qf(t,i,n)}}var a=i.stateNode;a!==null&&typeof a.componentDidCatch=="function"&&(e.callback=function(){qf(t,i,n),typeof l!="function"&&(Hn===null?Hn=new Set([this]):Hn.add(this));var o=n.stack;this.componentDidCatch(n.value,{componentStack:o!==null?o:""})})}function Dv(e,t,i,n,l){if(i.flags|=32768,n!==null&&typeof n=="object"&&typeof n.then=="function"){if(t=i.alternate,t!==null&&cs(t,i,l,!0),i=Se.current,i!==null){switch(i.tag){case 31:case 13:return De===null?go():i.alternate===null&&bt===0&&(bt=3),i.flags&=-257,i.flags|=65536,i.lanes=l,n===so?i.flags|=16384:(t=i.updateQueue,t===null?i.updateQueue=new Set([n]):t.add(n),lu(e,n,l)),!1;case 22:return i.flags|=65536,n===so?i.flags|=16384:(t=i.updateQueue,t===null?(t={transitions:null,markerInstances:null,retryQueue:new Set([n])},i.updateQueue=t):(i=t.retryQueue,i===null?t.retryQueue=new Set([n]):i.add(n)),lu(e,n,l)),!1}throw Error(N(435,i.tag))}return lu(e,n,l),go(),!1}if(et)return t=Se.current,t!==null?(!(t.flags&65536)&&(t.flags|=256),t.flags|=65536,t.lanes=l,n!==Iu&&(e=Error(N(422),{cause:n}),Hr(Re(e,i)))):(n!==Iu&&(t=Error(N(423),{cause:n}),Hr(Re(t,i))),e=e.current.alternate,e.flags|=65536,l&=-l,e.lanes|=l,n=Re(n,i),l=$u(e.stateNode,n,l),q2(e,l),bt!==4&&(bt=2)),!1;var s=Error(N(520),{cause:n});if(s=Re(s,i),er===null?er=[s]:er.push(s),bt!==4&&(bt=2),t===null)return!0;n=Re(n,i),i=t;do{switch(i.tag){case 3:return i.flags|=65536,e=l&-l,i.lanes|=e,e=$u(i.stateNode,n,e),q2(i,e),!1;case 1:if(t=i.type,s=i.stateNode,(i.flags&128)===0&&(typeof t.getDerivedStateFromError=="function"||s!==null&&typeof s.componentDidCatch=="function"&&(Hn===null||!Hn.has(s))))return i.flags|=65536,l&=-l,i.lanes|=l,l=OV(l),NV(l,e,i,n),q2(i,l),!1}i=i.return}while(i!==null);return!1}var g1=Error(N(461)),Nt=!1;function Pt(e,t,i,n){t.child=e===null?XH(t,null,i,n):el(t,e.child,i,n)}function Yf(e,t,i,n,l){i=i.render;var s=t.ref;if("ref"in n){var a={};for(var o in n)o!=="ref"&&(a[o]=n[o])}else a=n;return tl(t),n=l1(e,t,i,a,s,l),o=s1(),e!==null&&!Nt?(r1(e,t,l),Ri(e,t,l)):(et&&o&&Qc(t),t.flags|=1,Pt(e,t,n,l),t.child)}function Xf(e,t,i,n,l){if(e===null){var s=i.type;return typeof s=="function"&&!Kc(s)&&s.defaultProps===void 0&&i.compare===null?(t.tag=15,t.type=s,RV(e,t,s,n,l)):(e=Ra(i.type,null,n,t,t.mode,l),e.ref=t.ref,e.return=t,t.child=e)}if(s=e.child,!p1(e,l)){var a=s.memoizedProps;if(i=i.compare,i=i!==null?i:fr,i(a,n)&&e.ref===t.ref)return Ri(e,t,l)}return t.flags|=1,e=Ti(s,n),e.ref=t.ref,e.return=t,t.child=e}function RV(e,t,i,n,l){if(e!==null){var s=e.memoizedProps;if(fr(s,n)&&e.ref===t.ref)if(Nt=!1,t.pendingProps=n=s,p1(e,l))e.flags&131072&&(Nt=!0);else return t.lanes=e.lanes,Ri(e,t,l)}return Wu(e,t,i,n,l)}function BV(e,t,i,n){var l=n.children,s=e!==null?e.memoizedState:null;if(e===null&&t.stateNode===null&&(t.stateNode={_visibility:1,_pendingMarkers:null,_retryCache:null,_transitions:null}),n.mode==="hidden"){if(t.flags&128){if(s=s!==null?s.baseLanes|i:i,e!==null){for(n=t.child=e.child,l=0;n!==null;)l=l|n.lanes|n.childLanes,n=n.sibling;n=l&~s}else n=0,t.child=null;return Ff(e,t,s,i,n)}if(i&536870912)t.memoizedState={baseLanes:0,cachePool:null},e!==null&&Ba(t,s!==null?s.cachePool:null),s!==null?Df(t,s):Yu(),QH(t);else return n=t.lanes=536870912,Ff(e,t,s!==null?s.baseLanes|i:i,i,n)}else s!==null?(Ba(t,s.cachePool),Df(t,s),Wi(),t.memoizedState=null):(e!==null&&Ba(t,null),Yu(),Wi());return Pt(e,t,l,i),t.child}function js(e,t){return e!==null&&e.tag===22||t.stateNode!==null||(t.stateNode={_visibility:1,_pendingMarkers:null,_retryCache:null,_transitions:null}),t.sibling}function Ff(e,t,i,n,l){var s=Wc();return s=s===null?null:{parent:Ot._currentValue,pool:s},t.memoizedState={baseLanes:i,cachePool:s},e!==null&&Ba(t,null),Yu(),QH(t),e!==null&&cs(e,t,n,!0),t.childLanes=l,null}function ka(e,t){return t=ho({mode:t.mode,children:t.children},e.mode),t.ref=e.ref,e.child=t,t.return=e,t}function Kf(e,t,i){return el(t,e.child,null,i),e=ka(t,t.pendingProps),e.flags|=2,pe(t),t.memoizedState=null,e}function Lv(e,t,i){var n=t.pendingProps,l=(t.flags&128)!==0;if(t.flags&=-129,e===null){if(et){if(n.mode==="hidden")return e=ka(t,n),t.lanes=536870912,js(null,e);if(Xu(t),(e=vt)?(e=Eg(e,Be),e=e!==null&&e.data==="&"?e:null,e!==null&&(t.memoizedState={dehydrated:e,treeContext:wn!==null?{id:Je,overflow:$e}:null,retryLane:536870912,hydrationErrors:null},i=zH(e),i.return=t,t.child=i,qt=t,vt=null)):e=null,e===null)throw Zn(t);return t.lanes=536870912,null}return ka(t,n)}var s=e.memoizedState;if(s!==null){var a=s.dehydrated;if(Xu(t),l)if(t.flags&256)t.flags&=-257,t=Kf(e,t,i);else if(t.memoizedState!==null)t.child=e.child,t.flags|=128,t=null;else throw Error(N(558));else if(Nt||cs(e,t,i,!1),l=(i&e.childLanes)!==0,Nt||l){if(n=dt,n!==null&&(a=fH(n,i),a!==0&&a!==s.retryLane))throw s.retryLane=a,cl(e,a),fe(n,e,a),g1;go(),t=Kf(e,t,i)}else e=s.treeContext,vt=Le(a.nextSibling),qt=t,et=!0,hn=null,Be=!1,e!==null&&jH(t,e),t=ka(t,n),t.flags|=4096;return t}return e=Ti(e.child,{mode:n.mode,children:n.children}),e.ref=t.ref,t.child=e,e.return=t,e}function Ia(e,t){var i=t.ref;if(i===null)e!==null&&e.ref!==null&&(t.flags|=4194816);else{if(typeof i!="function"&&typeof i!="object")throw Error(N(284));(e===null||e.ref!==i)&&(t.flags|=4194816)}}function Wu(e,t,i,n,l){return tl(t),i=l1(e,t,i,n,void 0,l),n=s1(),e!==null&&!Nt?(r1(e,t,l),Ri(e,t,l)):(et&&n&&Qc(t),t.flags|=1,Pt(e,t,i,l),t.child)}function Qf(e,t,i,n,l,s){return tl(t),t.updateQueue=null,i=$H(t,n,i,l),JH(e),n=s1(),e!==null&&!Nt?(r1(e,t,s),Ri(e,t,s)):(et&&n&&Qc(t),t.flags|=1,Pt(e,t,i,s),t.child)}function Jf(e,t,i,n,l){if(tl(t),t.stateNode===null){var s=Ol,a=i.contextType;typeof a=="object"&&a!==null&&(s=Yt(a)),s=new i(n,s),t.memoizedState=s.state!==null&&s.state!==void 0?s.state:null,s.updater=Ju,t.stateNode=s,s._reactInternals=t,s=t.stateNode,s.props=n,s.state=t.memoizedState,s.refs={},e1(t),a=i.contextType,s.context=typeof a=="object"&&a!==null?Yt(a):Ol,s.state=t.memoizedState,a=i.getDerivedStateFromProps,typeof a=="function"&&(X2(t,i,a,n),s.state=t.memoizedState),typeof i.getDerivedStateFromProps=="function"||typeof s.getSnapshotBeforeUpdate=="function"||typeof s.UNSAFE_componentWillMount!="function"&&typeof s.componentWillMount!="function"||(a=s.state,typeof s.componentWillMount=="function"&&s.componentWillMount(),typeof s.UNSAFE_componentWillMount=="function"&&s.UNSAFE_componentWillMount(),a!==s.state&&Ju.enqueueReplaceState(s,s.state,null),Js(t,n,s,l),Qs(),s.state=t.memoizedState),typeof s.componentDidMount=="function"&&(t.flags|=4194308),n=!0}else if(e===null){s=t.stateNode;var o=t.memoizedProps,c=nl(i,o);s.props=c;var d=s.context,v=i.contextType;a=Ol,typeof v=="object"&&v!==null&&(a=Yt(v));var Z=i.getDerivedStateFromProps;v=typeof Z=="function"||typeof s.getSnapshotBeforeUpdate=="function",o=t.pendingProps!==o,v||typeof s.UNSAFE_componentWillReceiveProps!="function"&&typeof s.componentWillReceiveProps!="function"||(o||d!==a)&&Gf(t,s,n,a),Qi=!1;var V=t.memoizedState;s.state=V,Js(t,n,s,l),Qs(),d=t.memoizedState,o||V!==d||Qi?(typeof Z=="function"&&(X2(t,i,Z,n),d=t.memoizedState),(c=Qi||Pf(t,i,c,n,V,d,a))?(v||typeof s.UNSAFE_componentWillMount!="function"&&typeof s.componentWillMount!="function"||(typeof s.componentWillMount=="function"&&s.componentWillMount(),typeof s.UNSAFE_componentWillMount=="function"&&s.UNSAFE_componentWillMount()),typeof s.componentDidMount=="function"&&(t.flags|=4194308)):(typeof s.componentDidMount=="function"&&(t.flags|=4194308),t.memoizedProps=n,t.memoizedState=d),s.props=n,s.state=d,s.context=a,n=c):(typeof s.componentDidMount=="function"&&(t.flags|=4194308),n=!1)}else{s=t.stateNode,Gu(e,t),a=t.memoizedProps,v=nl(i,a),s.props=v,Z=t.pendingProps,V=s.context,d=i.contextType,c=Ol,typeof d=="object"&&d!==null&&(c=Yt(d)),o=i.getDerivedStateFromProps,(d=typeof o=="function"||typeof s.getSnapshotBeforeUpdate=="function")||typeof s.UNSAFE_componentWillReceiveProps!="function"&&typeof s.componentWillReceiveProps!="function"||(a!==Z||V!==c)&&Gf(t,s,n,c),Qi=!1,V=t.memoizedState,s.state=V,Js(t,n,s,l),Qs();var b=t.memoizedState;a!==Z||V!==b||Qi||e!==null&&e.dependencies!==null&&lo(e.dependencies)?(typeof o=="function"&&(X2(t,i,o,n),b=t.memoizedState),(v=Qi||Pf(t,i,v,n,V,b,c)||e!==null&&e.dependencies!==null&&lo(e.dependencies))?(d||typeof s.UNSAFE_componentWillUpdate!="function"&&typeof s.componentWillUpdate!="function"||(typeof s.componentWillUpdate=="function"&&s.componentWillUpdate(n,b,c),typeof s.UNSAFE_componentWillUpdate=="function"&&s.UNSAFE_componentWillUpdate(n,b,c)),typeof s.componentDidUpdate=="function"&&(t.flags|=4),typeof s.getSnapshotBeforeUpdate=="function"&&(t.flags|=1024)):(typeof s.componentDidUpdate!="function"||a===e.memoizedProps&&V===e.memoizedState||(t.flags|=4),typeof s.getSnapshotBeforeUpdate!="function"||a===e.memoizedProps&&V===e.memoizedState||(t.flags|=1024),t.memoizedProps=n,t.memoizedState=b),s.props=n,s.state=b,s.context=c,n=v):(typeof s.componentDidUpdate!="function"||a===e.memoizedProps&&V===e.memoizedState||(t.flags|=4),typeof s.getSnapshotBeforeUpdate!="function"||a===e.memoizedProps&&V===e.memoizedState||(t.flags|=1024),n=!1)}return s=n,Ia(e,t),n=(t.flags&128)!==0,s||n?(s=t.stateNode,i=n&&typeof i.getDerivedStateFromError!="function"?null:s.render(),t.flags|=1,e!==null&&n?(t.child=el(t,e.child,null,l),t.child=el(t,null,i,l)):Pt(e,t,i,l),t.memoizedState=s.state,e=t.child):e=Ri(e,t,l),e}function $f(e,t,i,n){return Wn(),t.flags|=256,Pt(e,t,i,n),t.child}var F2={dehydrated:null,treeContext:null,retryLane:0,hydrationErrors:null};function K2(e){return{baseLanes:e,cachePool:GH()}}function Q2(e,t,i){return e=e!==null?e.childLanes&~i:0,t&&(e|=Me),e}function DV(e,t,i){var n=t.pendingProps,l=!1,s=(t.flags&128)!==0,a;if((a=s)||(a=e!==null&&e.memoizedState===null?!1:(Et.current&2)!==0),a&&(l=!0,t.flags&=-129),a=(t.flags&32)!==0,t.flags&=-33,e===null){if(et){if(l?$i(t):Wi(),(e=vt)?(e=Eg(e,Be),e=e!==null&&e.data!=="&"?e:null,e!==null&&(t.memoizedState={dehydrated:e,treeContext:wn!==null?{id:Je,overflow:$e}:null,retryLane:536870912,hydrationErrors:null},i=zH(e),i.return=t,t.child=i,qt=t,vt=null)):e=null,e===null)throw Zn(t);return dc(e)?t.lanes=32:t.lanes=536870912,null}var o=n.children;return n=n.fallback,l?(Wi(),l=t.mode,o=ho({mode:"hidden",children:o},l),n=Xn(n,l,i,null),o.return=t,n.return=t,o.sibling=n,t.child=o,n=t.child,n.memoizedState=K2(i),n.childLanes=Q2(e,a,i),t.memoizedState=F2,js(null,n)):($i(t),tc(t,o))}var c=e.memoizedState;if(c!==null&&(o=c.dehydrated,o!==null)){if(s)t.flags&256?($i(t),t.flags&=-257,t=J2(e,t,i)):t.memoizedState!==null?(Wi(),t.child=e.child,t.flags|=128,t=null):(Wi(),o=n.fallback,l=t.mode,n=ho({mode:"visible",children:n.children},l),o=Xn(o,l,i,null),o.flags|=2,n.return=t,o.return=t,n.sibling=o,t.child=n,el(t,e.child,null,i),n=t.child,n.memoizedState=K2(i),n.childLanes=Q2(e,a,i),t.memoizedState=F2,t=js(null,n));else if($i(t),dc(o)){if(a=o.nextSibling&&o.nextSibling.dataset,a)var d=a.dgst;a=d,n=Error(N(419)),n.stack="",n.digest=a,Hr({value:n,source:null,stack:null}),t=J2(e,t,i)}else if(Nt||cs(e,t,i,!1),a=(i&e.childLanes)!==0,Nt||a){if(a=dt,a!==null&&(n=fH(a,i),n!==0&&n!==c.retryLane))throw c.retryLane=n,cl(e,n),fe(a,e,n),g1;fc(o)||go(),t=J2(e,t,i)}else fc(o)?(t.flags|=192,t.child=e.child,t=null):(e=c.treeContext,vt=Le(o.nextSibling),qt=t,et=!0,hn=null,Be=!1,e!==null&&jH(t,e),t=tc(t,n.children),t.flags|=4096);return t}return l?(Wi(),o=n.fallback,l=t.mode,c=e.child,d=c.sibling,n=Ti(c,{mode:"hidden",children:n.children}),n.subtreeFlags=c.subtreeFlags&65011712,d!==null?o=Ti(d,o):(o=Xn(o,l,i,null),o.flags|=2),o.return=t,n.return=t,n.sibling=o,t.child=n,js(null,n),n=t.child,o=e.child.memoizedState,o===null?o=K2(i):(l=o.cachePool,l!==null?(c=Ot._currentValue,l=l.parent!==c?{parent:c,pool:c}:l):l=GH(),o={baseLanes:o.baseLanes|i,cachePool:l}),n.memoizedState=o,n.childLanes=Q2(e,a,i),t.memoizedState=F2,js(e.child,n)):($i(t),i=e.child,e=i.sibling,i=Ti(i,{mode:"visible",children:n.children}),i.return=t,i.sibling=null,e!==null&&(a=t.deletions,a===null?(t.deletions=[e],t.flags|=16):a.push(e)),t.child=i,t.memoizedState=null,i)}function tc(e,t){return t=ho({mode:"visible",children:t},e.mode),t.return=e,e.child=t}function ho(e,t){return e=me(22,e,null,t),e.lanes=0,e}function J2(e,t,i){return el(t,e.child,null,i),e=tc(t,t.pendingProps.children),e.flags|=2,t.memoizedState=null,e}function Wf(e,t,i){e.lanes|=t;var n=e.alternate;n!==null&&(n.lanes|=t),Uu(e.return,t,i)}function $2(e,t,i,n,l,s){var a=e.memoizedState;a===null?e.memoizedState={isBackwards:t,rendering:null,renderingStartTime:0,last:n,tail:i,tailMode:l,treeForkCount:s}:(a.isBackwards=t,a.rendering=null,a.renderingStartTime=0,a.last=n,a.tail=i,a.tailMode=l,a.treeForkCount=s)}function LV(e,t,i){var n=t.pendingProps,l=n.revealOrder,s=n.tail;n=n.children;var a=Et.current,o=(a&2)!==0;if(o?(a=a&1|2,t.flags|=128):a&=1,Vt(Et,a),Pt(e,t,n,i),n=et?dr:0,!o&&e!==null&&e.flags&128)t:for(e=t.child;e!==null;){if(e.tag===13)e.memoizedState!==null&&Wf(e,i,t);else if(e.tag===19)Wf(e,i,t);else if(e.child!==null){e.child.return=e,e=e.child;continue}if(e===t)break t;for(;e.sibling===null;){if(e.return===null||e.return===t)break t;e=e.return}e.sibling.return=e.return,e=e.sibling}switch(l){case"forwards":for(i=t.child,l=null;i!==null;)e=i.alternate,e!==null&&ao(e)===null&&(l=i),i=i.sibling;i=l,i===null?(l=t.child,t.child=null):(l=i.sibling,i.sibling=null),$2(t,!1,l,i,s,n);break;case"backwards":case"unstable_legacy-backwards":for(i=null,l=t.child,t.child=null;l!==null;){if(e=l.alternate,e!==null&&ao(e)===null){t.child=l;break}e=l.sibling,l.sibling=i,i=l,l=e}$2(t,!0,i,null,s,n);break;case"together":$2(t,!1,null,null,void 0,n);break;default:t.memoizedState=null}return t.child}function Ri(e,t,i){if(e!==null&&(t.dependencies=e.dependencies),bn|=t.lanes,!(i&t.childLanes))if(e!==null){if(cs(e,t,i,!1),(i&t.childLanes)===0)return null}else return null;if(e!==null&&t.child!==e.child)throw Error(N(153));if(t.child!==null){for(e=t.child,i=Ti(e,e.pendingProps),t.child=i,i.return=t;e.sibling!==null;)e=e.sibling,i=i.sibling=Ti(e,e.pendingProps),i.return=t;i.sibling=null}return t.child}function p1(e,t){return e.lanes&t?!0:(e=e.dependencies,!!(e!==null&&lo(e)))}function kv(e,t,i){switch(t.tag){case 3:Ja(t,t.stateNode.containerInfo),Ji(t,Ot,e.memoizedState.cache),Wn();break;case 27:case 5:Tu(t);break;case 4:Ja(t,t.stateNode.containerInfo);break;case 10:Ji(t,t.type,t.memoizedProps.value);break;case 31:if(t.memoizedState!==null)return t.flags|=128,Xu(t),null;break;case 13:var n=t.memoizedState;if(n!==null)return n.dehydrated!==null?($i(t),t.flags|=128,null):i&t.child.childLanes?DV(e,t,i):($i(t),e=Ri(e,t,i),e!==null?e.sibling:null);$i(t);break;case 19:var l=(e.flags&128)!==0;if(n=(i&t.childLanes)!==0,n||(cs(e,t,i,!1),n=(i&t.childLanes)!==0),l){if(n)return LV(e,t,i);t.flags|=128}if(l=t.memoizedState,l!==null&&(l.rendering=null,l.tail=null,l.lastEffect=null),Vt(Et,Et.current),n)break;return null;case 22:return t.lanes=0,BV(e,t,i,t.pendingProps);case 24:Ji(t,Ot,e.memoizedState.cache)}return Ri(e,t,i)}function kV(e,t,i){if(e!==null)if(e.memoizedProps!==t.pendingProps)Nt=!0;else{if(!p1(e,i)&&!(t.flags&128))return Nt=!1,kv(e,t,i);Nt=!!(e.flags&131072)}else Nt=!1,et&&t.flags&1048576&&UH(t,dr,t.index);switch(t.lanes=0,t.tag){case 16:t:{var n=t.pendingProps;if(e=zn(t.elementType),t.type=e,typeof e=="function")Kc(e)?(n=nl(e,n),t.tag=1,t=Jf(null,t,e,n,i)):(t.tag=0,t=Wu(null,t,e,n,i));else{if(e!=null){var l=e.$$typeof;if(l===Bc){t.tag=11,t=Yf(null,t,e,n,i);break t}else if(l===Dc){t.tag=14,t=Xf(null,t,e,n,i);break t}}throw t=Su(e)||e,Error(N(306,t,""))}}return t;case 0:return Wu(e,t,t.type,t.pendingProps,i);case 1:return n=t.type,l=nl(n,t.pendingProps),Jf(e,t,n,l,i);case 3:t:{if(Ja(t,t.stateNode.containerInfo),e===null)throw Error(N(387));n=t.pendingProps;var s=t.memoizedState;l=s.element,Gu(e,t),Js(t,n,null,i);var a=t.memoizedState;if(n=a.cache,Ji(t,Ot,n),n!==s.cache&&ju(t,[Ot],i,!0),Qs(),n=a.element,s.isDehydrated)if(s={element:n,isDehydrated:!1,cache:a.cache},t.updateQueue.baseState=s,t.memoizedState=s,t.flags&256){t=$f(e,t,n,i);break t}else if(n!==l){l=Re(Error(N(424)),t),Hr(l),t=$f(e,t,n,i);break t}else{switch(e=t.stateNode.containerInfo,e.nodeType){case 9:e=e.body;break;default:e=e.nodeName==="HTML"?e.ownerDocument.body:e}for(vt=Le(e.firstChild),qt=t,et=!0,hn=null,Be=!0,i=XH(t,null,n,i),t.child=i;i;)i.flags=i.flags&-3|4096,i=i.sibling}else{if(Wn(),n===l){t=Ri(e,t,i);break t}Pt(e,t,n,i)}t=t.child}return t;case 26:return Ia(e,t),e===null?(i=v0(t.type,null,t.pendingProps,null))?t.memoizedState=i:et||(i=t.type,e=t.pendingProps,n=Mo(cn.current).createElement(i),n[Gt]=t,n[de]=e,Xt(n,i,e),It(n),t.stateNode=n):t.memoizedState=v0(t.type,e.memoizedProps,t.pendingProps,e.memoizedState),null;case 27:return Tu(t),e===null&&et&&(n=t.stateNode=Tg(t.type,t.pendingProps,cn.current),qt=t,Be=!0,l=vt,An(t.type)?(Hc=l,vt=Le(n.firstChild)):vt=l),Pt(e,t,t.pendingProps.children,i),Ia(e,t),e===null&&(t.flags|=4194304),t.child;case 5:return e===null&&et&&((l=n=vt)&&(n=H9(n,t.type,t.pendingProps,Be),n!==null?(t.stateNode=n,qt=t,vt=Le(n.firstChild),Be=!1,l=!0):l=!1),l||Zn(t)),Tu(t),l=t.type,s=t.pendingProps,a=e!==null?e.memoizedProps:null,n=s.children,cc(l,s)?n=null:a!==null&&cc(l,a)&&(t.flags|=32),t.memoizedState!==null&&(l=l1(e,t,Av,null,null,i),Mr._currentValue=l),Ia(e,t),Pt(e,t,n,i),t.child;case 6:return e===null&&et&&((e=i=vt)&&(i=V9(i,t.pendingProps,Be),i!==null?(t.stateNode=i,qt=t,vt=null,e=!0):e=!1),e||Zn(t)),null;case 13:return DV(e,t,i);case 4:return Ja(t,t.stateNode.containerInfo),n=t.pendingProps,e===null?t.child=el(t,null,n,i):Pt(e,t,n,i),t.child;case 11:return Yf(e,t,t.type,t.pendingProps,i);case 7:return Pt(e,t,t.pendingProps,i),t.child;case 8:return Pt(e,t,t.pendingProps.children,i),t.child;case 12:return Pt(e,t,t.pendingProps.children,i),t.child;case 10:return n=t.pendingProps,Ji(t,t.type,n.value),Pt(e,t,n.children,i),t.child;case 9:return l=t.type._context,n=t.pendingProps.children,tl(t),l=Yt(l),n=n(l),t.flags|=1,Pt(e,t,n,i),t.child;case 14:return Xf(e,t,t.type,t.pendingProps,i);case 15:return RV(e,t,t.type,t.pendingProps,i);case 19:return LV(e,t,i);case 31:return Lv(e,t,i);case 22:return BV(e,t,i,t.pendingProps);case 24:return tl(t),n=Yt(Ot),e===null?(l=Wc(),l===null&&(l=dt,s=$c(),l.pooledCache=s,s.refCount++,s!==null&&(l.pooledCacheLanes|=i),l=s),t.memoizedState={parent:n,cache:l},e1(t),Ji(t,Ot,l)):(e.lanes&i&&(Gu(e,t),Js(t,null,null,i),Qs()),l=e.memoizedState,s=t.memoizedState,l.parent!==n?(l={parent:n,cache:n},t.memoizedState=l,t.lanes===0&&(t.memoizedState=t.updateQueue.baseState=l),Ji(t,Ot,n)):(n=s.cache,Ji(t,Ot,n),n!==l.cache&&ju(t,[Ot],i,!0))),Pt(e,t,t.pendingProps.children,i),t.child;case 29:throw t.pendingProps}throw Error(N(156,t.tag))}function Hi(e){e.flags|=4}function W2(e,t,i,n,l){if((t=(e.mode&32)!==0)&&(t=!1),t){if(e.flags|=16777216,(l&335544128)===l)if(e.stateNode.complete)e.flags|=8192;else if(og())e.flags|=8192;else throw Kn=so,t1}else e.flags&=-16777217}function t0(e,t){if(t.type!=="stylesheet"||t.state.loading&4)e.flags&=-16777217;else if(e.flags|=16777216,!Cg(t))if(og())e.flags|=8192;else throw Kn=so,t1}function ma(e,t){t!==null&&(e.flags|=4),e.flags&16384&&(t=e.tag!==22?uH():536870912,e.lanes|=t,Wl|=t)}function Bs(e,t){if(!et)switch(e.tailMode){case"hidden":t=e.tail;for(var i=null;t!==null;)t.alternate!==null&&(i=t),t=t.sibling;i===null?e.tail=null:i.sibling=null;break;case"collapsed":i=e.tail;for(var n=null;i!==null;)i.alternate!==null&&(n=i),i=i.sibling;n===null?t||e.tail===null?e.tail=null:e.tail.sibling=null:n.sibling=null}}function pt(e){var t=e.alternate!==null&&e.alternate.child===e.child,i=0,n=0;if(t)for(var l=e.child;l!==null;)i|=l.lanes|l.childLanes,n|=l.subtreeFlags&65011712,n|=l.flags&65011712,l.return=e,l=l.sibling;else for(l=e.child;l!==null;)i|=l.lanes|l.childLanes,n|=l.subtreeFlags,n|=l.flags,l.return=e,l=l.sibling;return e.subtreeFlags|=n,e.childLanes=i,t}function Iv(e,t,i){var n=t.pendingProps;switch(Jc(t),t.tag){case 16:case 15:case 0:case 11:case 7:case 8:case 12:case 9:case 14:return pt(t),null;case 1:return pt(t),null;case 3:return i=t.stateNode,n=null,e!==null&&(n=e.memoizedState.cache),t.memoizedState.cache!==n&&(t.flags|=2048),Ai(Ot),Xl(),i.pendingContext&&(i.context=i.pendingContext,i.pendingContext=null),(e===null||e.child===null)&&(vl(t)?Hi(t):e===null||e.memoizedState.isDehydrated&&!(t.flags&256)||(t.flags|=1024,G2())),pt(t),null;case 26:var l=t.type,s=t.memoizedState;return e===null?(Hi(t),s!==null?(pt(t),t0(t,s)):(pt(t),W2(t,l,null,n,i))):s?s!==e.memoizedState?(Hi(t),pt(t),t0(t,s)):(pt(t),t.flags&=-16777217):(e=e.memoizedProps,e!==n&&Hi(t),pt(t),W2(t,l,e,n,i)),null;case 27:if($a(t),i=cn.current,l=t.type,e!==null&&t.stateNode!=null)e.memoizedProps!==n&&Hi(t);else{if(!n){if(t.stateNode===null)throw Error(N(166));return pt(t),null}e=ei.current,vl(t)?Af(t):(e=Tg(l,n,i),t.stateNode=e,Hi(t))}return pt(t),null;case 5:if($a(t),l=t.type,e!==null&&t.stateNode!=null)e.memoizedProps!==n&&Hi(t);else{if(!n){if(t.stateNode===null)throw Error(N(166));return pt(t),null}if(s=ei.current,vl(t))Af(t);else{var a=Mo(cn.current);switch(s){case 1:s=a.createElementNS("http://www.w3.org/2000/svg",l);break;case 2:s=a.createElementNS("http://www.w3.org/1998/Math/MathML",l);break;default:switch(l){case"svg":s=a.createElementNS("http://www.w3.org/2000/svg",l);break;case"math":s=a.createElementNS("http://www.w3.org/1998/Math/MathML",l);break;case"script":s=a.createElement("div"),s.innerHTML="<script><\/script>",s=s.removeChild(s.firstChild);break;case"select":s=typeof n.is=="string"?a.createElement("select",{is:n.is}):a.createElement("select"),n.multiple?s.multiple=!0:n.size&&(s.size=n.size);break;default:s=typeof n.is=="string"?a.createElement(l,{is:n.is}):a.createElement(l)}}s[Gt]=t,s[de]=n;t:for(a=t.child;a!==null;){if(a.tag===5||a.tag===6)s.appendChild(a.stateNode);else if(a.tag!==4&&a.tag!==27&&a.child!==null){a.child.return=a,a=a.child;continue}if(a===t)break t;for(;a.sibling===null;){if(a.return===null||a.return===t)break t;a=a.return}a.sibling.return=a.return,a=a.sibling}t.stateNode=s;t:switch(Xt(s,l,n),l){case"button":case"input":case"select":case"textarea":n=!!n.autoFocus;break t;case"img":n=!0;break t;default:n=!1}n&&Hi(t)}}return pt(t),W2(t,t.type,e===null?null:e.memoizedProps,t.pendingProps,i),null;case 6:if(e&&t.stateNode!=null)e.memoizedProps!==n&&Hi(t);else{if(typeof n!="string"&&t.stateNode===null)throw Error(N(166));if(e=cn.current,vl(t)){if(e=t.stateNode,i=t.memoizedProps,n=null,l=qt,l!==null)switch(l.tag){case 27:case 5:n=l.memoizedProps}e[Gt]=t,e=!!(e.nodeValue===i||n!==null&&n.suppressHydrationWarning===!0||_g(e.nodeValue,i)),e||Zn(t,!0)}else e=Mo(e).createTextNode(n),e[Gt]=t,t.stateNode=e}return pt(t),null;case 31:if(i=t.memoizedState,e===null||e.memoizedState!==null){if(n=vl(t),i!==null){if(e===null){if(!n)throw Error(N(318));if(e=t.memoizedState,e=e!==null?e.dehydrated:null,!e)throw Error(N(557));e[Gt]=t}else Wn(),!(t.flags&128)&&(t.memoizedState=null),t.flags|=4;pt(t),e=!1}else i=G2(),e!==null&&e.memoizedState!==null&&(e.memoizedState.hydrationErrors=i),e=!0;if(!e)return t.flags&256?(pe(t),t):(pe(t),null);if(t.flags&128)throw Error(N(558))}return pt(t),null;case 13:if(n=t.memoizedState,e===null||e.memoizedState!==null&&e.memoizedState.dehydrated!==null){if(l=vl(t),n!==null&&n.dehydrated!==null){if(e===null){if(!l)throw Error(N(318));if(l=t.memoizedState,l=l!==null?l.dehydrated:null,!l)throw Error(N(317));l[Gt]=t}else Wn(),!(t.flags&128)&&(t.memoizedState=null),t.flags|=4;pt(t),l=!1}else l=G2(),e!==null&&e.memoizedState!==null&&(e.memoizedState.hydrationErrors=l),l=!0;if(!l)return t.flags&256?(pe(t),t):(pe(t),null)}return pe(t),t.flags&128?(t.lanes=i,t):(i=n!==null,e=e!==null&&e.memoizedState!==null,i&&(n=t.child,l=null,n.alternate!==null&&n.alternate.memoizedState!==null&&n.alternate.memoizedState.cachePool!==null&&(l=n.alternate.memoizedState.cachePool.pool),s=null,n.memoizedState!==null&&n.memoizedState.cachePool!==null&&(s=n.memoizedState.cachePool.pool),s!==l&&(n.flags|=2048)),i!==e&&i&&(t.child.flags|=8192),ma(t,t.updateQueue),pt(t),null);case 4:return Xl(),e===null&&_1(t.stateNode.containerInfo),pt(t),null;case 10:return Ai(t.type),pt(t),null;case 19:if(zt(Et),n=t.memoizedState,n===null)return pt(t),null;if(l=(t.flags&128)!==0,s=n.rendering,s===null)if(l)Bs(n,!1);else{if(bt!==0||e!==null&&e.flags&128)for(e=t.child;e!==null;){if(s=ao(e),s!==null){for(t.flags|=128,Bs(n,!1),e=s.updateQueue,t.updateQueue=e,ma(t,e),t.subtreeFlags=0,e=i,i=t.child;i!==null;)IH(i,e),i=i.sibling;return Vt(Et,Et.current&1|2),et&&vi(t,n.treeForkCount),t.child}e=e.sibling}n.tail!==null&&ye()>Ho&&(t.flags|=128,l=!0,Bs(n,!1),t.lanes=4194304)}else{if(!l)if(e=ao(s),e!==null){if(t.flags|=128,l=!0,e=e.updateQueue,t.updateQueue=e,ma(t,e),Bs(n,!0),n.tail===null&&n.tailMode==="hidden"&&!s.alternate&&!et)return pt(t),null}else 2*ye()-n.renderingStartTime>Ho&&i!==536870912&&(t.flags|=128,l=!0,Bs(n,!1),t.lanes=4194304);n.isBackwards?(s.sibling=t.child,t.child=s):(e=n.last,e!==null?e.sibling=s:t.child=s,n.last=s)}return n.tail!==null?(e=n.tail,n.rendering=e,n.tail=e.sibling,n.renderingStartTime=ye(),e.sibling=null,i=Et.current,Vt(Et,l?i&1|2:i&1),et&&vi(t,n.treeForkCount),e):(pt(t),null);case 22:case 23:return pe(t),i1(),n=t.memoizedState!==null,e!==null?e.memoizedState!==null!==n&&(t.flags|=8192):n&&(t.flags|=8192),n?i&536870912&&!(t.flags&128)&&(pt(t),t.subtreeFlags&6&&(t.flags|=8192)):pt(t),i=t.updateQueue,i!==null&&ma(t,i.retryQueue),i=null,e!==null&&e.memoizedState!==null&&e.memoizedState.cachePool!==null&&(i=e.memoizedState.cachePool.pool),n=null,t.memoizedState!==null&&t.memoizedState.cachePool!==null&&(n=t.memoizedState.cachePool.pool),n!==i&&(t.flags|=2048),e!==null&&zt(Fn),null;case 24:return i=null,e!==null&&(i=e.memoizedState.cache),t.memoizedState.cache!==i&&(t.flags|=2048),Ai(Ot),pt(t),null;case 25:return null;case 30:return null}throw Error(N(156,t.tag))}function zv(e,t){switch(Jc(t),t.tag){case 1:return e=t.flags,e&65536?(t.flags=e&-65537|128,t):null;case 3:return Ai(Ot),Xl(),e=t.flags,e&65536&&!(e&128)?(t.flags=e&-65537|128,t):null;case 26:case 27:case 5:return $a(t),null;case 31:if(t.memoizedState!==null){if(pe(t),t.alternate===null)throw Error(N(340));Wn()}return e=t.flags,e&65536?(t.flags=e&-65537|128,t):null;case 13:if(pe(t),e=t.memoizedState,e!==null&&e.dehydrated!==null){if(t.alternate===null)throw Error(N(340));Wn()}return e=t.flags,e&65536?(t.flags=e&-65537|128,t):null;case 19:return zt(Et),null;case 4:return Xl(),null;case 10:return Ai(t.type),null;case 22:case 23:return pe(t),i1(),e!==null&&zt(Fn),e=t.flags,e&65536?(t.flags=e&-65537|128,t):null;case 24:return Ai(Ot),null;case 25:return null;default:return null}}function IV(e,t){switch(Jc(t),t.tag){case 3:Ai(Ot),Xl();break;case 26:case 27:case 5:$a(t);break;case 4:Xl();break;case 31:t.memoizedState!==null&&pe(t);break;case 13:pe(t);break;case 19:zt(Et);break;case 10:Ai(t.type);break;case 22:case 23:pe(t),i1(),e!==null&&zt(Fn);break;case 24:Ai(Ot)}}function Dr(e,t){try{var i=t.updateQueue,n=i!==null?i.lastEffect:null;if(n!==null){var l=n.next;i=l;do{if((i.tag&e)===e){n=void 0;var s=i.create,a=i.inst;n=s(),a.destroy=n}i=i.next}while(i!==l)}}catch(o){ut(t,t.return,o)}}function _n(e,t,i){try{var n=t.updateQueue,l=n!==null?n.lastEffect:null;if(l!==null){var s=l.next;n=s;do{if((n.tag&e)===e){var a=n.inst,o=a.destroy;if(o!==void 0){a.destroy=void 0,l=t;var c=i,d=o;try{d()}catch(v){ut(l,c,v)}}}n=n.next}while(n!==s)}}catch(v){ut(t,t.return,v)}}function zV(e){var t=e.updateQueue;if(t!==null){var i=e.stateNode;try{KH(t,i)}catch(n){ut(e,e.return,n)}}}function UV(e,t,i){i.props=nl(e.type,e.memoizedProps),i.state=e.memoizedState;try{i.componentWillUnmount()}catch(n){ut(e,t,n)}}function Ws(e,t){try{var i=e.ref;if(i!==null){switch(e.tag){case 26:case 27:case 5:var n=e.stateNode;break;case 30:n=e.stateNode;break;default:n=e.stateNode}typeof i=="function"?e.refCleanup=i(n):i.current=n}}catch(l){ut(e,t,l)}}function We(e,t){var i=e.ref,n=e.refCleanup;if(i!==null)if(typeof n=="function")try{n()}catch(l){ut(e,t,l)}finally{e.refCleanup=null,e=e.alternate,e!=null&&(e.refCleanup=null)}else if(typeof i=="function")try{i(null)}catch(l){ut(e,t,l)}else i.current=null}function jV(e){var t=e.type,i=e.memoizedProps,n=e.stateNode;try{t:switch(t){case"button":case"input":case"select":case"textarea":i.autoFocus&&n.focus();break t;case"img":i.src?n.src=i.src:i.srcSet&&(n.srcset=i.srcSet)}}catch(l){ut(e,e.return,l)}}function tu(e,t,i){try{var n=e.stateNode;o9(n,e.type,i,t),n[de]=t}catch(l){ut(e,e.return,l)}}function PV(e){return e.tag===5||e.tag===3||e.tag===26||e.tag===27&&An(e.type)||e.tag===4}function eu(e){t:for(;;){for(;e.sibling===null;){if(e.return===null||PV(e.return))return null;e=e.return}for(e.sibling.return=e.return,e=e.sibling;e.tag!==5&&e.tag!==6&&e.tag!==18;){if(e.tag===27&&An(e.type)||e.flags&2||e.child===null||e.tag===4)continue t;e.child.return=e,e=e.child}if(!(e.flags&2))return e.stateNode}}function ec(e,t,i){var n=e.tag;if(n===5||n===6)e=e.stateNode,t?(i.nodeType===9?i.body:i.nodeName==="HTML"?i.ownerDocument.body:i).insertBefore(e,t):(t=i.nodeType===9?i.body:i.nodeName==="HTML"?i.ownerDocument.body:i,t.appendChild(e),i=i._reactRootContainer,i!=null||t.onclick!==null||(t.onclick=_i));else if(n!==4&&(n===27&&An(e.type)&&(i=e.stateNode,t=null),e=e.child,e!==null))for(ec(e,t,i),e=e.sibling;e!==null;)ec(e,t,i),e=e.sibling}function fo(e,t,i){var n=e.tag;if(n===5||n===6)e=e.stateNode,t?i.insertBefore(e,t):i.appendChild(e);else if(n!==4&&(n===27&&An(e.type)&&(i=e.stateNode),e=e.child,e!==null))for(fo(e,t,i),e=e.sibling;e!==null;)fo(e,t,i),e=e.sibling}function GV(e){var t=e.stateNode,i=e.memoizedProps;try{for(var n=e.type,l=t.attributes;l.length;)t.removeAttributeNode(l[0]);Xt(t,n,i),t[Gt]=e,t[de]=i}catch(s){ut(e,e.return,s)}}var Mi=!1,Ct=!1,iu=!1,e0=typeof WeakSet=="function"?WeakSet:Set,kt=null;function Uv(e,t){if(e=e.containerInfo,oc=_o,e=CH(e),Yc(e)){if("selectionStart"in e)var i={start:e.selectionStart,end:e.selectionEnd};else t:{i=(i=e.ownerDocument)&&i.defaultView||window;var n=i.getSelection&&i.getSelection();if(n&&n.rangeCount!==0){i=n.anchorNode;var l=n.anchorOffset,s=n.focusNode;n=n.focusOffset;try{i.nodeType,s.nodeType}catch{i=null;break t}var a=0,o=-1,c=-1,d=0,v=0,Z=e,V=null;e:for(;;){for(var b;Z!==i||l!==0&&Z.nodeType!==3||(o=a+l),Z!==s||n!==0&&Z.nodeType!==3||(c=a+n),Z.nodeType===3&&(a+=Z.nodeValue.length),(b=Z.firstChild)!==null;)V=Z,Z=b;for(;;){if(Z===e)break e;if(V===i&&++d===l&&(o=a),V===s&&++v===n&&(c=a),(b=Z.nextSibling)!==null)break;Z=V,V=Z.parentNode}Z=b}i=o===-1||c===-1?null:{start:o,end:c}}else i=null}i=i||{start:0,end:0}}else i=null;for(uc={focusedElem:e,selectionRange:i},_o=!1,kt=t;kt!==null;)if(t=kt,e=t.child,(t.subtreeFlags&1028)!==0&&e!==null)e.return=t,kt=e;else for(;kt!==null;){switch(t=kt,s=t.alternate,e=t.flags,t.tag){case 0:if(e&4&&(e=t.updateQueue,e=e!==null?e.events:null,e!==null))for(i=0;i<e.length;i++)l=e[i],l.ref.impl=l.nextImpl;break;case 11:case 15:break;case 1:if(e&1024&&s!==null){e=void 0,i=t,l=s.memoizedProps,s=s.memoizedState,n=i.stateNode;try{var C=nl(i.type,l);e=n.getSnapshotBeforeUpdate(C,s),n.__reactInternalSnapshotBeforeUpdate=e}catch(O){ut(i,i.return,O)}}break;case 3:if(e&1024){if(e=t.stateNode.containerInfo,i=e.nodeType,i===9)hc(e);else if(i===1)switch(e.nodeName){case"HEAD":case"HTML":case"BODY":hc(e);break;default:e.textContent=""}}break;case 5:case 26:case 27:case 6:case 4:case 17:break;default:if(e&1024)throw Error(N(163))}if(e=t.sibling,e!==null){e.return=t.return,kt=e;break}kt=t.return}}function qV(e,t,i){var n=i.flags;switch(i.tag){case 0:case 11:case 15:gi(e,i),n&4&&Dr(5,i);break;case 1:if(gi(e,i),n&4)if(e=i.stateNode,t===null)try{e.componentDidMount()}catch(a){ut(i,i.return,a)}else{var l=nl(i.type,t.memoizedProps);t=t.memoizedState;try{e.componentDidUpdate(l,t,e.__reactInternalSnapshotBeforeUpdate)}catch(a){ut(i,i.return,a)}}n&64&&zV(i),n&512&&Ws(i,i.return);break;case 3:if(gi(e,i),n&64&&(e=i.updateQueue,e!==null)){if(t=null,i.child!==null)switch(i.child.tag){case 27:case 5:t=i.child.stateNode;break;case 1:t=i.child.stateNode}try{KH(e,t)}catch(a){ut(i,i.return,a)}}break;case 27:t===null&&n&4&&GV(i);case 26:case 5:gi(e,i),t===null&&n&4&&jV(i),n&512&&Ws(i,i.return);break;case 12:gi(e,i);break;case 31:gi(e,i),n&4&&FV(e,i);break;case 13:gi(e,i),n&4&&KV(e,i),n&64&&(e=i.memoizedState,e!==null&&(e=e.dehydrated,e!==null&&(i=Qv.bind(null,i),g9(e,i))));break;case 22:if(n=i.memoizedState!==null||Mi,!n){t=t!==null&&t.memoizedState!==null||Ct,l=Mi;var s=Ct;Mi=n,(Ct=t)&&!s?mi(e,i,(i.subtreeFlags&8772)!==0):gi(e,i),Mi=l,Ct=s}break;case 30:break;default:gi(e,i)}}function YV(e){var t=e.alternate;t!==null&&(e.alternate=null,YV(t)),e.child=null,e.deletions=null,e.sibling=null,e.tag===5&&(t=e.stateNode,t!==null&&zc(t)),e.stateNode=null,e.return=null,e.dependencies=null,e.memoizedProps=null,e.memoizedState=null,e.pendingProps=null,e.stateNode=null,e.updateQueue=null}var wt=null,ue=!1;function Vi(e,t,i){for(i=i.child;i!==null;)XV(e,t,i),i=i.sibling}function XV(e,t,i){if(we&&typeof we.onCommitFiberUnmount=="function")try{we.onCommitFiberUnmount(Ar,i)}catch{}switch(i.tag){case 26:Ct||We(i,t),Vi(e,t,i),i.memoizedState?i.memoizedState.count--:i.stateNode&&(i=i.stateNode,i.parentNode.removeChild(i));break;case 27:Ct||We(i,t);var n=wt,l=ue;An(i.type)&&(wt=i.stateNode,ue=!1),Vi(e,t,i),nr(i.stateNode),wt=n,ue=l;break;case 5:Ct||We(i,t);case 6:if(n=wt,l=ue,wt=null,Vi(e,t,i),wt=n,ue=l,wt!==null)if(ue)try{(wt.nodeType===9?wt.body:wt.nodeName==="HTML"?wt.ownerDocument.body:wt).removeChild(i.stateNode)}catch(s){ut(i,t,s)}else try{wt.removeChild(i.stateNode)}catch(s){ut(i,t,s)}break;case 18:wt!==null&&(ue?(e=wt,H0(e.nodeType===9?e.body:e.nodeName==="HTML"?e.ownerDocument.body:e,i.stateNode),ns(e)):H0(wt,i.stateNode));break;case 4:n=wt,l=ue,wt=i.stateNode.containerInfo,ue=!0,Vi(e,t,i),wt=n,ue=l;break;case 0:case 11:case 14:case 15:_n(2,i,t),Ct||_n(4,i,t),Vi(e,t,i);break;case 1:Ct||(We(i,t),n=i.stateNode,typeof n.componentWillUnmount=="function"&&UV(i,t,n)),Vi(e,t,i);break;case 21:Vi(e,t,i);break;case 22:Ct=(n=Ct)||i.memoizedState!==null,Vi(e,t,i),Ct=n;break;default:Vi(e,t,i)}}function FV(e,t){if(t.memoizedState===null&&(e=t.alternate,e!==null&&(e=e.memoizedState,e!==null))){e=e.dehydrated;try{ns(e)}catch(i){ut(t,t.return,i)}}}function KV(e,t){if(t.memoizedState===null&&(e=t.alternate,e!==null&&(e=e.memoizedState,e!==null&&(e=e.dehydrated,e!==null))))try{ns(e)}catch(i){ut(t,t.return,i)}}function jv(e){switch(e.tag){case 31:case 13:case 19:var t=e.stateNode;return t===null&&(t=e.stateNode=new e0),t;case 22:return e=e.stateNode,t=e._retryCache,t===null&&(t=e._retryCache=new e0),t;default:throw Error(N(435,e.tag))}}function va(e,t){var i=jv(e);t.forEach(function(n){if(!i.has(n)){i.add(n);var l=Jv.bind(null,e,n);n.then(l,l)}})}function ae(e,t){var i=t.deletions;if(i!==null)for(var n=0;n<i.length;n++){var l=i[n],s=e,a=t,o=a;t:for(;o!==null;){switch(o.tag){case 27:if(An(o.type)){wt=o.stateNode,ue=!1;break t}break;case 5:wt=o.stateNode,ue=!1;break t;case 3:case 4:wt=o.stateNode.containerInfo,ue=!0;break t}o=o.return}if(wt===null)throw Error(N(160));XV(s,a,l),wt=null,ue=!1,s=l.alternate,s!==null&&(s.return=null),l.return=null}if(t.subtreeFlags&13886)for(t=t.child;t!==null;)QV(t,e),t=t.sibling}var Ue=null;function QV(e,t){var i=e.alternate,n=e.flags;switch(e.tag){case 0:case 11:case 14:case 15:ae(t,e),oe(e),n&4&&(_n(3,e,e.return),Dr(3,e),_n(5,e,e.return));break;case 1:ae(t,e),oe(e),n&512&&(Ct||i===null||We(i,i.return)),n&64&&Mi&&(e=e.updateQueue,e!==null&&(n=e.callbacks,n!==null&&(i=e.shared.hiddenCallbacks,e.shared.hiddenCallbacks=i===null?n:i.concat(n))));break;case 26:var l=Ue;if(ae(t,e),oe(e),n&512&&(Ct||i===null||We(i,i.return)),n&4){var s=i!==null?i.memoizedState:null;if(n=e.memoizedState,i===null)if(n===null)if(e.stateNode===null){t:{n=e.type,i=e.memoizedProps,l=l.ownerDocument||l;e:switch(n){case"title":s=l.getElementsByTagName("title")[0],(!s||s[Or]||s[Gt]||s.namespaceURI==="http://www.w3.org/2000/svg"||s.hasAttribute("itemprop"))&&(s=l.createElement(n),l.head.insertBefore(s,l.querySelector("head > title"))),Xt(s,n,i),s[Gt]=e,It(s),n=s;break t;case"link":var a=y0("link","href",l).get(n+(i.href||""));if(a){for(var o=0;o<a.length;o++)if(s=a[o],s.getAttribute("href")===(i.href==null||i.href===""?null:i.href)&&s.getAttribute("rel")===(i.rel==null?null:i.rel)&&s.getAttribute("title")===(i.title==null?null:i.title)&&s.getAttribute("crossorigin")===(i.crossOrigin==null?null:i.crossOrigin)){a.splice(o,1);break e}}s=l.createElement(n),Xt(s,n,i),l.head.appendChild(s);break;case"meta":if(a=y0("meta","content",l).get(n+(i.content||""))){for(o=0;o<a.length;o++)if(s=a[o],s.getAttribute("content")===(i.content==null?null:""+i.content)&&s.getAttribute("name")===(i.name==null?null:i.name)&&s.getAttribute("property")===(i.property==null?null:i.property)&&s.getAttribute("http-equiv")===(i.httpEquiv==null?null:i.httpEquiv)&&s.getAttribute("charset")===(i.charSet==null?null:i.charSet)){a.splice(o,1);break e}}s=l.createElement(n),Xt(s,n,i),l.head.appendChild(s);break;default:throw Error(N(468,n))}s[Gt]=e,It(s),n=s}e.stateNode=n}else w0(l,e.type,e.stateNode);else e.stateNode=M0(l,n,e.memoizedProps);else s!==n?(s===null?i.stateNode!==null&&(i=i.stateNode,i.parentNode.removeChild(i)):s.count--,n===null?w0(l,e.type,e.stateNode):M0(l,n,e.memoizedProps)):n===null&&e.stateNode!==null&&tu(e,e.memoizedProps,i.memoizedProps)}break;case 27:ae(t,e),oe(e),n&512&&(Ct||i===null||We(i,i.return)),i!==null&&n&4&&tu(e,e.memoizedProps,i.memoizedProps);break;case 5:if(ae(t,e),oe(e),n&512&&(Ct||i===null||We(i,i.return)),e.flags&32){l=e.stateNode;try{Kl(l,"")}catch(C){ut(e,e.return,C)}}n&4&&e.stateNode!=null&&(l=e.memoizedProps,tu(e,l,i!==null?i.memoizedProps:l)),n&1024&&(iu=!0);break;case 6:if(ae(t,e),oe(e),n&4){if(e.stateNode===null)throw Error(N(162));n=e.memoizedProps,i=e.stateNode;try{i.nodeValue=n}catch(C){ut(e,e.return,C)}}break;case 3:if(ja=null,l=Ue,Ue=yo(t.containerInfo),ae(t,e),Ue=l,oe(e),n&4&&i!==null&&i.memoizedState.isDehydrated)try{ns(t.containerInfo)}catch(C){ut(e,e.return,C)}iu&&(iu=!1,JV(e));break;case 4:n=Ue,Ue=yo(e.stateNode.containerInfo),ae(t,e),oe(e),Ue=n;break;case 12:ae(t,e),oe(e);break;case 31:ae(t,e),oe(e),n&4&&(n=e.updateQueue,n!==null&&(e.updateQueue=null,va(e,n)));break;case 13:ae(t,e),oe(e),e.child.flags&8192&&e.memoizedState!==null!=(i!==null&&i.memoizedState!==null)&&($o=ye()),n&4&&(n=e.updateQueue,n!==null&&(e.updateQueue=null,va(e,n)));break;case 22:l=e.memoizedState!==null;var c=i!==null&&i.memoizedState!==null,d=Mi,v=Ct;if(Mi=d||l,Ct=v||c,ae(t,e),Ct=v,Mi=d,oe(e),n&8192)t:for(t=e.stateNode,t._visibility=l?t._visibility&-2:t._visibility|1,l&&(i===null||c||Mi||Ct||Un(e)),i=null,t=e;;){if(t.tag===5||t.tag===26){if(i===null){c=i=t;try{if(s=c.stateNode,l)a=s.style,typeof a.setProperty=="function"?a.setProperty("display","none","important"):a.display="none";else{o=c.stateNode;var Z=c.memoizedProps.style,V=Z!=null&&Z.hasOwnProperty("display")?Z.display:null;o.style.display=V==null||typeof V=="boolean"?"":(""+V).trim()}}catch(C){ut(c,c.return,C)}}}else if(t.tag===6){if(i===null){c=t;try{c.stateNode.nodeValue=l?"":c.memoizedProps}catch(C){ut(c,c.return,C)}}}else if(t.tag===18){if(i===null){c=t;try{var b=c.stateNode;l?V0(b,!0):V0(c.stateNode,!1)}catch(C){ut(c,c.return,C)}}}else if((t.tag!==22&&t.tag!==23||t.memoizedState===null||t===e)&&t.child!==null){t.child.return=t,t=t.child;continue}if(t===e)break t;for(;t.sibling===null;){if(t.return===null||t.return===e)break t;i===t&&(i=null),t=t.return}i===t&&(i=null),t.sibling.return=t.return,t=t.sibling}n&4&&(n=e.updateQueue,n!==null&&(i=n.retryQueue,i!==null&&(n.retryQueue=null,va(e,i))));break;case 19:ae(t,e),oe(e),n&4&&(n=e.updateQueue,n!==null&&(e.updateQueue=null,va(e,n)));break;case 30:break;case 21:break;default:ae(t,e),oe(e)}}function oe(e){var t=e.flags;if(t&2){try{for(var i,n=e.return;n!==null;){if(PV(n)){i=n;break}n=n.return}if(i==null)throw Error(N(160));switch(i.tag){case 27:var l=i.stateNode,s=eu(e);fo(e,s,l);break;case 5:var a=i.stateNode;i.flags&32&&(Kl(a,""),i.flags&=-33);var o=eu(e);fo(e,o,a);break;case 3:case 4:var c=i.stateNode.containerInfo,d=eu(e);ec(e,d,c);break;default:throw Error(N(161))}}catch(v){ut(e,e.return,v)}e.flags&=-3}t&4096&&(e.flags&=-4097)}function JV(e){if(e.subtreeFlags&1024)for(e=e.child;e!==null;){var t=e;JV(t),t.tag===5&&t.flags&1024&&t.stateNode.reset(),e=e.sibling}}function gi(e,t){if(t.subtreeFlags&8772)for(t=t.child;t!==null;)qV(e,t.alternate,t),t=t.sibling}function Un(e){for(e=e.child;e!==null;){var t=e;switch(t.tag){case 0:case 11:case 14:case 15:_n(4,t,t.return),Un(t);break;case 1:We(t,t.return);var i=t.stateNode;typeof i.componentWillUnmount=="function"&&UV(t,t.return,i),Un(t);break;case 27:nr(t.stateNode);case 26:case 5:We(t,t.return),Un(t);break;case 22:t.memoizedState===null&&Un(t);break;case 30:Un(t);break;default:Un(t)}e=e.sibling}}function mi(e,t,i){for(i=i&&(t.subtreeFlags&8772)!==0,t=t.child;t!==null;){var n=t.alternate,l=e,s=t,a=s.flags;switch(s.tag){case 0:case 11:case 15:mi(l,s,i),Dr(4,s);break;case 1:if(mi(l,s,i),n=s,l=n.stateNode,typeof l.componentDidMount=="function")try{l.componentDidMount()}catch(d){ut(n,n.return,d)}if(n=s,l=n.updateQueue,l!==null){var o=n.stateNode;try{var c=l.shared.hiddenCallbacks;if(c!==null)for(l.shared.hiddenCallbacks=null,l=0;l<c.length;l++)FH(c[l],o)}catch(d){ut(n,n.return,d)}}i&&a&64&&zV(s),Ws(s,s.return);break;case 27:GV(s);case 26:case 5:mi(l,s,i),i&&n===null&&a&4&&jV(s),Ws(s,s.return);break;case 12:mi(l,s,i);break;case 31:mi(l,s,i),i&&a&4&&FV(l,s);break;case 13:mi(l,s,i),i&&a&4&&KV(l,s);break;case 22:s.memoizedState===null&&mi(l,s,i),Ws(s,s.return);break;case 30:break;default:mi(l,s,i)}t=t.sibling}}function m1(e,t){var i=null;e!==null&&e.memoizedState!==null&&e.memoizedState.cachePool!==null&&(i=e.memoizedState.cachePool.pool),e=null,t.memoizedState!==null&&t.memoizedState.cachePool!==null&&(e=t.memoizedState.cachePool.pool),e!==i&&(e!=null&&e.refCount++,i!=null&&Rr(i))}function v1(e,t){e=null,t.alternate!==null&&(e=t.alternate.memoizedState.cache),t=t.memoizedState.cache,t!==e&&(t.refCount++,e!=null&&Rr(e))}function ze(e,t,i,n){if(t.subtreeFlags&10256)for(t=t.child;t!==null;)$V(e,t,i,n),t=t.sibling}function $V(e,t,i,n){var l=t.flags;switch(t.tag){case 0:case 11:case 15:ze(e,t,i,n),l&2048&&Dr(9,t);break;case 1:ze(e,t,i,n);break;case 3:ze(e,t,i,n),l&2048&&(e=null,t.alternate!==null&&(e=t.alternate.memoizedState.cache),t=t.memoizedState.cache,t!==e&&(t.refCount++,e!=null&&Rr(e)));break;case 12:if(l&2048){ze(e,t,i,n),e=t.stateNode;try{var s=t.memoizedProps,a=s.id,o=s.onPostCommit;typeof o=="function"&&o(a,t.alternate===null?"mount":"update",e.passiveEffectDuration,-0)}catch(c){ut(t,t.return,c)}}else ze(e,t,i,n);break;case 31:ze(e,t,i,n);break;case 13:ze(e,t,i,n);break;case 23:break;case 22:s=t.stateNode,a=t.alternate,t.memoizedState!==null?s._visibility&2?ze(e,t,i,n):tr(e,t):s._visibility&2?ze(e,t,i,n):(s._visibility|=2,wl(e,t,i,n,(t.subtreeFlags&10256)!==0||!1)),l&2048&&m1(a,t);break;case 24:ze(e,t,i,n),l&2048&&v1(t.alternate,t);break;default:ze(e,t,i,n)}}function wl(e,t,i,n,l){for(l=l&&((t.subtreeFlags&10256)!==0||!1),t=t.child;t!==null;){var s=e,a=t,o=i,c=n,d=a.flags;switch(a.tag){case 0:case 11:case 15:wl(s,a,o,c,l),Dr(8,a);break;case 23:break;case 22:var v=a.stateNode;a.memoizedState!==null?v._visibility&2?wl(s,a,o,c,l):tr(s,a):(v._visibility|=2,wl(s,a,o,c,l)),l&&d&2048&&m1(a.alternate,a);break;case 24:wl(s,a,o,c,l),l&&d&2048&&v1(a.alternate,a);break;default:wl(s,a,o,c,l)}t=t.sibling}}function tr(e,t){if(t.subtreeFlags&10256)for(t=t.child;t!==null;){var i=e,n=t,l=n.flags;switch(n.tag){case 22:tr(i,n),l&2048&&m1(n.alternate,n);break;case 24:tr(i,n),l&2048&&v1(n.alternate,n);break;default:tr(i,n)}t=t.sibling}}var Ps=8192;function Ml(e,t,i){if(e.subtreeFlags&Ps)for(e=e.child;e!==null;)WV(e,t,i),e=e.sibling}function WV(e,t,i){switch(e.tag){case 26:Ml(e,t,i),e.flags&Ps&&e.memoizedState!==null&&T9(i,Ue,e.memoizedState,e.memoizedProps);break;case 5:Ml(e,t,i);break;case 3:case 4:var n=Ue;Ue=yo(e.stateNode.containerInfo),Ml(e,t,i),Ue=n;break;case 22:e.memoizedState===null&&(n=e.alternate,n!==null&&n.memoizedState!==null?(n=Ps,Ps=16777216,Ml(e,t,i),Ps=n):Ml(e,t,i));break;default:Ml(e,t,i)}}function tg(e){var t=e.alternate;if(t!==null&&(e=t.child,e!==null)){t.child=null;do t=e.sibling,e.sibling=null,e=t;while(e!==null)}}function Ds(e){var t=e.deletions;if(e.flags&16){if(t!==null)for(var i=0;i<t.length;i++){var n=t[i];kt=n,ig(n,e)}tg(e)}if(e.subtreeFlags&10256)for(e=e.child;e!==null;)eg(e),e=e.sibling}function eg(e){switch(e.tag){case 0:case 11:case 15:Ds(e),e.flags&2048&&_n(9,e,e.return);break;case 3:Ds(e);break;case 12:Ds(e);break;case 22:var t=e.stateNode;e.memoizedState!==null&&t._visibility&2&&(e.return===null||e.return.tag!==13)?(t._visibility&=-3,za(e)):Ds(e);break;default:Ds(e)}}function za(e){var t=e.deletions;if(e.flags&16){if(t!==null)for(var i=0;i<t.length;i++){var n=t[i];kt=n,ig(n,e)}tg(e)}for(e=e.child;e!==null;){switch(t=e,t.tag){case 0:case 11:case 15:_n(8,t,t.return),za(t);break;case 22:i=t.stateNode,i._visibility&2&&(i._visibility&=-3,za(t));break;default:za(t)}e=e.sibling}}function ig(e,t){for(;kt!==null;){var i=kt;switch(i.tag){case 0:case 11:case 15:_n(8,i,t);break;case 23:case 22:if(i.memoizedState!==null&&i.memoizedState.cachePool!==null){var n=i.memoizedState.cachePool.pool;n!=null&&n.refCount++}break;case 24:Rr(i.memoizedState.cache)}if(n=i.child,n!==null)n.return=i,kt=n;else t:for(i=e;kt!==null;){n=kt;var l=n.sibling,s=n.return;if(YV(n),n===i){kt=null;break t}if(l!==null){l.return=s,kt=l;break t}kt=s}}}var Pv={getCacheForType:function(e){var t=Yt(Ot),i=t.data.get(e);return i===void 0&&(i=e(),t.data.set(e,i)),i},cacheSignal:function(){return Yt(Ot).controller.signal}},Gv=typeof WeakMap=="function"?WeakMap:Map,lt=0,dt=null,J=null,tt=0,ot=0,ge=null,an=!1,fs=!1,M1=!1,Bi=0,bt=0,bn=0,Qn=0,y1=0,Me=0,Wl=0,er=null,ce=null,ic=!1,$o=0,ng=0,Ho=1/0,Vo=null,Hn=null,Dt=0,Vn=null,ts=null,xi=0,nc=0,lc=null,lg=null,ir=0,sc=null;function _e(){return lt&2&&tt!==0?tt&-tt:G.T!==null?Z1():dH()}function sg(){if(Me===0)if(!(tt&536870912)||et){var e=ha;ha<<=1,!(ha&3932160)&&(ha=262144),Me=e}else Me=536870912;return e=Se.current,e!==null&&(e.flags|=32),Me}function fe(e,t,i){(e===dt&&(ot===2||ot===9)||e.cancelPendingCommit!==null)&&(es(e,0),on(e,tt,Me,!1)),Cr(e,i),(!(lt&2)||e!==dt)&&(e===dt&&(!(lt&2)&&(Qn|=i),bt===4&&on(e,tt,Me,!1)),ri(e))}function rg(e,t,i){if(lt&6)throw Error(N(327));var n=!i&&(t&127)===0&&(t&e.expiredLanes)===0||xr(e,t),l=n?Xv(e,t):nu(e,t,!0),s=n;do{if(l===0){fs&&!n&&on(e,t,0,!1);break}else{if(i=e.current.alternate,s&&!qv(i)){l=nu(e,t,!1),s=!1;continue}if(l===2){if(s=t,e.errorRecoveryDisabledLanes&s)var a=0;else a=e.pendingLanes&-536870913,a=a!==0?a:a&536870912?536870912:0;if(a!==0){t=a;t:{var o=e;l=er;var c=o.current.memoizedState.isDehydrated;if(c&&(es(o,a).flags|=256),a=nu(o,a,!1),a!==2){if(M1&&!c){o.errorRecoveryDisabledLanes|=s,Qn|=s,l=4;break t}s=ce,ce=l,s!==null&&(ce===null?ce=s:ce.push.apply(ce,s))}l=a}if(s=!1,l!==2)continue}}if(l===1){es(e,0),on(e,t,0,!0);break}t:{switch(n=e,s=l,s){case 0:case 1:throw Error(N(345));case 4:if((t&4194048)!==t)break;case 6:on(n,t,Me,!an);break t;case 2:ce=null;break;case 3:case 5:break;default:throw Error(N(329))}if((t&62914560)===t&&(l=$o+300-ye(),10<l)){if(on(n,t,Me,!an),Uo(n,0,!0)!==0)break t;xi=t,n.timeoutHandle=Sg(i0.bind(null,n,i,ce,Vo,ic,t,Me,Qn,Wl,an,s,"Throttled",-0,0),l);break t}i0(n,i,ce,Vo,ic,t,Me,Qn,Wl,an,s,null,-0,0)}}break}while(!0);ri(e)}function i0(e,t,i,n,l,s,a,o,c,d,v,Z,V,b){if(e.timeoutHandle=-1,Z=t.subtreeFlags,Z&8192||(Z&16785408)===16785408){Z={stylesheets:null,count:0,imgCount:0,imgBytes:0,suspenseyImages:[],waitingForImages:!0,waitingForViewTransition:!1,unsuspend:_i},WV(t,s,Z);var C=(s&62914560)===s?$o-ye():(s&4194048)===s?ng-ye():0;if(C=A9(Z,C),C!==null){xi=s,e.cancelPendingCommit=C(l0.bind(null,e,t,s,i,n,l,a,o,c,v,Z,null,V,b)),on(e,s,a,!d);return}}l0(e,t,s,i,n,l,a,o,c)}function qv(e){for(var t=e;;){var i=t.tag;if((i===0||i===11||i===15)&&t.flags&16384&&(i=t.updateQueue,i!==null&&(i=i.stores,i!==null)))for(var n=0;n<i.length;n++){var l=i[n],s=l.getSnapshot;l=l.value;try{if(!be(s(),l))return!1}catch{return!1}}if(i=t.child,t.subtreeFlags&16384&&i!==null)i.return=t,t=i;else{if(t===e)break;for(;t.sibling===null;){if(t.return===null||t.return===e)return!0;t=t.return}t.sibling.return=t.return,t=t.sibling}}return!0}function on(e,t,i,n){t&=~y1,t&=~Qn,e.suspendedLanes|=t,e.pingedLanes&=~t,n&&(e.warmLanes|=t),n=e.expirationTimes;for(var l=t;0<l;){var s=31-Ze(l),a=1<<s;n[s]=-1,l&=~a}i!==0&&cH(e,i,t)}function Wo(){return lt&6?!0:(Lr(0),!1)}function w1(){if(J!==null){if(ot===0)var e=J.return;else e=J,bi=hl=null,a1(e),zl=null,Vr=0,e=J;for(;e!==null;)IV(e.alternate,e),e=e.return;J=null}}function es(e,t){var i=e.timeoutHandle;i!==-1&&(e.timeoutHandle=-1,h9(i)),i=e.cancelPendingCommit,i!==null&&(e.cancelPendingCommit=null,i()),xi=0,w1(),dt=e,J=i=Ti(e.current,null),tt=t,ot=0,ge=null,an=!1,fs=xr(e,t),M1=!1,Wl=Me=y1=Qn=bn=bt=0,ce=er=null,ic=!1,t&8&&(t|=t&32);var n=e.entangledLanes;if(n!==0)for(e=e.entanglements,n&=t;0<n;){var l=31-Ze(n),s=1<<l;t|=e[l],n&=~s}return Bi=t,qo(),i}function ag(e,t){F=null,G.H=pr,t===hs||t===Xo?(t=Rf(),ot=3):t===t1?(t=Rf(),ot=4):ot=t===g1?8:t!==null&&typeof t=="object"&&typeof t.then=="function"?6:1,ge=t,J===null&&(bt=1,co(e,Re(t,e.current)))}function og(){var e=Se.current;return e===null?!0:(tt&4194048)===tt?De===null:(tt&62914560)===tt||tt&536870912?e===De:!1}function ug(){var e=G.H;return G.H=pr,e===null?pr:e}function cg(){var e=G.A;return G.A=Pv,e}function go(){bt=4,an||(tt&4194048)!==tt&&Se.current!==null||(fs=!0),!(bn&134217727)&&!(Qn&134217727)||dt===null||on(dt,tt,Me,!1)}function nu(e,t,i){var n=lt;lt|=2;var l=ug(),s=cg();(dt!==e||tt!==t)&&(Vo=null,es(e,t)),t=!1;var a=bt;t:do try{if(ot!==0&&J!==null){var o=J,c=ge;switch(ot){case 8:w1(),a=6;break t;case 3:case 2:case 9:case 6:Se.current===null&&(t=!0);var d=ot;if(ot=0,ge=null,Bl(e,o,c,d),i&&fs){a=0;break t}break;default:d=ot,ot=0,ge=null,Bl(e,o,c,d)}}Yv(),a=bt;break}catch(v){ag(e,v)}while(!0);return t&&e.shellSuspendCounter++,bi=hl=null,lt=n,G.H=l,G.A=s,J===null&&(dt=null,tt=0,qo()),a}function Yv(){for(;J!==null;)hg(J)}function Xv(e,t){var i=lt;lt|=2;var n=ug(),l=cg();dt!==e||tt!==t?(Vo=null,Ho=ye()+500,es(e,t)):fs=xr(e,t);t:do try{if(ot!==0&&J!==null){t=J;var s=ge;e:switch(ot){case 1:ot=0,ge=null,Bl(e,t,s,1);break;case 2:case 9:if(Nf(s)){ot=0,ge=null,n0(t);break}t=function(){ot!==2&&ot!==9||dt!==e||(ot=7),ri(e)},s.then(t,t);break t;case 3:ot=7;break t;case 4:ot=5;break t;case 7:Nf(s)?(ot=0,ge=null,n0(t)):(ot=0,ge=null,Bl(e,t,s,7));break;case 5:var a=null;switch(J.tag){case 26:a=J.memoizedState;case 5:case 27:var o=J;if(a?Cg(a):o.stateNode.complete){ot=0,ge=null;var c=o.sibling;if(c!==null)J=c;else{var d=o.return;d!==null?(J=d,t2(d)):J=null}break e}}ot=0,ge=null,Bl(e,t,s,5);break;case 6:ot=0,ge=null,Bl(e,t,s,6);break;case 8:w1(),bt=6;break t;default:throw Error(N(462))}}Fv();break}catch(v){ag(e,v)}while(!0);return bi=hl=null,G.H=n,G.A=l,lt=i,J!==null?0:(dt=null,tt=0,qo(),bt)}function Fv(){for(;J!==null&&!pm();)hg(J)}function hg(e){var t=kV(e.alternate,e,Bi);e.memoizedProps=e.pendingProps,t===null?t2(e):J=t}function n0(e){var t=e,i=t.alternate;switch(t.tag){case 15:case 0:t=Qf(i,t,t.pendingProps,t.type,void 0,tt);break;case 11:t=Qf(i,t,t.pendingProps,t.type.render,t.ref,tt);break;case 5:a1(t);default:IV(i,t),t=J=IH(t,Bi),t=kV(i,t,Bi)}e.memoizedProps=e.pendingProps,t===null?t2(e):J=t}function Bl(e,t,i,n){bi=hl=null,a1(t),zl=null,Vr=0;var l=t.return;try{if(Dv(e,l,t,i,tt)){bt=1,co(e,Re(i,e.current)),J=null;return}}catch(s){if(l!==null)throw J=l,s;bt=1,co(e,Re(i,e.current)),J=null;return}t.flags&32768?(et||n===1?e=!0:fs||tt&536870912?e=!1:(an=e=!0,(n===2||n===9||n===3||n===6)&&(n=Se.current,n!==null&&n.tag===13&&(n.flags|=16384))),fg(t,e)):t2(t)}function t2(e){var t=e;do{if(t.flags&32768){fg(t,an);return}e=t.return;var i=Iv(t.alternate,t,Bi);if(i!==null){J=i;return}if(t=t.sibling,t!==null){J=t;return}J=t=e}while(t!==null);bt===0&&(bt=5)}function fg(e,t){do{var i=zv(e.alternate,e);if(i!==null){i.flags&=32767,J=i;return}if(i=e.return,i!==null&&(i.flags|=32768,i.subtreeFlags=0,i.deletions=null),!t&&(e=e.sibling,e!==null)){J=e;return}J=e=i}while(e!==null);bt=6,J=null}function l0(e,t,i,n,l,s,a,o,c){e.cancelPendingCommit=null;do e2();while(Dt!==0);if(lt&6)throw Error(N(327));if(t!==null){if(t===e.current)throw Error(N(177));if(s=t.lanes|t.childLanes,s|=Xc,Em(e,i,s,a,o,c),e===dt&&(J=dt=null,tt=0),ts=t,Vn=e,xi=i,nc=s,lc=l,lg=n,t.subtreeFlags&10256||t.flags&10256?(e.callbackNode=null,e.callbackPriority=0,$v(Wa,function(){return pg(),null})):(e.callbackNode=null,e.callbackPriority=0),n=(t.flags&13878)!==0,t.subtreeFlags&13878||n){n=G.T,G.T=null,l=st.p,st.p=2,a=lt,lt|=4;try{Uv(e,t,i)}finally{lt=a,st.p=l,G.T=n}}Dt=1,dg(),Hg(),Vg()}}function dg(){if(Dt===1){Dt=0;var e=Vn,t=ts,i=(t.flags&13878)!==0;if(t.subtreeFlags&13878||i){i=G.T,G.T=null;var n=st.p;st.p=2;var l=lt;lt|=4;try{QV(t,e);var s=uc,a=CH(e.containerInfo),o=s.focusedElem,c=s.selectionRange;if(a!==o&&o&&o.ownerDocument&&xH(o.ownerDocument.documentElement,o)){if(c!==null&&Yc(o)){var d=c.start,v=c.end;if(v===void 0&&(v=d),"selectionStart"in o)o.selectionStart=d,o.selectionEnd=Math.min(v,o.value.length);else{var Z=o.ownerDocument||document,V=Z&&Z.defaultView||window;if(V.getSelection){var b=V.getSelection(),C=o.textContent.length,O=Math.min(c.start,C),R=c.end===void 0?O:Math.min(c.end,C);!b.extend&&O>R&&(a=R,R=O,O=a);var w=Sf(o,O),m=Sf(o,R);if(w&&m&&(b.rangeCount!==1||b.anchorNode!==w.node||b.anchorOffset!==w.offset||b.focusNode!==m.node||b.focusOffset!==m.offset)){var _=Z.createRange();_.setStart(w.node,w.offset),b.removeAllRanges(),O>R?(b.addRange(_),b.extend(m.node,m.offset)):(_.setEnd(m.node,m.offset),b.addRange(_))}}}}for(Z=[],b=o;b=b.parentNode;)b.nodeType===1&&Z.push({element:b,left:b.scrollLeft,top:b.scrollTop});for(typeof o.focus=="function"&&o.focus(),o=0;o<Z.length;o++){var A=Z[o];A.element.scrollLeft=A.left,A.element.scrollTop=A.top}}_o=!!oc,uc=oc=null}finally{lt=l,st.p=n,G.T=i}}e.current=t,Dt=2}}function Hg(){if(Dt===2){Dt=0;var e=Vn,t=ts,i=(t.flags&8772)!==0;if(t.subtreeFlags&8772||i){i=G.T,G.T=null;var n=st.p;st.p=2;var l=lt;lt|=4;try{qV(e,t.alternate,t)}finally{lt=l,st.p=n,G.T=i}}Dt=3}}function Vg(){if(Dt===4||Dt===3){Dt=0,mm();var e=Vn,t=ts,i=xi,n=lg;t.subtreeFlags&10256||t.flags&10256?Dt=5:(Dt=0,ts=Vn=null,gg(e,e.pendingLanes));var l=e.pendingLanes;if(l===0&&(Hn=null),Ic(i),t=t.stateNode,we&&typeof we.onCommitFiberRoot=="function")try{we.onCommitFiberRoot(Ar,t,void 0,(t.current.flags&128)===128)}catch{}if(n!==null){t=G.T,l=st.p,st.p=2,G.T=null;try{for(var s=e.onRecoverableError,a=0;a<n.length;a++){var o=n[a];s(o.value,{componentStack:o.stack})}}finally{G.T=t,st.p=l}}xi&3&&e2(),ri(e),l=e.pendingLanes,i&261930&&l&42?e===sc?ir++:(ir=0,sc=e):ir=0,Lr(0)}}function gg(e,t){(e.pooledCacheLanes&=t)===0&&(t=e.pooledCache,t!=null&&(e.pooledCache=null,Rr(t)))}function e2(){return dg(),Hg(),Vg(),pg()}function pg(){if(Dt!==5)return!1;var e=Vn,t=nc;nc=0;var i=Ic(xi),n=G.T,l=st.p;try{st.p=32>i?32:i,G.T=null,i=lc,lc=null;var s=Vn,a=xi;if(Dt=0,ts=Vn=null,xi=0,lt&6)throw Error(N(331));var o=lt;if(lt|=4,eg(s.current),$V(s,s.current,a,i),lt=o,Lr(0,!1),we&&typeof we.onPostCommitFiberRoot=="function")try{we.onPostCommitFiberRoot(Ar,s)}catch{}return!0}finally{st.p=l,G.T=n,gg(e,t)}}function s0(e,t,i){t=Re(i,t),t=$u(e.stateNode,t,2),e=dn(e,t,2),e!==null&&(Cr(e,2),ri(e))}function ut(e,t,i){if(e.tag===3)s0(e,e,i);else for(;t!==null;){if(t.tag===3){s0(t,e,i);break}else if(t.tag===1){var n=t.stateNode;if(typeof t.type.getDerivedStateFromError=="function"||typeof n.componentDidCatch=="function"&&(Hn===null||!Hn.has(n))){e=Re(i,e),i=OV(2),n=dn(t,i,2),n!==null&&(NV(i,n,t,e),Cr(n,2),ri(n));break}}t=t.return}}function lu(e,t,i){var n=e.pingCache;if(n===null){n=e.pingCache=new Gv;var l=new Set;n.set(t,l)}else l=n.get(t),l===void 0&&(l=new Set,n.set(t,l));l.has(i)||(M1=!0,l.add(i),e=Kv.bind(null,e,t,i),t.then(e,e))}function Kv(e,t,i){var n=e.pingCache;n!==null&&n.delete(t),e.pingedLanes|=e.suspendedLanes&i,e.warmLanes&=~i,dt===e&&(tt&i)===i&&(bt===4||bt===3&&(tt&62914560)===tt&&300>ye()-$o?!(lt&2)&&es(e,0):y1|=i,Wl===tt&&(Wl=0)),ri(e)}function mg(e,t){t===0&&(t=uH()),e=cl(e,t),e!==null&&(Cr(e,t),ri(e))}function Qv(e){var t=e.memoizedState,i=0;t!==null&&(i=t.retryLane),mg(e,i)}function Jv(e,t){var i=0;switch(e.tag){case 31:case 13:var n=e.stateNode,l=e.memoizedState;l!==null&&(i=l.retryLane);break;case 19:n=e.stateNode;break;case 22:n=e.stateNode._retryCache;break;default:throw Error(N(314))}n!==null&&n.delete(t),mg(e,i)}function $v(e,t){return Lc(e,t)}var po=null,Zl=null,rc=!1,mo=!1,su=!1,un=0;function ri(e){e!==Zl&&e.next===null&&(Zl===null?po=Zl=e:Zl=Zl.next=e),mo=!0,rc||(rc=!0,t9())}function Lr(e,t){if(!su&&mo){su=!0;do for(var i=!1,n=po;n!==null;){if(e!==0){var l=n.pendingLanes;if(l===0)var s=0;else{var a=n.suspendedLanes,o=n.pingedLanes;s=(1<<31-Ze(42|e)+1)-1,s&=l&~(a&~o),s=s&201326741?s&201326741|1:s?s|2:0}s!==0&&(i=!0,r0(n,s))}else s=tt,s=Uo(n,n===dt?s:0,n.cancelPendingCommit!==null||n.timeoutHandle!==-1),!(s&3)||xr(n,s)||(i=!0,r0(n,s));n=n.next}while(i);su=!1}}function Wv(){vg()}function vg(){mo=rc=!1;var e=0;un!==0&&c9()&&(e=un);for(var t=ye(),i=null,n=po;n!==null;){var l=n.next,s=Mg(n,t);s===0?(n.next=null,i===null?po=l:i.next=l,l===null&&(Zl=i)):(i=n,(e!==0||s&3)&&(mo=!0)),n=l}Dt!==0&&Dt!==5||Lr(e),un!==0&&(un=0)}function Mg(e,t){for(var i=e.suspendedLanes,n=e.pingedLanes,l=e.expirationTimes,s=e.pendingLanes&-62914561;0<s;){var a=31-Ze(s),o=1<<a,c=l[a];c===-1?(!(o&i)||o&n)&&(l[a]=Sm(o,t)):c<=t&&(e.expiredLanes|=o),s&=~o}if(t=dt,i=tt,i=Uo(e,e===t?i:0,e.cancelPendingCommit!==null||e.timeoutHandle!==-1),n=e.callbackNode,i===0||e===t&&(ot===2||ot===9)||e.cancelPendingCommit!==null)return n!==null&&n!==null&&N2(n),e.callbackNode=null,e.callbackPriority=0;if(!(i&3)||xr(e,i)){if(t=i&-i,t===e.callbackPriority)return t;switch(n!==null&&N2(n),Ic(i)){case 2:case 8:i=aH;break;case 32:i=Wa;break;case 268435456:i=oH;break;default:i=Wa}return n=yg.bind(null,e),i=Lc(i,n),e.callbackPriority=t,e.callbackNode=i,t}return n!==null&&n!==null&&N2(n),e.callbackPriority=2,e.callbackNode=null,2}function yg(e,t){if(Dt!==0&&Dt!==5)return e.callbackNode=null,e.callbackPriority=0,null;var i=e.callbackNode;if(e2()&&e.callbackNode!==i)return null;var n=tt;return n=Uo(e,e===dt?n:0,e.cancelPendingCommit!==null||e.timeoutHandle!==-1),n===0?null:(rg(e,n,t),Mg(e,ye()),e.callbackNode!=null&&e.callbackNode===i?yg.bind(null,e):null)}function r0(e,t){if(e2())return null;rg(e,t,!0)}function t9(){f9(function(){lt&6?Lc(rH,Wv):vg()})}function Z1(){if(un===0){var e=Ql;e===0&&(e=ca,ca<<=1,!(ca&261888)&&(ca=256)),un=e}return un}function a0(e){return e==null||typeof e=="symbol"||typeof e=="boolean"?null:typeof e=="function"?e:Ca(""+e)}function o0(e,t){var i=t.ownerDocument.createElement("input");return i.name=t.name,i.value=t.value,e.id&&i.setAttribute("form",e.id),t.parentNode.insertBefore(i,t),e=new FormData(e),i.parentNode.removeChild(i),e}function e9(e,t,i,n,l){if(t==="submit"&&i&&i.stateNode===l){var s=a0((l[de]||null).action),a=n.submitter;a&&(t=(t=a[de]||null)?a0(t.formAction):a.getAttribute("formAction"),t!==null&&(s=t,a=null));var o=new jo("action","action",null,n,l);e.push({event:o,listeners:[{instance:null,listener:function(){if(n.defaultPrevented){if(un!==0){var c=a?o0(l,a):new FormData(l);Qu(i,{pending:!0,data:c,method:l.method,action:s},null,c)}}else typeof s=="function"&&(o.preventDefault(),c=a?o0(l,a):new FormData(l),Qu(i,{pending:!0,data:c,method:l.method,action:s},s,c))},currentTarget:l}]})}}for(var ru=0;ru<ku.length;ru++){var au=ku[ru],i9=au.toLowerCase(),n9=au[0].toUpperCase()+au.slice(1);Xe(i9,"on"+n9)}Xe(NH,"onAnimationEnd");Xe(RH,"onAnimationIteration");Xe(BH,"onAnimationStart");Xe("dblclick","onDoubleClick");Xe("focusin","onFocus");Xe("focusout","onBlur");Xe(vv,"onTransitionRun");Xe(Mv,"onTransitionStart");Xe(yv,"onTransitionCancel");Xe(DH,"onTransitionEnd");Fl("onMouseEnter",["mouseout","mouseover"]);Fl("onMouseLeave",["mouseout","mouseover"]);Fl("onPointerEnter",["pointerout","pointerover"]);Fl("onPointerLeave",["pointerout","pointerover"]);al("onChange","change click focusin focusout input keydown keyup selectionchange".split(" "));al("onSelect","focusout contextmenu dragend focusin keydown keyup mousedown mouseup selectionchange".split(" "));al("onBeforeInput",["compositionend","keypress","textInput","paste"]);al("onCompositionEnd","compositionend focusout keydown keypress keyup mousedown".split(" "));al("onCompositionStart","compositionstart focusout keydown keypress keyup mousedown".split(" "));al("onCompositionUpdate","compositionupdate focusout keydown keypress keyup mousedown".split(" "));var mr="abort canplay canplaythrough durationchange emptied encrypted ended error loadeddata loadedmetadata loadstart pause play playing progress ratechange resize seeked seeking stalled suspend timeupdate volumechange waiting".split(" "),l9=new Set("beforetoggle cancel close invalid load scroll scrollend toggle".split(" ").concat(mr));function wg(e,t){t=(t&4)!==0;for(var i=0;i<e.length;i++){var n=e[i],l=n.event;n=n.listeners;t:{var s=void 0;if(t)for(var a=n.length-1;0<=a;a--){var o=n[a],c=o.instance,d=o.currentTarget;if(o=o.listener,c!==s&&l.isPropagationStopped())break t;s=o,l.currentTarget=d;try{s(l)}catch(v){eo(v)}l.currentTarget=null,s=c}else for(a=0;a<n.length;a++){if(o=n[a],c=o.instance,d=o.currentTarget,o=o.listener,c!==s&&l.isPropagationStopped())break t;s=o,l.currentTarget=d;try{s(l)}catch(v){eo(v)}l.currentTarget=null,s=c}}}}function Q(e,t){var i=t[xu];i===void 0&&(i=t[xu]=new Set);var n=e+"__bubble";i.has(n)||(Zg(t,e,2,!1),i.add(n))}function ou(e,t,i){var n=0;t&&(n|=4),Zg(i,e,n,t)}var Ma="_reactListening"+Math.random().toString(36).slice(2);function _1(e){if(!e[Ma]){e[Ma]=!0,HH.forEach(function(i){i!=="selectionchange"&&(l9.has(i)||ou(i,!1,e),ou(i,!0,e))});var t=e.nodeType===9?e:e.ownerDocument;t===null||t[Ma]||(t[Ma]=!0,ou("selectionchange",!1,t))}}function Zg(e,t,i,n){switch(Dg(t)){case 2:var l=O9;break;case 8:l=N9;break;default:l=T1}i=l.bind(null,t,i,e),l=void 0,!Bu||t!=="touchstart"&&t!=="touchmove"&&t!=="wheel"||(l=!0),n?l!==void 0?e.addEventListener(t,i,{capture:!0,passive:l}):e.addEventListener(t,i,!0):l!==void 0?e.addEventListener(t,i,{passive:l}):e.addEventListener(t,i,!1)}function uu(e,t,i,n,l){var s=n;if(!(t&1)&&!(t&2)&&n!==null)t:for(;;){if(n===null)return;var a=n.tag;if(a===3||a===4){var o=n.stateNode.containerInfo;if(o===l)break;if(a===4)for(a=n.return;a!==null;){var c=a.tag;if((c===3||c===4)&&a.stateNode.containerInfo===l)return;a=a.return}for(;o!==null;){if(a=Sl(o),a===null)return;if(c=a.tag,c===5||c===6||c===26||c===27){n=s=a;continue t}o=o.parentNode}}n=n.return}wH(function(){var d=s,v=jc(i),Z=[];t:{var V=LH.get(e);if(V!==void 0){var b=jo,C=e;switch(e){case"keypress":if(Na(i)===0)break t;case"keydown":case"keyup":b=Jm;break;case"focusin":C="focus",b=k2;break;case"focusout":C="blur",b=k2;break;case"beforeblur":case"afterblur":b=k2;break;case"click":if(i.button===2)break t;case"auxclick":case"dblclick":case"mousedown":case"mousemove":case"mouseup":case"mouseout":case"mouseover":case"contextmenu":b=gf;break;case"drag":case"dragend":case"dragenter":case"dragexit":case"dragleave":case"dragover":case"dragstart":case"drop":b=Im;break;case"touchcancel":case"touchend":case"touchmove":case"touchstart":b=tv;break;case NH:case RH:case BH:b=jm;break;case DH:b=iv;break;case"scroll":case"scrollend":b=Lm;break;case"wheel":b=lv;break;case"copy":case"cut":case"paste":b=Gm;break;case"gotpointercapture":case"lostpointercapture":case"pointercancel":case"pointerdown":case"pointermove":case"pointerout":case"pointerover":case"pointerup":b=mf;break;case"toggle":case"beforetoggle":b=rv}var O=(t&4)!==0,R=!O&&(e==="scroll"||e==="scrollend"),w=O?V!==null?V+"Capture":null:V;O=[];for(var m=d,_;m!==null;){var A=m;if(_=A.stateNode,A=A.tag,A!==5&&A!==26&&A!==27||_===null||w===null||(A=cr(m,w),A!=null&&O.push(vr(m,A,_))),R)break;m=m.return}0<O.length&&(V=new b(V,C,null,i,v),Z.push({event:V,listeners:O}))}}if(!(t&7)){t:{if(V=e==="mouseover"||e==="pointerover",b=e==="mouseout"||e==="pointerout",V&&i!==Ru&&(C=i.relatedTarget||i.fromElement)&&(Sl(C)||C[os]))break t;if((b||V)&&(V=v.window===v?v:(V=v.ownerDocument)?V.defaultView||V.parentWindow:window,b?(C=i.relatedTarget||i.toElement,b=d,C=C?Sl(C):null,C!==null&&(R=Tr(C),O=C.tag,C!==R||O!==5&&O!==27&&O!==6)&&(C=null)):(b=null,C=d),b!==C)){if(O=gf,A="onMouseLeave",w="onMouseEnter",m="mouse",(e==="pointerout"||e==="pointerover")&&(O=mf,A="onPointerLeave",w="onPointerEnter",m="pointer"),R=b==null?V:Us(b),_=C==null?V:Us(C),V=new O(A,m+"leave",b,i,v),V.target=R,V.relatedTarget=_,A=null,Sl(v)===d&&(O=new O(w,m+"enter",C,i,v),O.target=_,O.relatedTarget=R,A=O),R=A,b&&C)e:{for(O=s9,w=b,m=C,_=0,A=w;A;A=O(A))_++;A=0;for(var L=m;L;L=O(L))A++;for(;0<_-A;)w=O(w),_--;for(;0<A-_;)m=O(m),A--;for(;_--;){if(w===m||m!==null&&w===m.alternate){O=w;break e}w=O(w),m=O(m)}O=null}else O=null;b!==null&&u0(Z,V,b,O,!1),C!==null&&R!==null&&u0(Z,R,C,O,!0)}}t:{if(V=d?Us(d):window,b=V.nodeName&&V.nodeName.toLowerCase(),b==="select"||b==="input"&&V.type==="file")var U=wf;else if(yf(V))if(TH)U=gv;else{U=Hv;var p=dv}else b=V.nodeName,!b||b.toLowerCase()!=="input"||V.type!=="checkbox"&&V.type!=="radio"?d&&Uc(d.elementType)&&(U=wf):U=Vv;if(U&&(U=U(e,d))){EH(Z,U,i,v);break t}p&&p(e,V,d),e==="focusout"&&d&&V.type==="number"&&d.memoizedProps.value!=null&&Nu(V,"number",V.value)}switch(p=d?Us(d):window,e){case"focusin":(yf(p)||p.contentEditable==="true")&&(Al=p,Du=d,Xs=null);break;case"focusout":Xs=Du=Al=null;break;case"mousedown":Lu=!0;break;case"contextmenu":case"mouseup":case"dragend":Lu=!1,Ef(Z,i,v);break;case"selectionchange":if(mv)break;case"keydown":case"keyup":Ef(Z,i,v)}var f;if(qc)t:{switch(e){case"compositionstart":var g="onCompositionStart";break t;case"compositionend":g="onCompositionEnd";break t;case"compositionupdate":g="onCompositionUpdate";break t}g=void 0}else Tl?bH(e,i)&&(g="onCompositionEnd"):e==="keydown"&&i.keyCode===229&&(g="onCompositionStart");g&&(_H&&i.locale!=="ko"&&(Tl||g!=="onCompositionStart"?g==="onCompositionEnd"&&Tl&&(f=ZH()):(rn=v,Pc="value"in rn?rn.value:rn.textContent,Tl=!0)),p=vo(d,g),0<p.length&&(g=new pf(g,e,null,i,v),Z.push({event:g,listeners:p}),f?g.data=f:(f=SH(i),f!==null&&(g.data=f)))),(f=ov?uv(e,i):cv(e,i))&&(g=vo(d,"onBeforeInput"),0<g.length&&(p=new pf("onBeforeInput","beforeinput",null,i,v),Z.push({event:p,listeners:g}),p.data=f)),e9(Z,e,d,i,v)}wg(Z,t)})}function vr(e,t,i){return{instance:e,listener:t,currentTarget:i}}function vo(e,t){for(var i=t+"Capture",n=[];e!==null;){var l=e,s=l.stateNode;if(l=l.tag,l!==5&&l!==26&&l!==27||s===null||(l=cr(e,i),l!=null&&n.unshift(vr(e,l,s)),l=cr(e,t),l!=null&&n.push(vr(e,l,s))),e.tag===3)return n;e=e.return}return[]}function s9(e){if(e===null)return null;do e=e.return;while(e&&e.tag!==5&&e.tag!==27);return e||null}function u0(e,t,i,n,l){for(var s=t._reactName,a=[];i!==null&&i!==n;){var o=i,c=o.alternate,d=o.stateNode;if(o=o.tag,c!==null&&c===n)break;o!==5&&o!==26&&o!==27||d===null||(c=d,l?(d=cr(i,s),d!=null&&a.unshift(vr(i,d,c))):l||(d=cr(i,s),d!=null&&a.push(vr(i,d,c)))),i=i.return}a.length!==0&&e.push({event:t,listeners:a})}var r9=/\r\n?/g,a9=/\u0000|\uFFFD/g;function c0(e){return(typeof e=="string"?e:""+e).replace(r9,`
+`).replace(a9,"")}function _g(e,t){return t=c0(t),c0(e)===t}function ct(e,t,i,n,l,s){switch(i){case"children":typeof n=="string"?t==="body"||t==="textarea"&&n===""||Kl(e,n):(typeof n=="number"||typeof n=="bigint")&&t!=="body"&&Kl(e,""+n);break;case"className":da(e,"class",n);break;case"tabIndex":da(e,"tabindex",n);break;case"dir":case"role":case"viewBox":case"width":case"height":da(e,i,n);break;case"style":yH(e,n,s);break;case"data":if(t!=="object"){da(e,"data",n);break}case"src":case"href":if(n===""&&(t!=="a"||i!=="href")){e.removeAttribute(i);break}if(n==null||typeof n=="function"||typeof n=="symbol"||typeof n=="boolean"){e.removeAttribute(i);break}n=Ca(""+n),e.setAttribute(i,n);break;case"action":case"formAction":if(typeof n=="function"){e.setAttribute(i,"javascript:throw new Error('A React form was unexpectedly submitted. If you called form.submit() manually, consider using form.requestSubmit() instead. If you\\'re trying to use event.stopPropagation() in a submit event handler, consider also calling event.preventDefault().')");break}else typeof s=="function"&&(i==="formAction"?(t!=="input"&&ct(e,t,"name",l.name,l,null),ct(e,t,"formEncType",l.formEncType,l,null),ct(e,t,"formMethod",l.formMethod,l,null),ct(e,t,"formTarget",l.formTarget,l,null)):(ct(e,t,"encType",l.encType,l,null),ct(e,t,"method",l.method,l,null),ct(e,t,"target",l.target,l,null)));if(n==null||typeof n=="symbol"||typeof n=="boolean"){e.removeAttribute(i);break}n=Ca(""+n),e.setAttribute(i,n);break;case"onClick":n!=null&&(e.onclick=_i);break;case"onScroll":n!=null&&Q("scroll",e);break;case"onScrollEnd":n!=null&&Q("scrollend",e);break;case"dangerouslySetInnerHTML":if(n!=null){if(typeof n!="object"||!("__html"in n))throw Error(N(61));if(i=n.__html,i!=null){if(l.children!=null)throw Error(N(60));e.innerHTML=i}}break;case"multiple":e.multiple=n&&typeof n!="function"&&typeof n!="symbol";break;case"muted":e.muted=n&&typeof n!="function"&&typeof n!="symbol";break;case"suppressContentEditableWarning":case"suppressHydrationWarning":case"defaultValue":case"defaultChecked":case"innerHTML":case"ref":break;case"autoFocus":break;case"xlinkHref":if(n==null||typeof n=="function"||typeof n=="boolean"||typeof n=="symbol"){e.removeAttribute("xlink:href");break}i=Ca(""+n),e.setAttributeNS("http://www.w3.org/1999/xlink","xlink:href",i);break;case"contentEditable":case"spellCheck":case"draggable":case"value":case"autoReverse":case"externalResourcesRequired":case"focusable":case"preserveAlpha":n!=null&&typeof n!="function"&&typeof n!="symbol"?e.setAttribute(i,""+n):e.removeAttribute(i);break;case"inert":case"allowFullScreen":case"async":case"autoPlay":case"controls":case"default":case"defer":case"disabled":case"disablePictureInPicture":case"disableRemotePlayback":case"formNoValidate":case"hidden":case"loop":case"noModule":case"noValidate":case"open":case"playsInline":case"readOnly":case"required":case"reversed":case"scoped":case"seamless":case"itemScope":n&&typeof n!="function"&&typeof n!="symbol"?e.setAttribute(i,""):e.removeAttribute(i);break;case"capture":case"download":n===!0?e.setAttribute(i,""):n!==!1&&n!=null&&typeof n!="function"&&typeof n!="symbol"?e.setAttribute(i,n):e.removeAttribute(i);break;case"cols":case"rows":case"size":case"span":n!=null&&typeof n!="function"&&typeof n!="symbol"&&!isNaN(n)&&1<=n?e.setAttribute(i,n):e.removeAttribute(i);break;case"rowSpan":case"start":n==null||typeof n=="function"||typeof n=="symbol"||isNaN(n)?e.removeAttribute(i):e.setAttribute(i,n);break;case"popover":Q("beforetoggle",e),Q("toggle",e),xa(e,"popover",n);break;case"xlinkActuate":di(e,"http://www.w3.org/1999/xlink","xlink:actuate",n);break;case"xlinkArcrole":di(e,"http://www.w3.org/1999/xlink","xlink:arcrole",n);break;case"xlinkRole":di(e,"http://www.w3.org/1999/xlink","xlink:role",n);break;case"xlinkShow":di(e,"http://www.w3.org/1999/xlink","xlink:show",n);break;case"xlinkTitle":di(e,"http://www.w3.org/1999/xlink","xlink:title",n);break;case"xlinkType":di(e,"http://www.w3.org/1999/xlink","xlink:type",n);break;case"xmlBase":di(e,"http://www.w3.org/XML/1998/namespace","xml:base",n);break;case"xmlLang":di(e,"http://www.w3.org/XML/1998/namespace","xml:lang",n);break;case"xmlSpace":di(e,"http://www.w3.org/XML/1998/namespace","xml:space",n);break;case"is":xa(e,"is",n);break;case"innerText":case"textContent":break;default:(!(2<i.length)||i[0]!=="o"&&i[0]!=="O"||i[1]!=="n"&&i[1]!=="N")&&(i=Bm.get(i)||i,xa(e,i,n))}}function ac(e,t,i,n,l,s){switch(i){case"style":yH(e,n,s);break;case"dangerouslySetInnerHTML":if(n!=null){if(typeof n!="object"||!("__html"in n))throw Error(N(61));if(i=n.__html,i!=null){if(l.children!=null)throw Error(N(60));e.innerHTML=i}}break;case"children":typeof n=="string"?Kl(e,n):(typeof n=="number"||typeof n=="bigint")&&Kl(e,""+n);break;case"onScroll":n!=null&&Q("scroll",e);break;case"onScrollEnd":n!=null&&Q("scrollend",e);break;case"onClick":n!=null&&(e.onclick=_i);break;case"suppressContentEditableWarning":case"suppressHydrationWarning":case"innerHTML":case"ref":break;case"innerText":case"textContent":break;default:if(!VH.hasOwnProperty(i))t:{if(i[0]==="o"&&i[1]==="n"&&(l=i.endsWith("Capture"),t=i.slice(2,l?i.length-7:void 0),s=e[de]||null,s=s!=null?s[i]:null,typeof s=="function"&&e.removeEventListener(t,s,l),typeof n=="function")){typeof s!="function"&&s!==null&&(i in e?e[i]=null:e.hasAttribute(i)&&e.removeAttribute(i)),e.addEventListener(t,n,l);break t}i in e?e[i]=n:n===!0?e.setAttribute(i,""):xa(e,i,n)}}}function Xt(e,t,i){switch(t){case"div":case"span":case"svg":case"path":case"a":case"g":case"p":case"li":break;case"img":Q("error",e),Q("load",e);var n=!1,l=!1,s;for(s in i)if(i.hasOwnProperty(s)){var a=i[s];if(a!=null)switch(s){case"src":n=!0;break;case"srcSet":l=!0;break;case"children":case"dangerouslySetInnerHTML":throw Error(N(137,t));default:ct(e,t,s,a,i,null)}}l&&ct(e,t,"srcSet",i.srcSet,i,null),n&&ct(e,t,"src",i.src,i,null);return;case"input":Q("invalid",e);var o=s=a=l=null,c=null,d=null;for(n in i)if(i.hasOwnProperty(n)){var v=i[n];if(v!=null)switch(n){case"name":l=v;break;case"type":a=v;break;case"checked":c=v;break;case"defaultChecked":d=v;break;case"value":s=v;break;case"defaultValue":o=v;break;case"children":case"dangerouslySetInnerHTML":if(v!=null)throw Error(N(137,t));break;default:ct(e,t,n,v,i,null)}}mH(e,s,o,c,d,a,l,!1);return;case"select":Q("invalid",e),n=a=s=null;for(l in i)if(i.hasOwnProperty(l)&&(o=i[l],o!=null))switch(l){case"value":s=o;break;case"defaultValue":a=o;break;case"multiple":n=o;default:ct(e,t,l,o,i,null)}t=s,i=a,e.multiple=!!n,t!=null?Ll(e,!!n,t,!1):i!=null&&Ll(e,!!n,i,!0);return;case"textarea":Q("invalid",e),s=l=n=null;for(a in i)if(i.hasOwnProperty(a)&&(o=i[a],o!=null))switch(a){case"value":n=o;break;case"defaultValue":l=o;break;case"children":s=o;break;case"dangerouslySetInnerHTML":if(o!=null)throw Error(N(91));break;default:ct(e,t,a,o,i,null)}MH(e,n,l,s);return;case"option":for(c in i)if(i.hasOwnProperty(c)&&(n=i[c],n!=null))switch(c){case"selected":e.selected=n&&typeof n!="function"&&typeof n!="symbol";break;default:ct(e,t,c,n,i,null)}return;case"dialog":Q("beforetoggle",e),Q("toggle",e),Q("cancel",e),Q("close",e);break;case"iframe":case"object":Q("load",e);break;case"video":case"audio":for(n=0;n<mr.length;n++)Q(mr[n],e);break;case"image":Q("error",e),Q("load",e);break;case"details":Q("toggle",e);break;case"embed":case"source":case"link":Q("error",e),Q("load",e);case"area":case"base":case"br":case"col":case"hr":case"keygen":case"meta":case"param":case"track":case"wbr":case"menuitem":for(d in i)if(i.hasOwnProperty(d)&&(n=i[d],n!=null))switch(d){case"children":case"dangerouslySetInnerHTML":throw Error(N(137,t));default:ct(e,t,d,n,i,null)}return;default:if(Uc(t)){for(v in i)i.hasOwnProperty(v)&&(n=i[v],n!==void 0&&ac(e,t,v,n,i,void 0));return}}for(o in i)i.hasOwnProperty(o)&&(n=i[o],n!=null&&ct(e,t,o,n,i,null))}function o9(e,t,i,n){switch(t){case"div":case"span":case"svg":case"path":case"a":case"g":case"p":case"li":break;case"input":var l=null,s=null,a=null,o=null,c=null,d=null,v=null;for(b in i){var Z=i[b];if(i.hasOwnProperty(b)&&Z!=null)switch(b){case"checked":break;case"value":break;case"defaultValue":c=Z;default:n.hasOwnProperty(b)||ct(e,t,b,null,n,Z)}}for(var V in n){var b=n[V];if(Z=i[V],n.hasOwnProperty(V)&&(b!=null||Z!=null))switch(V){case"type":s=b;break;case"name":l=b;break;case"checked":d=b;break;case"defaultChecked":v=b;break;case"value":a=b;break;case"defaultValue":o=b;break;case"children":case"dangerouslySetInnerHTML":if(b!=null)throw Error(N(137,t));break;default:b!==Z&&ct(e,t,V,b,n,Z)}}Ou(e,a,o,c,d,v,s,l);return;case"select":b=a=o=V=null;for(s in i)if(c=i[s],i.hasOwnProperty(s)&&c!=null)switch(s){case"value":break;case"multiple":b=c;default:n.hasOwnProperty(s)||ct(e,t,s,null,n,c)}for(l in n)if(s=n[l],c=i[l],n.hasOwnProperty(l)&&(s!=null||c!=null))switch(l){case"value":V=s;break;case"defaultValue":o=s;break;case"multiple":a=s;default:s!==c&&ct(e,t,l,s,n,c)}t=o,i=a,n=b,V!=null?Ll(e,!!i,V,!1):!!n!=!!i&&(t!=null?Ll(e,!!i,t,!0):Ll(e,!!i,i?[]:"",!1));return;case"textarea":b=V=null;for(o in i)if(l=i[o],i.hasOwnProperty(o)&&l!=null&&!n.hasOwnProperty(o))switch(o){case"value":break;case"children":break;default:ct(e,t,o,null,n,l)}for(a in n)if(l=n[a],s=i[a],n.hasOwnProperty(a)&&(l!=null||s!=null))switch(a){case"value":V=l;break;case"defaultValue":b=l;break;case"children":break;case"dangerouslySetInnerHTML":if(l!=null)throw Error(N(91));break;default:l!==s&&ct(e,t,a,l,n,s)}vH(e,V,b);return;case"option":for(var C in i)if(V=i[C],i.hasOwnProperty(C)&&V!=null&&!n.hasOwnProperty(C))switch(C){case"selected":e.selected=!1;break;default:ct(e,t,C,null,n,V)}for(c in n)if(V=n[c],b=i[c],n.hasOwnProperty(c)&&V!==b&&(V!=null||b!=null))switch(c){case"selected":e.selected=V&&typeof V!="function"&&typeof V!="symbol";break;default:ct(e,t,c,V,n,b)}return;case"img":case"link":case"area":case"base":case"br":case"col":case"embed":case"hr":case"keygen":case"meta":case"param":case"source":case"track":case"wbr":case"menuitem":for(var O in i)V=i[O],i.hasOwnProperty(O)&&V!=null&&!n.hasOwnProperty(O)&&ct(e,t,O,null,n,V);for(d in n)if(V=n[d],b=i[d],n.hasOwnProperty(d)&&V!==b&&(V!=null||b!=null))switch(d){case"children":case"dangerouslySetInnerHTML":if(V!=null)throw Error(N(137,t));break;default:ct(e,t,d,V,n,b)}return;default:if(Uc(t)){for(var R in i)V=i[R],i.hasOwnProperty(R)&&V!==void 0&&!n.hasOwnProperty(R)&&ac(e,t,R,void 0,n,V);for(v in n)V=n[v],b=i[v],!n.hasOwnProperty(v)||V===b||V===void 0&&b===void 0||ac(e,t,v,V,n,b);return}}for(var w in i)V=i[w],i.hasOwnProperty(w)&&V!=null&&!n.hasOwnProperty(w)&&ct(e,t,w,null,n,V);for(Z in n)V=n[Z],b=i[Z],!n.hasOwnProperty(Z)||V===b||V==null&&b==null||ct(e,t,Z,V,n,b)}function h0(e){switch(e){case"css":case"script":case"font":case"img":case"image":case"input":case"link":return!0;default:return!1}}function u9(){if(typeof performance.getEntriesByType=="function"){for(var e=0,t=0,i=performance.getEntriesByType("resource"),n=0;n<i.length;n++){var l=i[n],s=l.transferSize,a=l.initiatorType,o=l.duration;if(s&&o&&h0(a)){for(a=0,o=l.responseEnd,n+=1;n<i.length;n++){var c=i[n],d=c.startTime;if(d>o)break;var v=c.transferSize,Z=c.initiatorType;v&&h0(Z)&&(c=c.responseEnd,a+=v*(c<o?1:(o-d)/(c-d)))}if(--n,t+=8*(s+a)/(l.duration/1e3),e++,10<e)break}}if(0<e)return t/e/1e6}return navigator.connection&&(e=navigator.connection.downlink,typeof e=="number")?e:5}var oc=null,uc=null;function Mo(e){return e.nodeType===9?e:e.ownerDocument}function f0(e){switch(e){case"http://www.w3.org/2000/svg":return 1;case"http://www.w3.org/1998/Math/MathML":return 2;default:return 0}}function bg(e,t){if(e===0)switch(t){case"svg":return 1;case"math":return 2;default:return 0}return e===1&&t==="foreignObject"?0:e}function cc(e,t){return e==="textarea"||e==="noscript"||typeof t.children=="string"||typeof t.children=="number"||typeof t.children=="bigint"||typeof t.dangerouslySetInnerHTML=="object"&&t.dangerouslySetInnerHTML!==null&&t.dangerouslySetInnerHTML.__html!=null}var cu=null;function c9(){var e=window.event;return e&&e.type==="popstate"?e===cu?!1:(cu=e,!0):(cu=null,!1)}var Sg=typeof setTimeout=="function"?setTimeout:void 0,h9=typeof clearTimeout=="function"?clearTimeout:void 0,d0=typeof Promise=="function"?Promise:void 0,f9=typeof queueMicrotask=="function"?queueMicrotask:typeof d0<"u"?function(e){return d0.resolve(null).then(e).catch(d9)}:Sg;function d9(e){setTimeout(function(){throw e})}function An(e){return e==="head"}function H0(e,t){var i=t,n=0;do{var l=i.nextSibling;if(e.removeChild(i),l&&l.nodeType===8)if(i=l.data,i==="/$"||i==="/&"){if(n===0){e.removeChild(l),ns(t);return}n--}else if(i==="$"||i==="$?"||i==="$~"||i==="$!"||i==="&")n++;else if(i==="html")nr(e.ownerDocument.documentElement);else if(i==="head"){i=e.ownerDocument.head,nr(i);for(var s=i.firstChild;s;){var a=s.nextSibling,o=s.nodeName;s[Or]||o==="SCRIPT"||o==="STYLE"||o==="LINK"&&s.rel.toLowerCase()==="stylesheet"||i.removeChild(s),s=a}}else i==="body"&&nr(e.ownerDocument.body);i=l}while(i);ns(t)}function V0(e,t){var i=e;e=0;do{var n=i.nextSibling;if(i.nodeType===1?t?(i._stashedDisplay=i.style.display,i.style.display="none"):(i.style.display=i._stashedDisplay||"",i.getAttribute("style")===""&&i.removeAttribute("style")):i.nodeType===3&&(t?(i._stashedText=i.nodeValue,i.nodeValue=""):i.nodeValue=i._stashedText||""),n&&n.nodeType===8)if(i=n.data,i==="/$"){if(e===0)break;e--}else i!=="$"&&i!=="$?"&&i!=="$~"&&i!=="$!"||e++;i=n}while(i)}function hc(e){var t=e.firstChild;for(t&&t.nodeType===10&&(t=t.nextSibling);t;){var i=t;switch(t=t.nextSibling,i.nodeName){case"HTML":case"HEAD":case"BODY":hc(i),zc(i);continue;case"SCRIPT":case"STYLE":continue;case"LINK":if(i.rel.toLowerCase()==="stylesheet")continue}e.removeChild(i)}}function H9(e,t,i,n){for(;e.nodeType===1;){var l=i;if(e.nodeName.toLowerCase()!==t.toLowerCase()){if(!n&&(e.nodeName!=="INPUT"||e.type!=="hidden"))break}else if(n){if(!e[Or])switch(t){case"meta":if(!e.hasAttribute("itemprop"))break;return e;case"link":if(s=e.getAttribute("rel"),s==="stylesheet"&&e.hasAttribute("data-precedence"))break;if(s!==l.rel||e.getAttribute("href")!==(l.href==null||l.href===""?null:l.href)||e.getAttribute("crossorigin")!==(l.crossOrigin==null?null:l.crossOrigin)||e.getAttribute("title")!==(l.title==null?null:l.title))break;return e;case"style":if(e.hasAttribute("data-precedence"))break;return e;case"script":if(s=e.getAttribute("src"),(s!==(l.src==null?null:l.src)||e.getAttribute("type")!==(l.type==null?null:l.type)||e.getAttribute("crossorigin")!==(l.crossOrigin==null?null:l.crossOrigin))&&s&&e.hasAttribute("async")&&!e.hasAttribute("itemprop"))break;return e;default:return e}}else if(t==="input"&&e.type==="hidden"){var s=l.name==null?null:""+l.name;if(l.type==="hidden"&&e.getAttribute("name")===s)return e}else return e;if(e=Le(e.nextSibling),e===null)break}return null}function V9(e,t,i){if(t==="")return null;for(;e.nodeType!==3;)if((e.nodeType!==1||e.nodeName!=="INPUT"||e.type!=="hidden")&&!i||(e=Le(e.nextSibling),e===null))return null;return e}function Eg(e,t){for(;e.nodeType!==8;)if((e.nodeType!==1||e.nodeName!=="INPUT"||e.type!=="hidden")&&!t||(e=Le(e.nextSibling),e===null))return null;return e}function fc(e){return e.data==="$?"||e.data==="$~"}function dc(e){return e.data==="$!"||e.data==="$?"&&e.ownerDocument.readyState!=="loading"}function g9(e,t){var i=e.ownerDocument;if(e.data==="$~")e._reactRetry=t;else if(e.data!=="$?"||i.readyState!=="loading")t();else{var n=function(){t(),i.removeEventListener("DOMContentLoaded",n)};i.addEventListener("DOMContentLoaded",n),e._reactRetry=n}}function Le(e){for(;e!=null;e=e.nextSibling){var t=e.nodeType;if(t===1||t===3)break;if(t===8){if(t=e.data,t==="$"||t==="$!"||t==="$?"||t==="$~"||t==="&"||t==="F!"||t==="F")break;if(t==="/$"||t==="/&")return null}}return e}var Hc=null;function g0(e){e=e.nextSibling;for(var t=0;e;){if(e.nodeType===8){var i=e.data;if(i==="/$"||i==="/&"){if(t===0)return Le(e.nextSibling);t--}else i!=="$"&&i!=="$!"&&i!=="$?"&&i!=="$~"&&i!=="&"||t++}e=e.nextSibling}return null}function p0(e){e=e.previousSibling;for(var t=0;e;){if(e.nodeType===8){var i=e.data;if(i==="$"||i==="$!"||i==="$?"||i==="$~"||i==="&"){if(t===0)return e;t--}else i!=="/$"&&i!=="/&"||t++}e=e.previousSibling}return null}function Tg(e,t,i){switch(t=Mo(i),e){case"html":if(e=t.documentElement,!e)throw Error(N(452));return e;case"head":if(e=t.head,!e)throw Error(N(453));return e;case"body":if(e=t.body,!e)throw Error(N(454));return e;default:throw Error(N(451))}}function nr(e){for(var t=e.attributes;t.length;)e.removeAttributeNode(t[0]);zc(e)}var ke=new Map,m0=new Set;function yo(e){return typeof e.getRootNode=="function"?e.getRootNode():e.nodeType===9?e:e.ownerDocument}var ki=st.d;st.d={f:p9,r:m9,D:v9,C:M9,L:y9,m:w9,X:_9,S:Z9,M:b9};function p9(){var e=ki.f(),t=Wo();return e||t}function m9(e){var t=us(e);t!==null&&t.tag===5&&t.type==="form"?yV(t):ki.r(e)}var ds=typeof document>"u"?null:document;function Ag(e,t,i){var n=ds;if(n&&typeof t=="string"&&t){var l=Ne(t);l='link[rel="'+e+'"][href="'+l+'"]',typeof i=="string"&&(l+='[crossorigin="'+i+'"]'),m0.has(l)||(m0.add(l),e={rel:e,crossOrigin:i,href:t},n.querySelector(l)===null&&(t=n.createElement("link"),Xt(t,"link",e),It(t),n.head.appendChild(t)))}}function v9(e){ki.D(e),Ag("dns-prefetch",e,null)}function M9(e,t){ki.C(e,t),Ag("preconnect",e,t)}function y9(e,t,i){ki.L(e,t,i);var n=ds;if(n&&e&&t){var l='link[rel="preload"][as="'+Ne(t)+'"]';t==="image"&&i&&i.imageSrcSet?(l+='[imagesrcset="'+Ne(i.imageSrcSet)+'"]',typeof i.imageSizes=="string"&&(l+='[imagesizes="'+Ne(i.imageSizes)+'"]')):l+='[href="'+Ne(e)+'"]';var s=l;switch(t){case"style":s=is(e);break;case"script":s=Hs(e)}ke.has(s)||(e=yt({rel:"preload",href:t==="image"&&i&&i.imageSrcSet?void 0:e,as:t},i),ke.set(s,e),n.querySelector(l)!==null||t==="style"&&n.querySelector(kr(s))||t==="script"&&n.querySelector(Ir(s))||(t=n.createElement("link"),Xt(t,"link",e),It(t),n.head.appendChild(t)))}}function w9(e,t){ki.m(e,t);var i=ds;if(i&&e){var n=t&&typeof t.as=="string"?t.as:"script",l='link[rel="modulepreload"][as="'+Ne(n)+'"][href="'+Ne(e)+'"]',s=l;switch(n){case"audioworklet":case"paintworklet":case"serviceworker":case"sharedworker":case"worker":case"script":s=Hs(e)}if(!ke.has(s)&&(e=yt({rel:"modulepreload",href:e},t),ke.set(s,e),i.querySelector(l)===null)){switch(n){case"audioworklet":case"paintworklet":case"serviceworker":case"sharedworker":case"worker":case"script":if(i.querySelector(Ir(s)))return}n=i.createElement("link"),Xt(n,"link",e),It(n),i.head.appendChild(n)}}}function Z9(e,t,i){ki.S(e,t,i);var n=ds;if(n&&e){var l=Dl(n).hoistableStyles,s=is(e);t=t||"default";var a=l.get(s);if(!a){var o={loading:0,preload:null};if(a=n.querySelector(kr(s)))o.loading=5;else{e=yt({rel:"stylesheet",href:e,"data-precedence":t},i),(i=ke.get(s))&&b1(e,i);var c=a=n.createElement("link");It(c),Xt(c,"link",e),c._p=new Promise(function(d,v){c.onload=d,c.onerror=v}),c.addEventListener("load",function(){o.loading|=1}),c.addEventListener("error",function(){o.loading|=2}),o.loading|=4,Ua(a,t,n)}a={type:"stylesheet",instance:a,count:1,state:o},l.set(s,a)}}}function _9(e,t){ki.X(e,t);var i=ds;if(i&&e){var n=Dl(i).hoistableScripts,l=Hs(e),s=n.get(l);s||(s=i.querySelector(Ir(l)),s||(e=yt({src:e,async:!0},t),(t=ke.get(l))&&S1(e,t),s=i.createElement("script"),It(s),Xt(s,"link",e),i.head.appendChild(s)),s={type:"script",instance:s,count:1,state:null},n.set(l,s))}}function b9(e,t){ki.M(e,t);var i=ds;if(i&&e){var n=Dl(i).hoistableScripts,l=Hs(e),s=n.get(l);s||(s=i.querySelector(Ir(l)),s||(e=yt({src:e,async:!0,type:"module"},t),(t=ke.get(l))&&S1(e,t),s=i.createElement("script"),It(s),Xt(s,"link",e),i.head.appendChild(s)),s={type:"script",instance:s,count:1,state:null},n.set(l,s))}}function v0(e,t,i,n){var l=(l=cn.current)?yo(l):null;if(!l)throw Error(N(446));switch(e){case"meta":case"title":return null;case"style":return typeof i.precedence=="string"&&typeof i.href=="string"?(t=is(i.href),i=Dl(l).hoistableStyles,n=i.get(t),n||(n={type:"style",instance:null,count:0,state:null},i.set(t,n)),n):{type:"void",instance:null,count:0,state:null};case"link":if(i.rel==="stylesheet"&&typeof i.href=="string"&&typeof i.precedence=="string"){e=is(i.href);var s=Dl(l).hoistableStyles,a=s.get(e);if(a||(l=l.ownerDocument||l,a={type:"stylesheet",instance:null,count:0,state:{loading:0,preload:null}},s.set(e,a),(s=l.querySelector(kr(e)))&&!s._p&&(a.instance=s,a.state.loading=5),ke.has(e)||(i={rel:"preload",as:"style",href:i.href,crossOrigin:i.crossOrigin,integrity:i.integrity,media:i.media,hrefLang:i.hrefLang,referrerPolicy:i.referrerPolicy},ke.set(e,i),s||S9(l,e,i,a.state))),t&&n===null)throw Error(N(528,""));return a}if(t&&n!==null)throw Error(N(529,""));return null;case"script":return t=i.async,i=i.src,typeof i=="string"&&t&&typeof t!="function"&&typeof t!="symbol"?(t=Hs(i),i=Dl(l).hoistableScripts,n=i.get(t),n||(n={type:"script",instance:null,count:0,state:null},i.set(t,n)),n):{type:"void",instance:null,count:0,state:null};default:throw Error(N(444,e))}}function is(e){return'href="'+Ne(e)+'"'}function kr(e){return'link[rel="stylesheet"]['+e+"]"}function xg(e){return yt({},e,{"data-precedence":e.precedence,precedence:null})}function S9(e,t,i,n){e.querySelector('link[rel="preload"][as="style"]['+t+"]")?n.loading=1:(t=e.createElement("link"),n.preload=t,t.addEventListener("load",function(){return n.loading|=1}),t.addEventListener("error",function(){return n.loading|=2}),Xt(t,"link",i),It(t),e.head.appendChild(t))}function Hs(e){return'[src="'+Ne(e)+'"]'}function Ir(e){return"script[async]"+e}function M0(e,t,i){if(t.count++,t.instance===null)switch(t.type){case"style":var n=e.querySelector('style[data-href~="'+Ne(i.href)+'"]');if(n)return t.instance=n,It(n),n;var l=yt({},i,{"data-href":i.href,"data-precedence":i.precedence,href:null,precedence:null});return n=(e.ownerDocument||e).createElement("style"),It(n),Xt(n,"style",l),Ua(n,i.precedence,e),t.instance=n;case"stylesheet":l=is(i.href);var s=e.querySelector(kr(l));if(s)return t.state.loading|=4,t.instance=s,It(s),s;n=xg(i),(l=ke.get(l))&&b1(n,l),s=(e.ownerDocument||e).createElement("link"),It(s);var a=s;return a._p=new Promise(function(o,c){a.onload=o,a.onerror=c}),Xt(s,"link",n),t.state.loading|=4,Ua(s,i.precedence,e),t.instance=s;case"script":return s=Hs(i.src),(l=e.querySelector(Ir(s)))?(t.instance=l,It(l),l):(n=i,(l=ke.get(s))&&(n=yt({},i),S1(n,l)),e=e.ownerDocument||e,l=e.createElement("script"),It(l),Xt(l,"link",n),e.head.appendChild(l),t.instance=l);case"void":return null;default:throw Error(N(443,t.type))}else t.type==="stylesheet"&&!(t.state.loading&4)&&(n=t.instance,t.state.loading|=4,Ua(n,i.precedence,e));return t.instance}function Ua(e,t,i){for(var n=i.querySelectorAll('link[rel="stylesheet"][data-precedence],style[data-precedence]'),l=n.length?n[n.length-1]:null,s=l,a=0;a<n.length;a++){var o=n[a];if(o.dataset.precedence===t)s=o;else if(s!==l)break}s?s.parentNode.insertBefore(e,s.nextSibling):(t=i.nodeType===9?i.head:i,t.insertBefore(e,t.firstChild))}function b1(e,t){e.crossOrigin==null&&(e.crossOrigin=t.crossOrigin),e.referrerPolicy==null&&(e.referrerPolicy=t.referrerPolicy),e.title==null&&(e.title=t.title)}function S1(e,t){e.crossOrigin==null&&(e.crossOrigin=t.crossOrigin),e.referrerPolicy==null&&(e.referrerPolicy=t.referrerPolicy),e.integrity==null&&(e.integrity=t.integrity)}var ja=null;function y0(e,t,i){if(ja===null){var n=new Map,l=ja=new Map;l.set(i,n)}else l=ja,n=l.get(i),n||(n=new Map,l.set(i,n));if(n.has(e))return n;for(n.set(e,null),i=i.getElementsByTagName(e),l=0;l<i.length;l++){var s=i[l];if(!(s[Or]||s[Gt]||e==="link"&&s.getAttribute("rel")==="stylesheet")&&s.namespaceURI!=="http://www.w3.org/2000/svg"){var a=s.getAttribute(t)||"";a=e+a;var o=n.get(a);o?o.push(s):n.set(a,[s])}}return n}function w0(e,t,i){e=e.ownerDocument||e,e.head.insertBefore(i,t==="title"?e.querySelector("head > title"):null)}function E9(e,t,i){if(i===1||t.itemProp!=null)return!1;switch(e){case"meta":case"title":return!0;case"style":if(typeof t.precedence!="string"||typeof t.href!="string"||t.href==="")break;return!0;case"link":if(typeof t.rel!="string"||typeof t.href!="string"||t.href===""||t.onLoad||t.onError)break;switch(t.rel){case"stylesheet":return e=t.disabled,typeof t.precedence=="string"&&e==null;default:return!0}case"script":if(t.async&&typeof t.async!="function"&&typeof t.async!="symbol"&&!t.onLoad&&!t.onError&&t.src&&typeof t.src=="string")return!0}return!1}function Cg(e){return!(e.type==="stylesheet"&&!(e.state.loading&3))}function T9(e,t,i,n){if(i.type==="stylesheet"&&(typeof n.media!="string"||matchMedia(n.media).matches!==!1)&&!(i.state.loading&4)){if(i.instance===null){var l=is(n.href),s=t.querySelector(kr(l));if(s){t=s._p,t!==null&&typeof t=="object"&&typeof t.then=="function"&&(e.count++,e=wo.bind(e),t.then(e,e)),i.state.loading|=4,i.instance=s,It(s);return}s=t.ownerDocument||t,n=xg(n),(l=ke.get(l))&&b1(n,l),s=s.createElement("link"),It(s);var a=s;a._p=new Promise(function(o,c){a.onload=o,a.onerror=c}),Xt(s,"link",n),i.instance=s}e.stylesheets===null&&(e.stylesheets=new Map),e.stylesheets.set(i,t),(t=i.state.preload)&&!(i.state.loading&3)&&(e.count++,i=wo.bind(e),t.addEventListener("load",i),t.addEventListener("error",i))}}var hu=0;function A9(e,t){return e.stylesheets&&e.count===0&&Pa(e,e.stylesheets),0<e.count||0<e.imgCount?function(i){var n=setTimeout(function(){if(e.stylesheets&&Pa(e,e.stylesheets),e.unsuspend){var s=e.unsuspend;e.unsuspend=null,s()}},6e4+t);0<e.imgBytes&&hu===0&&(hu=62500*u9());var l=setTimeout(function(){if(e.waitingForImages=!1,e.count===0&&(e.stylesheets&&Pa(e,e.stylesheets),e.unsuspend)){var s=e.unsuspend;e.unsuspend=null,s()}},(e.imgBytes>hu?50:800)+t);return e.unsuspend=i,function(){e.unsuspend=null,clearTimeout(n),clearTimeout(l)}}:null}function wo(){if(this.count--,this.count===0&&(this.imgCount===0||!this.waitingForImages)){if(this.stylesheets)Pa(this,this.stylesheets);else if(this.unsuspend){var e=this.unsuspend;this.unsuspend=null,e()}}}var Zo=null;function Pa(e,t){e.stylesheets=null,e.unsuspend!==null&&(e.count++,Zo=new Map,t.forEach(x9,e),Zo=null,wo.call(e))}function x9(e,t){if(!(t.state.loading&4)){var i=Zo.get(e);if(i)var n=i.get(null);else{i=new Map,Zo.set(e,i);for(var l=e.querySelectorAll("link[data-precedence],style[data-precedence]"),s=0;s<l.length;s++){var a=l[s];(a.nodeName==="LINK"||a.getAttribute("media")!=="not all")&&(i.set(a.dataset.precedence,a),n=a)}n&&i.set(null,n)}l=t.instance,a=l.getAttribute("data-precedence"),s=i.get(a)||n,s===n&&i.set(null,l),i.set(a,l),this.count++,n=wo.bind(this),l.addEventListener("load",n),l.addEventListener("error",n),s?s.parentNode.insertBefore(l,s.nextSibling):(e=e.nodeType===9?e.head:e,e.insertBefore(l,e.firstChild)),t.state.loading|=4}}var Mr={$$typeof:Zi,Provider:null,Consumer:null,_currentValue:Yn,_currentValue2:Yn,_threadCount:0};function C9(e,t,i,n,l,s,a,o,c){this.tag=1,this.containerInfo=e,this.pingCache=this.current=this.pendingChildren=null,this.timeoutHandle=-1,this.callbackNode=this.next=this.pendingContext=this.context=this.cancelPendingCommit=null,this.callbackPriority=0,this.expirationTimes=R2(-1),this.entangledLanes=this.shellSuspendCounter=this.errorRecoveryDisabledLanes=this.expiredLanes=this.warmLanes=this.pingedLanes=this.suspendedLanes=this.pendingLanes=0,this.entanglements=R2(0),this.hiddenUpdates=R2(null),this.identifierPrefix=n,this.onUncaughtError=l,this.onCaughtError=s,this.onRecoverableError=a,this.pooledCache=null,this.pooledCacheLanes=0,this.formState=c,this.incompleteTransitions=new Map}function Og(e,t,i,n,l,s,a,o,c,d,v,Z){return e=new C9(e,t,i,a,c,d,v,Z,o),t=1,s===!0&&(t|=24),s=me(3,null,null,t),e.current=s,s.stateNode=e,t=$c(),t.refCount++,e.pooledCache=t,t.refCount++,s.memoizedState={element:n,isDehydrated:i,cache:t},e1(s),e}function Ng(e){return e?(e=Ol,e):Ol}function Rg(e,t,i,n,l,s){l=Ng(l),n.context===null?n.context=l:n.pendingContext=l,n=fn(t),n.payload={element:i},s=s===void 0?null:s,s!==null&&(n.callback=s),i=dn(e,n,t),i!==null&&(fe(i,e,t),Ks(i,e,t))}function Z0(e,t){if(e=e.memoizedState,e!==null&&e.dehydrated!==null){var i=e.retryLane;e.retryLane=i!==0&&i<t?i:t}}function E1(e,t){Z0(e,t),(e=e.alternate)&&Z0(e,t)}function Bg(e){if(e.tag===13||e.tag===31){var t=cl(e,67108864);t!==null&&fe(t,e,67108864),E1(e,67108864)}}function _0(e){if(e.tag===13||e.tag===31){var t=_e();t=kc(t);var i=cl(e,t);i!==null&&fe(i,e,t),E1(e,t)}}var _o=!0;function O9(e,t,i,n){var l=G.T;G.T=null;var s=st.p;try{st.p=2,T1(e,t,i,n)}finally{st.p=s,G.T=l}}function N9(e,t,i,n){var l=G.T;G.T=null;var s=st.p;try{st.p=8,T1(e,t,i,n)}finally{st.p=s,G.T=l}}function T1(e,t,i,n){if(_o){var l=Vc(n);if(l===null)uu(e,t,n,bo,i),b0(e,n);else if(B9(l,e,t,i,n))n.stopPropagation();else if(b0(e,n),t&4&&-1<R9.indexOf(e)){for(;l!==null;){var s=us(l);if(s!==null)switch(s.tag){case 3:if(s=s.stateNode,s.current.memoizedState.isDehydrated){var a=In(s.pendingLanes);if(a!==0){var o=s;for(o.pendingLanes|=2,o.entangledLanes|=2;a;){var c=1<<31-Ze(a);o.entanglements[1]|=c,a&=~c}ri(s),!(lt&6)&&(Ho=ye()+500,Lr(0))}}break;case 31:case 13:o=cl(s,2),o!==null&&fe(o,s,2),Wo(),E1(s,2)}if(s=Vc(n),s===null&&uu(e,t,n,bo,i),s===l)break;l=s}l!==null&&n.stopPropagation()}else uu(e,t,n,null,i)}}function Vc(e){return e=jc(e),A1(e)}var bo=null;function A1(e){if(bo=null,e=Sl(e),e!==null){var t=Tr(e);if(t===null)e=null;else{var i=t.tag;if(i===13){if(e=eH(t),e!==null)return e;e=null}else if(i===31){if(e=iH(t),e!==null)return e;e=null}else if(i===3){if(t.stateNode.current.memoizedState.isDehydrated)return t.tag===3?t.stateNode.containerInfo:null;e=null}else t!==e&&(e=null)}}return bo=e,null}function Dg(e){switch(e){case"beforetoggle":case"cancel":case"click":case"close":case"contextmenu":case"copy":case"cut":case"auxclick":case"dblclick":case"dragend":case"dragstart":case"drop":case"focusin":case"focusout":case"input":case"invalid":case"keydown":case"keypress":case"keyup":case"mousedown":case"mouseup":case"paste":case"pause":case"play":case"pointercancel":case"pointerdown":case"pointerup":case"ratechange":case"reset":case"resize":case"seeked":case"submit":case"toggle":case"touchcancel":case"touchend":case"touchstart":case"volumechange":case"change":case"selectionchange":case"textInput":case"compositionstart":case"compositionend":case"compositionupdate":case"beforeblur":case"afterblur":case"beforeinput":case"blur":case"fullscreenchange":case"focus":case"hashchange":case"popstate":case"select":case"selectstart":return 2;case"drag":case"dragenter":case"dragexit":case"dragleave":case"dragover":case"mousemove":case"mouseout":case"mouseover":case"pointermove":case"pointerout":case"pointerover":case"scroll":case"touchmove":case"wheel":case"mouseenter":case"mouseleave":case"pointerenter":case"pointerleave":return 8;case"message":switch(vm()){case rH:return 2;case aH:return 8;case Wa:case Mm:return 32;case oH:return 268435456;default:return 32}default:return 32}}var gc=!1,gn=null,pn=null,mn=null,yr=new Map,wr=new Map,tn=[],R9="mousedown mouseup touchcancel touchend touchstart auxclick dblclick pointercancel pointerdown pointerup dragend dragstart drop compositionend compositionstart keydown keypress keyup input textInput copy cut paste click change contextmenu reset".split(" ");function b0(e,t){switch(e){case"focusin":case"focusout":gn=null;break;case"dragenter":case"dragleave":pn=null;break;case"mouseover":case"mouseout":mn=null;break;case"pointerover":case"pointerout":yr.delete(t.pointerId);break;case"gotpointercapture":case"lostpointercapture":wr.delete(t.pointerId)}}function Ls(e,t,i,n,l,s){return e===null||e.nativeEvent!==s?(e={blockedOn:t,domEventName:i,eventSystemFlags:n,nativeEvent:s,targetContainers:[l]},t!==null&&(t=us(t),t!==null&&Bg(t)),e):(e.eventSystemFlags|=n,t=e.targetContainers,l!==null&&t.indexOf(l)===-1&&t.push(l),e)}function B9(e,t,i,n,l){switch(t){case"focusin":return gn=Ls(gn,e,t,i,n,l),!0;case"dragenter":return pn=Ls(pn,e,t,i,n,l),!0;case"mouseover":return mn=Ls(mn,e,t,i,n,l),!0;case"pointerover":var s=l.pointerId;return yr.set(s,Ls(yr.get(s)||null,e,t,i,n,l)),!0;case"gotpointercapture":return s=l.pointerId,wr.set(s,Ls(wr.get(s)||null,e,t,i,n,l)),!0}return!1}function Lg(e){var t=Sl(e.target);if(t!==null){var i=Tr(t);if(i!==null){if(t=i.tag,t===13){if(t=eH(i),t!==null){e.blockedOn=t,uf(e.priority,function(){_0(i)});return}}else if(t===31){if(t=iH(i),t!==null){e.blockedOn=t,uf(e.priority,function(){_0(i)});return}}else if(t===3&&i.stateNode.current.memoizedState.isDehydrated){e.blockedOn=i.tag===3?i.stateNode.containerInfo:null;return}}}e.blockedOn=null}function Ga(e){if(e.blockedOn!==null)return!1;for(var t=e.targetContainers;0<t.length;){var i=Vc(e.nativeEvent);if(i===null){i=e.nativeEvent;var n=new i.constructor(i.type,i);Ru=n,i.target.dispatchEvent(n),Ru=null}else return t=us(i),t!==null&&Bg(t),e.blockedOn=i,!1;t.shift()}return!0}function S0(e,t,i){Ga(e)&&i.delete(t)}function D9(){gc=!1,gn!==null&&Ga(gn)&&(gn=null),pn!==null&&Ga(pn)&&(pn=null),mn!==null&&Ga(mn)&&(mn=null),yr.forEach(S0),wr.forEach(S0)}function ya(e,t){e.blockedOn===t&&(e.blockedOn=null,gc||(gc=!0,Lt.unstable_scheduleCallback(Lt.unstable_NormalPriority,D9)))}var wa=null;function E0(e){wa!==e&&(wa=e,Lt.unstable_scheduleCallback(Lt.unstable_NormalPriority,function(){wa===e&&(wa=null);for(var t=0;t<e.length;t+=3){var i=e[t],n=e[t+1],l=e[t+2];if(typeof n!="function"){if(A1(n||i)===null)continue;break}var s=us(i);s!==null&&(e.splice(t,3),t-=3,Qu(s,{pending:!0,data:l,method:i.method,action:n},n,l))}}))}function ns(e){function t(c){return ya(c,e)}gn!==null&&ya(gn,e),pn!==null&&ya(pn,e),mn!==null&&ya(mn,e),yr.forEach(t),wr.forEach(t);for(var i=0;i<tn.length;i++){var n=tn[i];n.blockedOn===e&&(n.blockedOn=null)}for(;0<tn.length&&(i=tn[0],i.blockedOn===null);)Lg(i),i.blockedOn===null&&tn.shift();if(i=(e.ownerDocument||e).$$reactFormReplay,i!=null)for(n=0;n<i.length;n+=3){var l=i[n],s=i[n+1],a=l[de]||null;if(typeof s=="function")a||E0(i);else if(a){var o=null;if(s&&s.hasAttribute("formAction")){if(l=s,a=s[de]||null)o=a.formAction;else if(A1(l)!==null)continue}else o=a.action;typeof o=="function"?i[n+1]=o:(i.splice(n,3),n-=3),E0(i)}}}function kg(){function e(s){s.canIntercept&&s.info==="react-transition"&&s.intercept({handler:function(){return new Promise(function(a){return l=a})},focusReset:"manual",scroll:"manual"})}function t(){l!==null&&(l(),l=null),n||setTimeout(i,20)}function i(){if(!n&&!navigation.transition){var s=navigation.currentEntry;s&&s.url!=null&&navigation.navigate(s.url,{state:s.getState(),info:"react-transition",history:"replace"})}}if(typeof navigation=="object"){var n=!1,l=null;return navigation.addEventListener("navigate",e),navigation.addEventListener("navigatesuccess",t),navigation.addEventListener("navigateerror",t),setTimeout(i,100),function(){n=!0,navigation.removeEventListener("navigate",e),navigation.removeEventListener("navigatesuccess",t),navigation.removeEventListener("navigateerror",t),l!==null&&(l(),l=null)}}}function x1(e){this._internalRoot=e}i2.prototype.render=x1.prototype.render=function(e){var t=this._internalRoot;if(t===null)throw Error(N(409));var i=t.current,n=_e();Rg(i,n,e,t,null,null)};i2.prototype.unmount=x1.prototype.unmount=function(){var e=this._internalRoot;if(e!==null){this._internalRoot=null;var t=e.containerInfo;Rg(e.current,2,null,e,null,null),Wo(),t[os]=null}};function i2(e){this._internalRoot=e}i2.prototype.unstable_scheduleHydration=function(e){if(e){var t=dH();e={blockedOn:null,target:e,priority:t};for(var i=0;i<tn.length&&t!==0&&t<tn[i].priority;i++);tn.splice(i,0,e),i===0&&Lg(e)}};var T0=Wd.version;if(T0!=="19.2.4")throw Error(N(527,T0,"19.2.4"));st.findDOMNode=function(e){var t=e._reactInternals;if(t===void 0)throw typeof e.render=="function"?Error(N(188)):(e=Object.keys(e).join(","),Error(N(268,e)));return e=fm(t),e=e!==null?nH(e):null,e=e===null?null:e.stateNode,e};var L9={bundleType:0,version:"19.2.4",rendererPackageName:"react-dom",currentDispatcherRef:G,reconcilerVersion:"19.2.4"};if(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__<"u"){var Za=__REACT_DEVTOOLS_GLOBAL_HOOK__;if(!Za.isDisabled&&Za.supportsFiber)try{Ar=Za.inject(L9),we=Za}catch{}}Io.createRoot=function(e,t){if(!tH(e))throw Error(N(299));var i=!1,n="",l=AV,s=xV,a=CV;return t!=null&&(t.unstable_strictMode===!0&&(i=!0),t.identifierPrefix!==void 0&&(n=t.identifierPrefix),t.onUncaughtError!==void 0&&(l=t.onUncaughtError),t.onCaughtError!==void 0&&(s=t.onCaughtError),t.onRecoverableError!==void 0&&(a=t.onRecoverableError)),t=Og(e,1,!1,null,null,i,n,null,l,s,a,kg),e[os]=t.current,_1(e),new x1(t)};Io.hydrateRoot=function(e,t,i){if(!tH(e))throw Error(N(299));var n=!1,l="",s=AV,a=xV,o=CV,c=null;return i!=null&&(i.unstable_strictMode===!0&&(n=!0),i.identifierPrefix!==void 0&&(l=i.identifierPrefix),i.onUncaughtError!==void 0&&(s=i.onUncaughtError),i.onCaughtError!==void 0&&(a=i.onCaughtError),i.onRecoverableError!==void 0&&(o=i.onRecoverableError),i.formState!==void 0&&(c=i.formState)),t=Og(e,1,!0,t,i??null,n,l,c,s,a,o,kg),t.context=Ng(null),i=t.current,n=_e(),n=kc(n),l=fn(n),l.callback=null,dn(i,l,n),i=n,t.current.lanes=i,Cr(t,i),ri(t),e[os]=t.current,_1(e),new i2(t)};Io.version="19.2.4";function Ig(){if(!(typeof __REACT_DEVTOOLS_GLOBAL_HOOK__>"u"||typeof __REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE!="function"))try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(Ig)}catch(e){console.error(e)}}Ig(),zd.exports=Io;var k9=zd.exports;function zg(e){var t,i,n="";if(typeof e=="string"||typeof e=="number")n+=e;else if(typeof e=="object")if(Array.isArray(e)){var l=e.length;for(t=0;t<l;t++)e[t]&&(i=zg(e[t]))&&(n&&(n+=" "),n+=i)}else for(i in e)e[i]&&(n&&(n+=" "),n+=i);return n}function Ug(){for(var e,t,i=0,n="",l=arguments.length;i<l;i++)(e=arguments[i])&&(t=zg(e))&&(n&&(n+=" "),n+=t);return n}const I9=(e,t)=>{const i=new Array(e.length+t.length);for(let n=0;n<e.length;n++)i[n]=e[n];for(let n=0;n<t.length;n++)i[e.length+n]=t[n];return i},z9=(e,t)=>({classGroupId:e,validator:t}),jg=(e=new Map,t=null,i)=>({nextPart:e,validators:t,classGroupId:i}),So="-",A0=[],U9="arbitrary..",j9=e=>{const t=G9(e),{conflictingClassGroups:i,conflictingClassGroupModifiers:n}=e;return{getClassGroupId:a=>{if(a.startsWith("[")&&a.endsWith("]"))return P9(a);const o=a.split(So),c=o[0]===""&&o.length>1?1:0;return Pg(o,c,t)},getConflictingClassGroupIds:(a,o)=>{if(o){const c=n[a],d=i[a];return c?d?I9(d,c):c:d||A0}return i[a]||A0}}},Pg=(e,t,i)=>{if(e.length-t===0)return i.classGroupId;const l=e[t],s=i.nextPart.get(l);if(s){const d=Pg(e,t+1,s);if(d)return d}const a=i.validators;if(a===null)return;const o=t===0?e.join(So):e.slice(t).join(So),c=a.length;for(let d=0;d<c;d++){const v=a[d];if(v.validator(o))return v.classGroupId}},P9=e=>e.slice(1,-1).indexOf(":")===-1?void 0:(()=>{const t=e.slice(1,-1),i=t.indexOf(":"),n=t.slice(0,i);return n?U9+n:void 0})(),G9=e=>{const{theme:t,classGroups:i}=e;return q9(i,t)},q9=(e,t)=>{const i=jg();for(const n in e){const l=e[n];C1(l,i,n,t)}return i},C1=(e,t,i,n)=>{const l=e.length;for(let s=0;s<l;s++){const a=e[s];Y9(a,t,i,n)}},Y9=(e,t,i,n)=>{if(typeof e=="string"){X9(e,t,i);return}if(typeof e=="function"){F9(e,t,i,n);return}K9(e,t,i,n)},X9=(e,t,i)=>{const n=e===""?t:Gg(t,e);n.classGroupId=i},F9=(e,t,i,n)=>{if(Q9(e)){C1(e(n),t,i,n);return}t.validators===null&&(t.validators=[]),t.validators.push(z9(i,e))},K9=(e,t,i,n)=>{const l=Object.entries(e),s=l.length;for(let a=0;a<s;a++){const[o,c]=l[a];C1(c,Gg(t,o),i,n)}},Gg=(e,t)=>{let i=e;const n=t.split(So),l=n.length;for(let s=0;s<l;s++){const a=n[s];let o=i.nextPart.get(a);o||(o=jg(),i.nextPart.set(a,o)),i=o}return i},Q9=e=>"isThemeGetter"in e&&e.isThemeGetter===!0,J9=e=>{if(e<1)return{get:()=>{},set:()=>{}};let t=0,i=Object.create(null),n=Object.create(null);const l=(s,a)=>{i[s]=a,t++,t>e&&(t=0,n=i,i=Object.create(null))};return{get(s){let a=i[s];if(a!==void 0)return a;if((a=n[s])!==void 0)return l(s,a),a},set(s,a){s in i?i[s]=a:l(s,a)}}},pc="!",x0=":",$9=[],C0=(e,t,i,n,l)=>({modifiers:e,hasImportantModifier:t,baseClassName:i,maybePostfixModifierPosition:n,isExternal:l}),W9=e=>{const{prefix:t,experimentalParseClassName:i}=e;let n=l=>{const s=[];let a=0,o=0,c=0,d;const v=l.length;for(let O=0;O<v;O++){const R=l[O];if(a===0&&o===0){if(R===x0){s.push(l.slice(c,O)),c=O+1;continue}if(R==="/"){d=O;continue}}R==="["?a++:R==="]"?a--:R==="("?o++:R===")"&&o--}const Z=s.length===0?l:l.slice(c);let V=Z,b=!1;Z.endsWith(pc)?(V=Z.slice(0,-1),b=!0):Z.startsWith(pc)&&(V=Z.slice(1),b=!0);const C=d&&d>c?d-c:void 0;return C0(s,b,V,C)};if(t){const l=t+x0,s=n;n=a=>a.startsWith(l)?s(a.slice(l.length)):C0($9,!1,a,void 0,!0)}if(i){const l=n;n=s=>i({className:s,parseClassName:l})}return n},t7=e=>{const t=new Map;return e.orderSensitiveModifiers.forEach((i,n)=>{t.set(i,1e6+n)}),i=>{const n=[];let l=[];for(let s=0;s<i.length;s++){const a=i[s],o=a[0]==="[",c=t.has(a);o||c?(l.length>0&&(l.sort(),n.push(...l),l=[]),n.push(a)):l.push(a)}return l.length>0&&(l.sort(),n.push(...l)),n}},e7=e=>({cache:J9(e.cacheSize),parseClassName:W9(e),sortModifiers:t7(e),...j9(e)}),i7=/\s+/,n7=(e,t)=>{const{parseClassName:i,getClassGroupId:n,getConflictingClassGroupIds:l,sortModifiers:s}=t,a=[],o=e.trim().split(i7);let c="";for(let d=o.length-1;d>=0;d-=1){const v=o[d],{isExternal:Z,modifiers:V,hasImportantModifier:b,baseClassName:C,maybePostfixModifierPosition:O}=i(v);if(Z){c=v+(c.length>0?" "+c:c);continue}let R=!!O,w=n(R?C.substring(0,O):C);if(!w){if(!R){c=v+(c.length>0?" "+c:c);continue}if(w=n(C),!w){c=v+(c.length>0?" "+c:c);continue}R=!1}const m=V.length===0?"":V.length===1?V[0]:s(V).join(":"),_=b?m+pc:m,A=_+w;if(a.indexOf(A)>-1)continue;a.push(A);const L=l(w,R);for(let U=0;U<L.length;++U){const p=L[U];a.push(_+p)}c=v+(c.length>0?" "+c:c)}return c},l7=(...e)=>{let t=0,i,n,l="";for(;t<e.length;)(i=e[t++])&&(n=qg(i))&&(l&&(l+=" "),l+=n);return l},qg=e=>{if(typeof e=="string")return e;let t,i="";for(let n=0;n<e.length;n++)e[n]&&(t=qg(e[n]))&&(i&&(i+=" "),i+=t);return i},s7=(e,...t)=>{let i,n,l,s;const a=c=>{const d=t.reduce((v,Z)=>Z(v),e());return i=e7(d),n=i.cache.get,l=i.cache.set,s=o,o(c)},o=c=>{const d=n(c);if(d)return d;const v=n7(c,i);return l(c,v),v};return s=a,(...c)=>s(l7(...c))},r7=[],Bt=e=>{const t=i=>i[e]||r7;return t.isThemeGetter=!0,t},Yg=/^\[(?:(\w[\w-]*):)?(.+)\]$/i,Xg=/^\((?:(\w[\w-]*):)?(.+)\)$/i,a7=/^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/,o7=/^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/,u7=/\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/,c7=/^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/,h7=/^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/,f7=/^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/,qi=e=>a7.test(e),K=e=>!!e&&!Number.isNaN(Number(e)),Yi=e=>!!e&&Number.isInteger(Number(e)),fu=e=>e.endsWith("%")&&K(e.slice(0,-1)),pi=e=>o7.test(e),Fg=()=>!0,d7=e=>u7.test(e)&&!c7.test(e),O1=()=>!1,H7=e=>h7.test(e),V7=e=>f7.test(e),g7=e=>!I(e)&&!z(e),p7=e=>xn(e,Jg,O1),I=e=>Yg.test(e),Ln=e=>xn(e,$g,d7),O0=e=>xn(e,b7,K),m7=e=>xn(e,t3,Fg),v7=e=>xn(e,Wg,O1),N0=e=>xn(e,Kg,O1),M7=e=>xn(e,Qg,V7),_a=e=>xn(e,e3,H7),z=e=>Xg.test(e),ks=e=>fl(e,$g),y7=e=>fl(e,Wg),R0=e=>fl(e,Kg),w7=e=>fl(e,Jg),Z7=e=>fl(e,Qg),ba=e=>fl(e,e3,!0),_7=e=>fl(e,t3,!0),xn=(e,t,i)=>{const n=Yg.exec(e);return n?n[1]?t(n[1]):i(n[2]):!1},fl=(e,t,i=!1)=>{const n=Xg.exec(e);return n?n[1]?t(n[1]):i:!1},Kg=e=>e==="position"||e==="percentage",Qg=e=>e==="image"||e==="url",Jg=e=>e==="length"||e==="size"||e==="bg-size",$g=e=>e==="length",b7=e=>e==="number",Wg=e=>e==="family-name",t3=e=>e==="number"||e==="weight",e3=e=>e==="shadow",S7=()=>{const e=Bt("color"),t=Bt("font"),i=Bt("text"),n=Bt("font-weight"),l=Bt("tracking"),s=Bt("leading"),a=Bt("breakpoint"),o=Bt("container"),c=Bt("spacing"),d=Bt("radius"),v=Bt("shadow"),Z=Bt("inset-shadow"),V=Bt("text-shadow"),b=Bt("drop-shadow"),C=Bt("blur"),O=Bt("perspective"),R=Bt("aspect"),w=Bt("ease"),m=Bt("animate"),_=()=>["auto","avoid","all","avoid-page","page","left","right","column"],A=()=>["center","top","bottom","left","right","top-left","left-top","top-right","right-top","bottom-right","right-bottom","bottom-left","left-bottom"],L=()=>[...A(),z,I],U=()=>["auto","hidden","clip","visible","scroll"],p=()=>["auto","contain","none"],f=()=>[z,I,c],g=()=>[qi,"full","auto",...f()],M=()=>[Yi,"none","subgrid",z,I],S=()=>["auto",{span:["full",Yi,z,I]},Yi,z,I],E=()=>[Yi,"auto",z,I],y=()=>["auto","min","max","fr",z,I],Wt=()=>["start","end","center","between","around","evenly","stretch","baseline","center-safe","end-safe"],Ft=()=>["start","end","center","stretch","center-safe","end-safe"],D=()=>["auto",...f()],j=()=>[qi,"auto","full","dvw","dvh","lvw","lvh","svw","svh","min","max","fit",...f()],P=()=>[qi,"screen","full","dvw","lvw","svw","min","max","fit",...f()],at=()=>[qi,"screen","full","lh","dvh","lvh","svh","min","max","fit",...f()],k=()=>[e,z,I],oi=()=>[...A(),R0,N0,{position:[z,I]}],Kt=()=>["no-repeat",{repeat:["","x","y","space","round"]}],Zt=()=>["auto","cover","contain",w7,p7,{size:[z,I]}],Ve=()=>[fu,ks,Ln],Ht=()=>["","none","full",d,z,I],Ut=()=>["",K,ks,Ln],ui=()=>["solid","dashed","dotted","double"],Fr=()=>["normal","multiply","screen","overlay","darken","lighten","color-dodge","color-burn","hard-light","soft-light","difference","exclusion","hue","saturation","color","luminosity"],At=()=>[K,fu,R0,N0],Cn=()=>["","none",C,z,I],ci=()=>["none",K,z,I],Ii=()=>["none",K,z,I],On=()=>[K,z,I],zi=()=>[qi,"full",...f()];return{cacheSize:500,theme:{animate:["spin","ping","pulse","bounce"],aspect:["video"],blur:[pi],breakpoint:[pi],color:[Fg],container:[pi],"drop-shadow":[pi],ease:["in","out","in-out"],font:[g7],"font-weight":["thin","extralight","light","normal","medium","semibold","bold","extrabold","black"],"inset-shadow":[pi],leading:["none","tight","snug","normal","relaxed","loose"],perspective:["dramatic","near","normal","midrange","distant","none"],radius:[pi],shadow:[pi],spacing:["px",K],text:[pi],"text-shadow":[pi],tracking:["tighter","tight","normal","wide","wider","widest"]},classGroups:{aspect:[{aspect:["auto","square",qi,I,z,R]}],container:["container"],columns:[{columns:[K,I,z,o]}],"break-after":[{"break-after":_()}],"break-before":[{"break-before":_()}],"break-inside":[{"break-inside":["auto","avoid","avoid-page","avoid-column"]}],"box-decoration":[{"box-decoration":["slice","clone"]}],box:[{box:["border","content"]}],display:["block","inline-block","inline","flex","inline-flex","table","inline-table","table-caption","table-cell","table-column","table-column-group","table-footer-group","table-header-group","table-row-group","table-row","flow-root","grid","inline-grid","contents","list-item","hidden"],sr:["sr-only","not-sr-only"],float:[{float:["right","left","none","start","end"]}],clear:[{clear:["left","right","both","none","start","end"]}],isolation:["isolate","isolation-auto"],"object-fit":[{object:["contain","cover","fill","none","scale-down"]}],"object-position":[{object:L()}],overflow:[{overflow:U()}],"overflow-x":[{"overflow-x":U()}],"overflow-y":[{"overflow-y":U()}],overscroll:[{overscroll:p()}],"overscroll-x":[{"overscroll-x":p()}],"overscroll-y":[{"overscroll-y":p()}],position:["static","fixed","absolute","relative","sticky"],inset:[{inset:g()}],"inset-x":[{"inset-x":g()}],"inset-y":[{"inset-y":g()}],start:[{"inset-s":g(),start:g()}],end:[{"inset-e":g(),end:g()}],"inset-bs":[{"inset-bs":g()}],"inset-be":[{"inset-be":g()}],top:[{top:g()}],right:[{right:g()}],bottom:[{bottom:g()}],left:[{left:g()}],visibility:["visible","invisible","collapse"],z:[{z:[Yi,"auto",z,I]}],basis:[{basis:[qi,"full","auto",o,...f()]}],"flex-direction":[{flex:["row","row-reverse","col","col-reverse"]}],"flex-wrap":[{flex:["nowrap","wrap","wrap-reverse"]}],flex:[{flex:[K,qi,"auto","initial","none",I]}],grow:[{grow:["",K,z,I]}],shrink:[{shrink:["",K,z,I]}],order:[{order:[Yi,"first","last","none",z,I]}],"grid-cols":[{"grid-cols":M()}],"col-start-end":[{col:S()}],"col-start":[{"col-start":E()}],"col-end":[{"col-end":E()}],"grid-rows":[{"grid-rows":M()}],"row-start-end":[{row:S()}],"row-start":[{"row-start":E()}],"row-end":[{"row-end":E()}],"grid-flow":[{"grid-flow":["row","col","dense","row-dense","col-dense"]}],"auto-cols":[{"auto-cols":y()}],"auto-rows":[{"auto-rows":y()}],gap:[{gap:f()}],"gap-x":[{"gap-x":f()}],"gap-y":[{"gap-y":f()}],"justify-content":[{justify:[...Wt(),"normal"]}],"justify-items":[{"justify-items":[...Ft(),"normal"]}],"justify-self":[{"justify-self":["auto",...Ft()]}],"align-content":[{content:["normal",...Wt()]}],"align-items":[{items:[...Ft(),{baseline:["","last"]}]}],"align-self":[{self:["auto",...Ft(),{baseline:["","last"]}]}],"place-content":[{"place-content":Wt()}],"place-items":[{"place-items":[...Ft(),"baseline"]}],"place-self":[{"place-self":["auto",...Ft()]}],p:[{p:f()}],px:[{px:f()}],py:[{py:f()}],ps:[{ps:f()}],pe:[{pe:f()}],pbs:[{pbs:f()}],pbe:[{pbe:f()}],pt:[{pt:f()}],pr:[{pr:f()}],pb:[{pb:f()}],pl:[{pl:f()}],m:[{m:D()}],mx:[{mx:D()}],my:[{my:D()}],ms:[{ms:D()}],me:[{me:D()}],mbs:[{mbs:D()}],mbe:[{mbe:D()}],mt:[{mt:D()}],mr:[{mr:D()}],mb:[{mb:D()}],ml:[{ml:D()}],"space-x":[{"space-x":f()}],"space-x-reverse":["space-x-reverse"],"space-y":[{"space-y":f()}],"space-y-reverse":["space-y-reverse"],size:[{size:j()}],"inline-size":[{inline:["auto",...P()]}],"min-inline-size":[{"min-inline":["auto",...P()]}],"max-inline-size":[{"max-inline":["none",...P()]}],"block-size":[{block:["auto",...at()]}],"min-block-size":[{"min-block":["auto",...at()]}],"max-block-size":[{"max-block":["none",...at()]}],w:[{w:[o,"screen",...j()]}],"min-w":[{"min-w":[o,"screen","none",...j()]}],"max-w":[{"max-w":[o,"screen","none","prose",{screen:[a]},...j()]}],h:[{h:["screen","lh",...j()]}],"min-h":[{"min-h":["screen","lh","none",...j()]}],"max-h":[{"max-h":["screen","lh",...j()]}],"font-size":[{text:["base",i,ks,Ln]}],"font-smoothing":["antialiased","subpixel-antialiased"],"font-style":["italic","not-italic"],"font-weight":[{font:[n,_7,m7]}],"font-stretch":[{"font-stretch":["ultra-condensed","extra-condensed","condensed","semi-condensed","normal","semi-expanded","expanded","extra-expanded","ultra-expanded",fu,I]}],"font-family":[{font:[y7,v7,t]}],"font-features":[{"font-features":[I]}],"fvn-normal":["normal-nums"],"fvn-ordinal":["ordinal"],"fvn-slashed-zero":["slashed-zero"],"fvn-figure":["lining-nums","oldstyle-nums"],"fvn-spacing":["proportional-nums","tabular-nums"],"fvn-fraction":["diagonal-fractions","stacked-fractions"],tracking:[{tracking:[l,z,I]}],"line-clamp":[{"line-clamp":[K,"none",z,O0]}],leading:[{leading:[s,...f()]}],"list-image":[{"list-image":["none",z,I]}],"list-style-position":[{list:["inside","outside"]}],"list-style-type":[{list:["disc","decimal","none",z,I]}],"text-alignment":[{text:["left","center","right","justify","start","end"]}],"placeholder-color":[{placeholder:k()}],"text-color":[{text:k()}],"text-decoration":["underline","overline","line-through","no-underline"],"text-decoration-style":[{decoration:[...ui(),"wavy"]}],"text-decoration-thickness":[{decoration:[K,"from-font","auto",z,Ln]}],"text-decoration-color":[{decoration:k()}],"underline-offset":[{"underline-offset":[K,"auto",z,I]}],"text-transform":["uppercase","lowercase","capitalize","normal-case"],"text-overflow":["truncate","text-ellipsis","text-clip"],"text-wrap":[{text:["wrap","nowrap","balance","pretty"]}],indent:[{indent:f()}],"vertical-align":[{align:["baseline","top","middle","bottom","text-top","text-bottom","sub","super",z,I]}],whitespace:[{whitespace:["normal","nowrap","pre","pre-line","pre-wrap","break-spaces"]}],break:[{break:["normal","words","all","keep"]}],wrap:[{wrap:["break-word","anywhere","normal"]}],hyphens:[{hyphens:["none","manual","auto"]}],content:[{content:["none",z,I]}],"bg-attachment":[{bg:["fixed","local","scroll"]}],"bg-clip":[{"bg-clip":["border","padding","content","text"]}],"bg-origin":[{"bg-origin":["border","padding","content"]}],"bg-position":[{bg:oi()}],"bg-repeat":[{bg:Kt()}],"bg-size":[{bg:Zt()}],"bg-image":[{bg:["none",{linear:[{to:["t","tr","r","br","b","bl","l","tl"]},Yi,z,I],radial:["",z,I],conic:[Yi,z,I]},Z7,M7]}],"bg-color":[{bg:k()}],"gradient-from-pos":[{from:Ve()}],"gradient-via-pos":[{via:Ve()}],"gradient-to-pos":[{to:Ve()}],"gradient-from":[{from:k()}],"gradient-via":[{via:k()}],"gradient-to":[{to:k()}],rounded:[{rounded:Ht()}],"rounded-s":[{"rounded-s":Ht()}],"rounded-e":[{"rounded-e":Ht()}],"rounded-t":[{"rounded-t":Ht()}],"rounded-r":[{"rounded-r":Ht()}],"rounded-b":[{"rounded-b":Ht()}],"rounded-l":[{"rounded-l":Ht()}],"rounded-ss":[{"rounded-ss":Ht()}],"rounded-se":[{"rounded-se":Ht()}],"rounded-ee":[{"rounded-ee":Ht()}],"rounded-es":[{"rounded-es":Ht()}],"rounded-tl":[{"rounded-tl":Ht()}],"rounded-tr":[{"rounded-tr":Ht()}],"rounded-br":[{"rounded-br":Ht()}],"rounded-bl":[{"rounded-bl":Ht()}],"border-w":[{border:Ut()}],"border-w-x":[{"border-x":Ut()}],"border-w-y":[{"border-y":Ut()}],"border-w-s":[{"border-s":Ut()}],"border-w-e":[{"border-e":Ut()}],"border-w-bs":[{"border-bs":Ut()}],"border-w-be":[{"border-be":Ut()}],"border-w-t":[{"border-t":Ut()}],"border-w-r":[{"border-r":Ut()}],"border-w-b":[{"border-b":Ut()}],"border-w-l":[{"border-l":Ut()}],"divide-x":[{"divide-x":Ut()}],"divide-x-reverse":["divide-x-reverse"],"divide-y":[{"divide-y":Ut()}],"divide-y-reverse":["divide-y-reverse"],"border-style":[{border:[...ui(),"hidden","none"]}],"divide-style":[{divide:[...ui(),"hidden","none"]}],"border-color":[{border:k()}],"border-color-x":[{"border-x":k()}],"border-color-y":[{"border-y":k()}],"border-color-s":[{"border-s":k()}],"border-color-e":[{"border-e":k()}],"border-color-bs":[{"border-bs":k()}],"border-color-be":[{"border-be":k()}],"border-color-t":[{"border-t":k()}],"border-color-r":[{"border-r":k()}],"border-color-b":[{"border-b":k()}],"border-color-l":[{"border-l":k()}],"divide-color":[{divide:k()}],"outline-style":[{outline:[...ui(),"none","hidden"]}],"outline-offset":[{"outline-offset":[K,z,I]}],"outline-w":[{outline:["",K,ks,Ln]}],"outline-color":[{outline:k()}],shadow:[{shadow:["","none",v,ba,_a]}],"shadow-color":[{shadow:k()}],"inset-shadow":[{"inset-shadow":["none",Z,ba,_a]}],"inset-shadow-color":[{"inset-shadow":k()}],"ring-w":[{ring:Ut()}],"ring-w-inset":["ring-inset"],"ring-color":[{ring:k()}],"ring-offset-w":[{"ring-offset":[K,Ln]}],"ring-offset-color":[{"ring-offset":k()}],"inset-ring-w":[{"inset-ring":Ut()}],"inset-ring-color":[{"inset-ring":k()}],"text-shadow":[{"text-shadow":["none",V,ba,_a]}],"text-shadow-color":[{"text-shadow":k()}],opacity:[{opacity:[K,z,I]}],"mix-blend":[{"mix-blend":[...Fr(),"plus-darker","plus-lighter"]}],"bg-blend":[{"bg-blend":Fr()}],"mask-clip":[{"mask-clip":["border","padding","content","fill","stroke","view"]},"mask-no-clip"],"mask-composite":[{mask:["add","subtract","intersect","exclude"]}],"mask-image-linear-pos":[{"mask-linear":[K]}],"mask-image-linear-from-pos":[{"mask-linear-from":At()}],"mask-image-linear-to-pos":[{"mask-linear-to":At()}],"mask-image-linear-from-color":[{"mask-linear-from":k()}],"mask-image-linear-to-color":[{"mask-linear-to":k()}],"mask-image-t-from-pos":[{"mask-t-from":At()}],"mask-image-t-to-pos":[{"mask-t-to":At()}],"mask-image-t-from-color":[{"mask-t-from":k()}],"mask-image-t-to-color":[{"mask-t-to":k()}],"mask-image-r-from-pos":[{"mask-r-from":At()}],"mask-image-r-to-pos":[{"mask-r-to":At()}],"mask-image-r-from-color":[{"mask-r-from":k()}],"mask-image-r-to-color":[{"mask-r-to":k()}],"mask-image-b-from-pos":[{"mask-b-from":At()}],"mask-image-b-to-pos":[{"mask-b-to":At()}],"mask-image-b-from-color":[{"mask-b-from":k()}],"mask-image-b-to-color":[{"mask-b-to":k()}],"mask-image-l-from-pos":[{"mask-l-from":At()}],"mask-image-l-to-pos":[{"mask-l-to":At()}],"mask-image-l-from-color":[{"mask-l-from":k()}],"mask-image-l-to-color":[{"mask-l-to":k()}],"mask-image-x-from-pos":[{"mask-x-from":At()}],"mask-image-x-to-pos":[{"mask-x-to":At()}],"mask-image-x-from-color":[{"mask-x-from":k()}],"mask-image-x-to-color":[{"mask-x-to":k()}],"mask-image-y-from-pos":[{"mask-y-from":At()}],"mask-image-y-to-pos":[{"mask-y-to":At()}],"mask-image-y-from-color":[{"mask-y-from":k()}],"mask-image-y-to-color":[{"mask-y-to":k()}],"mask-image-radial":[{"mask-radial":[z,I]}],"mask-image-radial-from-pos":[{"mask-radial-from":At()}],"mask-image-radial-to-pos":[{"mask-radial-to":At()}],"mask-image-radial-from-color":[{"mask-radial-from":k()}],"mask-image-radial-to-color":[{"mask-radial-to":k()}],"mask-image-radial-shape":[{"mask-radial":["circle","ellipse"]}],"mask-image-radial-size":[{"mask-radial":[{closest:["side","corner"],farthest:["side","corner"]}]}],"mask-image-radial-pos":[{"mask-radial-at":A()}],"mask-image-conic-pos":[{"mask-conic":[K]}],"mask-image-conic-from-pos":[{"mask-conic-from":At()}],"mask-image-conic-to-pos":[{"mask-conic-to":At()}],"mask-image-conic-from-color":[{"mask-conic-from":k()}],"mask-image-conic-to-color":[{"mask-conic-to":k()}],"mask-mode":[{mask:["alpha","luminance","match"]}],"mask-origin":[{"mask-origin":["border","padding","content","fill","stroke","view"]}],"mask-position":[{mask:oi()}],"mask-repeat":[{mask:Kt()}],"mask-size":[{mask:Zt()}],"mask-type":[{"mask-type":["alpha","luminance"]}],"mask-image":[{mask:["none",z,I]}],filter:[{filter:["","none",z,I]}],blur:[{blur:Cn()}],brightness:[{brightness:[K,z,I]}],contrast:[{contrast:[K,z,I]}],"drop-shadow":[{"drop-shadow":["","none",b,ba,_a]}],"drop-shadow-color":[{"drop-shadow":k()}],grayscale:[{grayscale:["",K,z,I]}],"hue-rotate":[{"hue-rotate":[K,z,I]}],invert:[{invert:["",K,z,I]}],saturate:[{saturate:[K,z,I]}],sepia:[{sepia:["",K,z,I]}],"backdrop-filter":[{"backdrop-filter":["","none",z,I]}],"backdrop-blur":[{"backdrop-blur":Cn()}],"backdrop-brightness":[{"backdrop-brightness":[K,z,I]}],"backdrop-contrast":[{"backdrop-contrast":[K,z,I]}],"backdrop-grayscale":[{"backdrop-grayscale":["",K,z,I]}],"backdrop-hue-rotate":[{"backdrop-hue-rotate":[K,z,I]}],"backdrop-invert":[{"backdrop-invert":["",K,z,I]}],"backdrop-opacity":[{"backdrop-opacity":[K,z,I]}],"backdrop-saturate":[{"backdrop-saturate":[K,z,I]}],"backdrop-sepia":[{"backdrop-sepia":["",K,z,I]}],"border-collapse":[{border:["collapse","separate"]}],"border-spacing":[{"border-spacing":f()}],"border-spacing-x":[{"border-spacing-x":f()}],"border-spacing-y":[{"border-spacing-y":f()}],"table-layout":[{table:["auto","fixed"]}],caption:[{caption:["top","bottom"]}],transition:[{transition:["","all","colors","opacity","shadow","transform","none",z,I]}],"transition-behavior":[{transition:["normal","discrete"]}],duration:[{duration:[K,"initial",z,I]}],ease:[{ease:["linear","initial",w,z,I]}],delay:[{delay:[K,z,I]}],animate:[{animate:["none",m,z,I]}],backface:[{backface:["hidden","visible"]}],perspective:[{perspective:[O,z,I]}],"perspective-origin":[{"perspective-origin":L()}],rotate:[{rotate:ci()}],"rotate-x":[{"rotate-x":ci()}],"rotate-y":[{"rotate-y":ci()}],"rotate-z":[{"rotate-z":ci()}],scale:[{scale:Ii()}],"scale-x":[{"scale-x":Ii()}],"scale-y":[{"scale-y":Ii()}],"scale-z":[{"scale-z":Ii()}],"scale-3d":["scale-3d"],skew:[{skew:On()}],"skew-x":[{"skew-x":On()}],"skew-y":[{"skew-y":On()}],transform:[{transform:[z,I,"","none","gpu","cpu"]}],"transform-origin":[{origin:L()}],"transform-style":[{transform:["3d","flat"]}],translate:[{translate:zi()}],"translate-x":[{"translate-x":zi()}],"translate-y":[{"translate-y":zi()}],"translate-z":[{"translate-z":zi()}],"translate-none":["translate-none"],accent:[{accent:k()}],appearance:[{appearance:["none","auto"]}],"caret-color":[{caret:k()}],"color-scheme":[{scheme:["normal","dark","light","light-dark","only-dark","only-light"]}],cursor:[{cursor:["auto","default","pointer","wait","text","move","help","not-allowed","none","context-menu","progress","cell","crosshair","vertical-text","alias","copy","no-drop","grab","grabbing","all-scroll","col-resize","row-resize","n-resize","e-resize","s-resize","w-resize","ne-resize","nw-resize","se-resize","sw-resize","ew-resize","ns-resize","nesw-resize","nwse-resize","zoom-in","zoom-out",z,I]}],"field-sizing":[{"field-sizing":["fixed","content"]}],"pointer-events":[{"pointer-events":["auto","none"]}],resize:[{resize:["none","","y","x"]}],"scroll-behavior":[{scroll:["auto","smooth"]}],"scroll-m":[{"scroll-m":f()}],"scroll-mx":[{"scroll-mx":f()}],"scroll-my":[{"scroll-my":f()}],"scroll-ms":[{"scroll-ms":f()}],"scroll-me":[{"scroll-me":f()}],"scroll-mbs":[{"scroll-mbs":f()}],"scroll-mbe":[{"scroll-mbe":f()}],"scroll-mt":[{"scroll-mt":f()}],"scroll-mr":[{"scroll-mr":f()}],"scroll-mb":[{"scroll-mb":f()}],"scroll-ml":[{"scroll-ml":f()}],"scroll-p":[{"scroll-p":f()}],"scroll-px":[{"scroll-px":f()}],"scroll-py":[{"scroll-py":f()}],"scroll-ps":[{"scroll-ps":f()}],"scroll-pe":[{"scroll-pe":f()}],"scroll-pbs":[{"scroll-pbs":f()}],"scroll-pbe":[{"scroll-pbe":f()}],"scroll-pt":[{"scroll-pt":f()}],"scroll-pr":[{"scroll-pr":f()}],"scroll-pb":[{"scroll-pb":f()}],"scroll-pl":[{"scroll-pl":f()}],"snap-align":[{snap:["start","end","center","align-none"]}],"snap-stop":[{snap:["normal","always"]}],"snap-type":[{snap:["none","x","y","both"]}],"snap-strictness":[{snap:["mandatory","proximity"]}],touch:[{touch:["auto","none","manipulation"]}],"touch-x":[{"touch-pan":["x","left","right"]}],"touch-y":[{"touch-pan":["y","up","down"]}],"touch-pz":["touch-pinch-zoom"],select:[{select:["none","text","all","auto"]}],"will-change":[{"will-change":["auto","scroll","contents","transform",z,I]}],fill:[{fill:["none",...k()]}],"stroke-w":[{stroke:[K,ks,Ln,O0]}],stroke:[{stroke:["none",...k()]}],"forced-color-adjust":[{"forced-color-adjust":["auto","none"]}]},conflictingClassGroups:{overflow:["overflow-x","overflow-y"],overscroll:["overscroll-x","overscroll-y"],inset:["inset-x","inset-y","inset-bs","inset-be","start","end","top","right","bottom","left"],"inset-x":["right","left"],"inset-y":["top","bottom"],flex:["basis","grow","shrink"],gap:["gap-x","gap-y"],p:["px","py","ps","pe","pbs","pbe","pt","pr","pb","pl"],px:["pr","pl"],py:["pt","pb"],m:["mx","my","ms","me","mbs","mbe","mt","mr","mb","ml"],mx:["mr","ml"],my:["mt","mb"],size:["w","h"],"font-size":["leading"],"fvn-normal":["fvn-ordinal","fvn-slashed-zero","fvn-figure","fvn-spacing","fvn-fraction"],"fvn-ordinal":["fvn-normal"],"fvn-slashed-zero":["fvn-normal"],"fvn-figure":["fvn-normal"],"fvn-spacing":["fvn-normal"],"fvn-fraction":["fvn-normal"],"line-clamp":["display","overflow"],rounded:["rounded-s","rounded-e","rounded-t","rounded-r","rounded-b","rounded-l","rounded-ss","rounded-se","rounded-ee","rounded-es","rounded-tl","rounded-tr","rounded-br","rounded-bl"],"rounded-s":["rounded-ss","rounded-es"],"rounded-e":["rounded-se","rounded-ee"],"rounded-t":["rounded-tl","rounded-tr"],"rounded-r":["rounded-tr","rounded-br"],"rounded-b":["rounded-br","rounded-bl"],"rounded-l":["rounded-tl","rounded-bl"],"border-spacing":["border-spacing-x","border-spacing-y"],"border-w":["border-w-x","border-w-y","border-w-s","border-w-e","border-w-bs","border-w-be","border-w-t","border-w-r","border-w-b","border-w-l"],"border-w-x":["border-w-r","border-w-l"],"border-w-y":["border-w-t","border-w-b"],"border-color":["border-color-x","border-color-y","border-color-s","border-color-e","border-color-bs","border-color-be","border-color-t","border-color-r","border-color-b","border-color-l"],"border-color-x":["border-color-r","border-color-l"],"border-color-y":["border-color-t","border-color-b"],translate:["translate-x","translate-y","translate-none"],"translate-none":["translate","translate-x","translate-y","translate-z"],"scroll-m":["scroll-mx","scroll-my","scroll-ms","scroll-me","scroll-mbs","scroll-mbe","scroll-mt","scroll-mr","scroll-mb","scroll-ml"],"scroll-mx":["scroll-mr","scroll-ml"],"scroll-my":["scroll-mt","scroll-mb"],"scroll-p":["scroll-px","scroll-py","scroll-ps","scroll-pe","scroll-pbs","scroll-pbe","scroll-pt","scroll-pr","scroll-pb","scroll-pl"],"scroll-px":["scroll-pr","scroll-pl"],"scroll-py":["scroll-pt","scroll-pb"],touch:["touch-x","touch-y","touch-pz"],"touch-x":["touch"],"touch-y":["touch"],"touch-pz":["touch"]},conflictingClassGroupModifiers:{"font-size":["leading"]},orderSensitiveModifiers:["*","**","after","backdrop","before","details-content","file","first-letter","first-line","marker","placeholder","selection"]}},E7=s7(S7);function Ee(...e){return E7(Ug(e))}const T7=e=>Y.jsx("svg",{viewBox:"0 0 32 32",fill:"none",...e,children:Y.jsx("path",{d:"M27 27H24V24H27V27ZM24 24H21V21H24V24ZM21 21H18V18H21V21ZM16 20H9V18H16V20ZM9 18H7V16H9V18ZM18 18H16V16H18V18ZM7 16H5V9H7V16ZM20 16H18V9H20V16ZM9 9H7V7H9V9ZM18 9H16V7H18V9ZM16 7H9V5H16V7Z",fill:"currentColor"})}),A7={"edit-add":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76610)">
+<rect x="15" y="4" width="2" height="10" fill="currentColor"/>
+<rect x="5" y="16" width="2" height="10" transform="rotate(-90 5 16)" fill="currentColor"/>
+<rect x="17" y="26" width="2" height="10" transform="rotate(-180 17 26)" fill="currentColor"/>
+<rect x="27" y="14" width="2" height="10" transform="rotate(90 27 14)" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76610">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-checklist":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 27H4V25H6V27ZM4 25H2V23H4V25ZM8 25H6V23H8V25ZM30 24H12V22H30V24ZM10 23H8V21H10V23ZM12 21H10V19H12V21ZM8 13H4V11H8V13ZM4 11H2V7H4V11ZM10 11H8V7H10V11ZM30 10H12V8H30V10ZM8 7H4V5H8V7Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-copy":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="26" y="25" width="5" height="2" transform="rotate(-180 26 25)" fill="currentColor"/>
+<rect x="6" y="7" width="9" height="2" fill="currentColor"/>
+<rect x="17" y="11" width="2" height="2" fill="currentColor"/>
+<rect x="15" y="13" width="4" height="2" transform="rotate(-90 15 13)" fill="currentColor"/>
+<rect x="11" y="7" width="2" height="2" transform="rotate(-90 11 7)" fill="currentColor"/>
+<rect x="21" y="13" width="14" height="2" transform="rotate(90 21 13)" fill="currentColor"/>
+<rect x="5" y="27" width="14" height="2" fill="currentColor"/>
+<rect x="13" y="3" width="13" height="2" fill="currentColor"/>
+<rect x="4" y="9" width="2" height="18" fill="currentColor"/>
+<rect x="26" y="5" width="2" height="18" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-cross-small":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76618)">
+<path d="M7 27H5V25H7V27ZM27 27H25V25H27V27ZM9 25H7V23H9V25ZM25 25H23V23H25V25ZM11 23H9V21H11V23ZM23 23H21V21H23V23ZM13 21H11V19H13V21ZM21 21H19V19H21V21ZM15 19H13V17H15V19ZM19 19H17V17H19V19ZM15 15H13V13H15V15ZM19 15H17V13H19V15ZM13 13H11V11H13V13ZM21 13H19V11H21V13ZM11 11H9V9H11V11ZM23 11H21V9H23V11ZM9 9H7V7H9V9ZM25 9H23V7H25V9ZM7 5V7H5V5H7ZM27 7H25V5H27V7Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76618">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-cross":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76614)">
+<path d="M5 29H3V27H5V29ZM29 29H27V27H29V29ZM7 27H5V25H7V27ZM27 27H25V25H27V27ZM9 25H7V23H9V25ZM25 25H23V23H25V25ZM11 23H9V21H11V23ZM23 23H21V21H23V23ZM13 21H11V19H13V21ZM21 21H19V19H21V21ZM15 19H13V17H15V19ZM19 19H17V17H19V19ZM15 15H13V13H15V15ZM19 15H17V13H19V15ZM13 13H11V11H13V13ZM21 13H19V11H21V13ZM11 11H9V9H11V11ZM23 11H21V9H23V11ZM9 9H7V7H9V9ZM25 9H23V7H25V9ZM7 7H5V5H7V7ZM27 7H25V5H27V7ZM5 3V5H3V3H5ZM29 5H27V3H29V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76614">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-cut":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76590)">
+<path d="M30 27H28V25H30V27ZM13 26H4V24H13V26ZM28 25H26V23H28V25ZM4 24H2V19H4V24ZM13 19H4V17H18V19H15V24H13V19ZM26 23H24V21H26V23ZM24 21H22V19H24V21ZM22 19H20V17H22V19ZM20 17H18V15H20V17ZM15 13H18V15H4V13H13V8H15V13ZM22 15H20V13H22V15ZM4 13H2V8H4V13ZM24 13H22V11H24V13ZM26 11H24V9H26V11ZM28 9H26V7H28V9ZM13 8H4V6H13V8ZM30 7H28V5H30V7Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76590">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-display-adj":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 25H24V27H8V28H6V27H2V25H6V24H8V25ZM23 22H3V20H23V22ZM30 16H31V18H30V21H28V18H27V16H28V7H30V16ZM3 20H1V8H3V20ZM25 20H23V8H25V20ZM23 8H3V6H23V8Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-dist-adj":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 25H10V27H4V21H6V25ZM9 24H7V22H9V24ZM22 23H13V21H22V23ZM11 22H9V20H11V22ZM24 21H22V12H24V21ZM13 20H11V18H13V20ZM8 19H6V12H8V19ZM15 18H13V16H15V18ZM22 12H8V10H22V12ZM27 11H25V7H21V5H27V11ZM24 10H22V8H24V10Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-dot-lists":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7 25H3V21H7V25ZM29 24H11V22H29V24ZM7 11H3V7H7V11ZM29 10H11V8H29V10Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-edit":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 27H9V29H3V23H5V27ZM30 29H15V27H30V29ZM11 27H9V25H11V27ZM13 25H11V23H13V25ZM7 23H5V21H7V23ZM15 23H13V21H15V23ZM9 21H7V19H9V21ZM17 21H15V19H17V21ZM11 19H9V17H11V19ZM19 19H17V17H19V19ZM13 17H11V15H13V17ZM21 17H19V15H21V17ZM15 15H13V13H15V15ZM23 15H21V13H23V15ZM17 13H15V11H17V13ZM25 13H23V11H25V13ZM19 11H17V9H19V11ZM23 11H21V9H23V11ZM27 11H25V9H27V11ZM21 9H19V7H21V9ZM29 9H27V7H29V9ZM23 7H21V5H23V7ZM27 7H25V5H27V7ZM25 5H23V3H25V5Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-hight-adj":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 31H15V29H17V31ZM15 29H13V27H15V29ZM19 29H17V27H19V29ZM13 27H11V25H13V27ZM17 27H15V23H17V27ZM21 27H19V25H21V27ZM24 22H8V20H24V22ZM8 20H6V12H8V20ZM26 20H24V12H26V20ZM24 12H8V10H24V12ZM17 9H15V5H17V9ZM13 7H11V5H13V7ZM21 7H19V5H21V7ZM15 5H13V3H15V5ZM19 5H17V3H19V5ZM17 3H15V1H17V3Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-import":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76574)">
+<path d="M5 27.998H27V18H29V28H27V29.998H5V28H3V18H5V27.998ZM17 25.001H15V23.001H17V25.001ZM15 23.001H13V21.001H15V23.001ZM19 23.001H17V21.001H19V23.001ZM13 21.001H11V19.001H13V21.001ZM21 21.001H19V19.001H21V21.001ZM17 21H15V2H17V21ZM11 19.001H9V17.001H11V19.001ZM23 19.001H21V17.001H23V19.001ZM9 17H7V15H9V17ZM25 17H23V15H25V17ZM7 15H5V13H7V15ZM27 15H25V13H27V15Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76574">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-layout-settings":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76654)">
+<path d="M26 30.0029H6V28.0029H26V30.0029ZM6 28.0029H4V4.00293H6V28.0029ZM28 28.0029H26V8.00293H28V28.0029ZM22 23.0029H20V21.0029H22V23.0029ZM20 21.0029H8V19.0029H20V21.0029ZM24 21.0029H22V19.0029H24V21.0029ZM22 19.0029H20V17.0029H22V19.0029ZM12 15.0029H10V13.0029H12V15.0029ZM10 13.0029H8V11.0029H10V13.0029ZM24 13.0029H12V11.0029H24V13.0029ZM12 11.0029H10V9.00293H12V11.0029ZM24 6.00293H26V8.00293H22V4.00293H24V6.00293ZM22 4.00293H6V2.00293H22V4.00293Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76654">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-multi-selection":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76670)">
+<path d="M25 28H23V26H25V28ZM7 26H3V24H7V26ZM19 26H10V24H19V26ZM23 26H21V24H23V26ZM27 26H25V24H27V26ZM29 24H27V22H29V24ZM31 22H29V20H31V22ZM7 17H3V15H7V17ZM28 17H10V15H28V17ZM7 8H3V6H7V8ZM28 8H10V6H28V8Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76670">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-new":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M26 30H6V28H26V30ZM6 28H4V4H6V28ZM28 28H26V8H28V28ZM17 22.0049H15V17.0049H17V22.0049ZM17 15.0049H15.0049V17H10.0049V15H15V10.0049H17V15.0049ZM22.0049 17H17.0049V15H22.0049V17ZM24 6H26V8H22V4H24V6ZM22 4H6V2H22V4Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-number-list":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 28H4V26H10V28ZM4 26H2V22H8V20H10V24H4V26ZM30 24H12V22H30V24ZM8 20H4V18H8V20ZM8 15H6V6H8V15ZM30 10H12V8H30V10ZM6 6H4V4H6V6Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-options":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76674)">
+<path d="M6 25H2V23H6V25ZM30 25H9V23H30V25ZM6 17H2V15H6V17ZM30 17H9V15H30V17ZM6 9H2V7H6V9ZM30 9H9V7H30V9Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76674">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-paste":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76598)">
+<path d="M20 30H4V28H20V30ZM4 28H2V8H4V28ZM28 26H22V28H20V26H12V24H28V26ZM12 24H10V8H4V6H10V4H12V24ZM30 24H28V4H30V24ZM26 19H14V17H26V19ZM26 15H14V13H26V15ZM26 11H14V9H26V11ZM28 4H12V2H28V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76598">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-pause":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76646)">
+<path d="M11 28H9V4H11V28ZM23 28H21V4H23V28Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76646">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-pin":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76630)">
+<path d="M17 31H15V20H17V31ZM6 18H15V20H4V16H6V18ZM28 20H17V18H26V16H28V20ZM8 16H6V14H8V16ZM26 16H24V14H26V16ZM10 14H8V12H10V14ZM24 14H22V12H24V14ZM13 10H19V5H21V10H22V12H10V10H11V5H13V10ZM11 5H9V3H11V5ZM23 5H21V3H23V5ZM21 3H11V1H21V3Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76630">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-play":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76642)">
+<path d="M12 29H9V27H12V29ZM9 27H7V5H9V27ZM15 27H12V25H15V27ZM18 25H15V23H18V25ZM21 23H18V21H21V23ZM24 21H21V19H24V21ZM26 19H24V17H26V19ZM28 17H26V15H28V17ZM26 15H24V13H26V15ZM24 13H21V11H24V13ZM21 11H18V9H21V11ZM18 9H15V7H18V9ZM15 7H12V5H15V7ZM12 5H9V3H12V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76642">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-redo":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76626)">
+<path d="M22 25V27H10V25H22ZM10 25H8V23H10V25ZM8 23H6V15H8V23ZM20 19H18V17H20V19ZM22 17H20V15H22V17ZM10 15H8V13H10V15ZM24 15H22V13H24V15ZM22 13H10V11H22V13ZM26 13H24V11H26V13ZM24 11H22V9H24V11ZM22 9H20V7H22V9ZM20 7H18V5H20V7Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76626">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-restore":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76650)">
+<path d="M24 29H8V27H24V29ZM8 27H6V25H8V27ZM26 27H24V25H26V27ZM6 25H4V15H6V25ZM28 25H26V11H28V25ZM14 13H12V11H14V13ZM12 11H10V9H12V11ZM26 11H24V9H26V11ZM10 9H8V7H10V9ZM24 9H12V7H24V9ZM12 7H10V5H12V7ZM14 5H12V3H14V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76650">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-settings":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M25 28H21V26H25V28ZM21 26H3V24H21V26ZM29 26H25V24H29V26ZM25 24H21V22H25V24ZM18 19H14V17H18V19ZM14 17H3V15H14V17ZM29 17H18V15H29V17ZM18 15H14V13H18V15ZM11 10H7V8H11V10ZM7 8H3V6H7V8ZM29 8H11V6H29V8ZM11 6H7V4H11V6Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-share":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M27 29H5V27H27V29ZM5 27H3V5H5V27ZM29 27H27V19H29V27ZM12 22H10V18H12V22ZM14 18H12V14H14V18ZM24 16H22V14H24V16ZM16 14H14V12H16V14ZM26 14H24V12H26V14ZM20 12H16V10H20V12ZM28 12H26V10H28V12ZM26 10H20V8H26V10ZM30 10H28V8H30V10ZM28 8H26V6H28V8ZM26 6H24V4H26V6ZM13 5H5V3H13V5ZM24 4H22V2H24V4Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-sweep":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76606)">
+<path d="M12 27H15V18H17V27H20V29H7V27H10V18H12V27ZM25 29H22V27H25V29ZM4 13H28V11H30V15H27V27H25V15H7V27H5V15H2V11H4V13ZM22 27H20V18H22V27ZM22 9H28V11H20V5H12V11H4V9H10V3H22V9Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76606">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-switch":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18 30H16V28H18V30ZM16 28H14V26H16V28ZM14 26H12V24H14V26ZM26 26H16V24H26V26ZM16 24H14V22H16V24ZM28 22V24H26V22H28ZM4 22H2V10H4V22ZM18 22H16V20H18V22ZM30 22H28V10H30V22ZM16 12H14V10H16V12ZM6 10H4V8H6V10ZM18 10H16V8H18V10ZM16 8H6V6H16V8ZM20 8H18V6H20V8ZM18 6H16V4H18V6ZM16 4H14V2H16V4Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-trash":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76602)">
+<path d="M24 30H8V28H24V30ZM8 28H6V10H8V28ZM26 28H24V10H26V28ZM14 26H12V10H14V26ZM20 26H18V10H20V26ZM12 6H20V4H22V6H28V8H4V6H10V4H12V6ZM20 4H12V2H20V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76602">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-undo":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76622)">
+<path d="M22 27H10V25H22V27ZM24 25H22V23H24V25ZM26 23H24V15H26V23ZM14 19H12V17H14V19ZM12 17H10V15H12V17ZM10 15H8V13H10V15ZM24 15H22V13H24V15ZM8 13H6V11H8V13ZM22 13H10V11H22V13ZM10 11H8V9H10V11ZM12 9H10V7H12V9ZM14 7H12V5H14V7Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76622">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Edit & Settings"},"edit-unpin":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 31H15V20H17V31ZM28 28H26V26H28V28ZM26 26H24V24H26V26ZM24 24H22V22H24V24ZM22 22H20V20H22V22ZM6 18H15V20H4V16H6V18ZM20 20H18V18H20V20ZM28 20H22V18H26V16H28V20ZM18 18H16V16H18V18ZM8 16H6V14H8V16ZM16 16H14V14H16V16ZM26 16H24V14H26V16ZM10 14H8V12H10V14ZM14 14H12V12H14V14ZM24 14H22V12H24V14ZM12 12H10V10H12V12ZM21 10H22V12H14V10H19V5H21V10ZM10 10H8V8H10V10ZM13 9H11V5H13V9ZM8 8H6V6H8V8ZM6 6H4V4H6V6ZM11 5H9V3H11V5ZM23 5H21V3H23V5ZM21 3H11V1H21V3Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-upload-to-cloud":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 28H15V18H17V28ZM6 22H3V20H6V22ZM11 22H9V20H11V22ZM23 22H21V20H23V22ZM29 22H26V20H29V22ZM3 20H1V13H3V20ZM13 20H11V18H13V20ZM21 20H19V18H21V20ZM31 20H29V13H31V20ZM15 18H13V16H15V18ZM19 18H17V16H19V18ZM17 16H15V14H17V16ZM5 13H3V11H5V13ZM29 13H25V11H29V13ZM9 11H5V9H9V11ZM25 11H23V9H25V11ZM11 9H9V7H11V9ZM23 9H20V7H23V9ZM20 7H11V5H20V7Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"edit-width":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2 27H0V5H2V27ZM32 27H30V5H32V27ZM9 21H7V19H9V21ZM25 21H23V19H25V21ZM7 19H5V17H7V19ZM27 19H25V17H27V19ZM5 17H3V15H5V17ZM25 15V17H7V15H25ZM29 17H27V15H29V17ZM7 15H5V13H7V15ZM27 15H25V13H27V15ZM9 13H7V11H9V13ZM25 13H23V11H25V13Z" fill="currentColor"/>
+</svg>`,category:"Edit & Settings"},"feat-access-control":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76400)">
+<path d="M26 29H6V27H26V29ZM6 27H4V14H6V27ZM28 27H26V14H28V27ZM17 24H15V22H17V24ZM15 22H13V19H15V22ZM19 22H17V19H19V22ZM17 19H15V17H17V19ZM12 12H26V14H6V12H10V5H12V12ZM22 9H20V5H22V9ZM20 5H12V3H20V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76400">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-account":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76452)">
+<path d="M7 29H5V21H7V29ZM27 29H25V21H27V29ZM9 21H7V19H9V21ZM25 21H23V19H25V21ZM23 19H9V17H23V19ZM20 15H12V13H20V15ZM12 13H10V5H12V13ZM22 13H20V5H22V13ZM20 5H12V3H20V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76452">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-calendar":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M27 29H5V27H27V29ZM5 9H27V7H29V27H27V11H5V27H3V7H5V9ZM11 23H9V21H11V23ZM17 23H15V21H17V23ZM23 23H21V21H23V23ZM11 17H9V15H11V17ZM17 17H15V15H17V17ZM23 17H21V15H23V17ZM11 5H21V2H23V5H27V7H5V5H9V2H11V5Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-camera":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M27 26H5V24H27V26ZM5 24H3V10H5V24ZM29 24H27V10H29V24ZM19 22H13V20H19V22ZM13 20H11V14H13V20ZM21 20H19V14H21V20ZM9 14H7V12H9V14ZM19 14H13V12H19V14ZM11 10H5V8H11V10ZM27 10H21V8H27V10ZM21 8H11V6H21V8Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-direct-push":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M28 26H4V24H28V26ZM4 24H2V8H4V24ZM30 24H28V8H30V24ZM17 20H15V18H17V20ZM15 18H13V16H15V18ZM19 18H17V16H19V18ZM13 16H11V14H13V16ZM17 16H15V4H17V16ZM21 16H19V14H21V16ZM11 14H9V12H11V14ZM23 14H21V12H23V14ZM11 8H4V6H11V8ZM28 8H21V6H28V8Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-eis":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76392)">
+<path d="M15.0088 31.9912L13.0088 32L13 30L15 29.9912L15.0088 31.9912ZM19.0088 31.9912L17.0088 32L17 30L19 29.9912L19.0088 31.9912ZM13.0088 29.9912L11.0088 30L11 28L13 27.9912L13.0088 29.9912ZM17.0088 29.9912L15.0088 30L15 28L17 27.9912L17.0088 29.9912ZM21.0088 29.9912L19.0088 30L19 28L21 27.9912L21.0088 29.9912ZM23 25H9V23H23V25ZM9 23H7V9H9V23ZM25 23H23V9H25V23ZM18.0176 17.9814L14.0088 18L13.9912 14.0088L18 13.9912L18.0176 17.9814ZM23 9H9V7H23V9ZM13.0088 3.99023L11.0098 4L11 2L13 1.99121L13.0088 3.99023ZM17.0088 3.99023L15.0098 4L15 2L17 1.99121L17.0088 3.99023ZM21.0088 3.99023L19.0098 4L19 2L21 1.99121L21.0088 3.99023ZM15.0088 1.99023L13.0098 2L13 0L15 -0.00878906L15.0088 1.99023ZM19.0088 1.99023L17.0098 2L17 0L19 -0.00878906L19.0088 1.99023Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76392">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-email":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76368)">
+<path d="M28 26H4V24H28V26ZM28 8H30V24H28V10H26V8H6V10H4V24H2V8H4V6H28V8ZM20 18H12V16H20V18ZM12 16H10V14H12V16ZM22 16H20V14H22V16ZM10 14H8V12H10V14ZM24 14H22V12H24V14ZM8 12H6V10H8V12ZM26 12H24V10H26V12Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76368">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-even-ai":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 30H15V2H17V30ZM10.5 24H8.5V8H10.5V24ZM23.5 24H21.5V8H23.5V24ZM4 20H2V12H4V20ZM30 20H28V12H30V20Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-facial-scan":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7 31H3V29H7V31ZM29 31H25V29H29V31ZM3 29H1V25H3V29ZM31 29H29V25H31V29ZM15 26H17V25H20V27H17V28H15V27H12V25H15V26ZM12 25H9V23H12V25ZM17 25H15V15H17V25ZM23 25H20V23H23V25ZM9 11H7V21H9V23H7V22H5V10H7V9H9V11ZM25 10H27V22H25V23H23V21H25V11H23V9H25V10ZM15 15H12V13H15V15ZM20 15H17V13H20V15ZM12 13H9V11H12V13ZM23 13H20V11H23V13ZM12 9H9V7H12V9ZM23 9H20V7H23V9ZM3 7H1V3H3V7ZM17 5H20V7H17V6H15V7H12V5H15V4H17V5ZM31 7H29V3H31V7ZM7 3H3V1H7V3ZM29 3H25V1H29V3Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-feedback":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M27 29V27H28V13H25V27H26V29H27ZM4 30H2V28H4V30ZM6 28H4V26H6V28ZM4 26H2V4H4V26ZM8 26H6V24H8V26ZM20 24H8V22H20V24ZM20 17H8V15H20V17ZM20 11H8V9H20V11ZM25 11H28V9H25V11ZM28 4H4V2H28V4ZM28 31H25V29H24V27H23V9H24V7H29V9H30V27H29V29H28V31Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-headup-angle":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76388)">
+<path d="M30 27H4V25H30V27ZM4 25H2V23H4V25ZM20 24H18V22H20V24ZM6 23H4V21H6V23ZM8 21H6V19H8V21ZM18 21H16V19H18V21ZM10 19H8V17H10V19ZM16 18H14V16H16V18ZM12 17H10V15H12V17ZM14 15H12V13H14V15ZM16 13H14V11H16V13ZM18 11H16V9H18V11ZM20 9H18V7H20V9ZM22 7H20V5H22V7ZM24 5H22V3H24V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76388">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-inbox":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76412)">
+<path d="M5 31H3V29H5V31ZM7 29H5V27H7V29ZM5 27H3V5H5V27ZM9 27H7V25H9V27ZM27 25H9V23H27V25ZM29 23H27V5H29V23ZM17 20H15V18H17V20ZM15 18H13V16H15V18ZM19 18H17V16H19V18ZM13 16H11V14H13V16ZM17 16H15V3H17V16ZM21 16H19V14H21V16ZM11 14H9V12H11V14ZM23 14H21V12H23V14ZM13 5H5V3H13V5ZM27 5H19V3H27V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76412">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-interface-settings":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M29 28H27V25H29V28ZM21 25H4V23H21V25ZM27 25H24V23H27V25ZM32 25H29V23H32V25ZM4 23H2V8H4V23ZM29 23H27V20H29V23ZM24 19H7V17H24V19ZM29 17H27V8H29V17ZM24 14H7V12H24V14ZM27 8H4V6H27V8Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-languages":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76380)">
+<path d="M10 22H2V20H8V18H2V20H0V16H8V14H10V22ZM20 22H14V20H20V22ZM32 22H26V20H32V22ZM14 12H20V14H14V20H12V8H14V12ZM22 20H20V14H22V20ZM26 20H24V14H26V20ZM8 14H2V12H8V14ZM32 14H26V12H32V14Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76380">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-learn-explore":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 27H4V25H15V27ZM28 27H17V25H28V27ZM4 25H2V7H4V25ZM17 25H15V7H17V25ZM30 25H28V10H30V25ZM24 6H26V8H28V10H24V7H17V5H24V6ZM15 7H4V5H15V7Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-menu":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M14 27H3V25H14V27ZM3 25H1V7H3V25ZM16 25H14V7H16V25ZM29 25H17V23H29V25ZM31 23H29V9H31V23ZM12 22H5V20H12V22ZM12 17H5V15H12V17ZM12 12H5V10H12V12ZM29 9H17V7H29V9ZM14 7H3V5H14V7Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-message":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76404)">
+<path d="M5 31H3V29H5V31ZM7 29H5V27H7V29ZM5 27H3V5H5V27ZM9 27H7V25H9V27ZM27 25H9V23H27V25ZM29 5V23H27V5H29ZM23 18H9V16H23V18ZM23 12H9V10H23V12ZM27 5H5V3H27V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76404">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-navigate":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76324)">
+<path d="M6 30H4V12H6V30ZM22 20H20V18H22V20ZM24 18H22V16H24V18ZM26 16H24V14H26V16ZM28 14H26V12H28V14ZM26 12H6V10H26V12ZM30 12H28V10H30V12ZM28 10H26V8H28V10ZM26 8H24V6H26V8ZM24 6H22V4H24V6ZM22 2V4H20V2H22Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76324">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-news":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76416)">
+<path d="M25.5 27V29H4.5V27H25.5ZM25.5 23H23.5V5H4.5V27H2.5V3H25.5V23ZM27.5 27H25.5V25H27.5V27ZM29.5 25H27.5V9H29.5V25ZM20.5 23H7.5V21H20.5V23ZM20.5 17H7.5V15H20.5V17ZM10.5 11H7.5V9H10.5V11ZM20.5 11H13.5V9H20.5V11Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76416">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-notification":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76344)">
+<path d="M18 29H14V27H18V29ZM27 25H5V23H27V25ZM5 23H3V20H5V23ZM29 23H27V20H29V23ZM7 20H5V18H7V20ZM27 20H25V18H27V20ZM9 18H7V16H9V18ZM25 18H23V16H25V18ZM11 16H9V7H11V16ZM23 7V16H21V7H23ZM13 7H11V5H13V7ZM21 7H19V5H21V7ZM19 5H13V3H19V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76344">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-personal-info":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76456)">
+<path d="M7 29H5V21H7V29ZM27 29H25V21H27V29ZM9 21H7V19H9V21ZM25 21H23V19H25V21ZM23 19H9V17H23V19ZM20 15H12V13H20V15ZM12 13H10V5H12V13ZM22 13H20V5H22V13ZM28 8H26V6H28V8ZM26 6H24V4H26V6ZM30 6H28V4H30V6ZM20 5H12V3H20V5ZM28 4H26V2H28V4Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76456">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-phone-call":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76408)">
+<path d="M16 30H6V28H16V30ZM6 28H4V21H6V28ZM19 28H16V26H19V28ZM22 26H19V24H22V26ZM24 24H22V22H24V24ZM16 23H13V21H16V23ZM26 22H24V19H26V22ZM13 21H6V19H13V21ZM19 21H16V19H19V21ZM21 19H19V16H21V19ZM28 19H26V16H28V19ZM13 16H11V13H13V16ZM23 16H21V13H23V16ZM30 16H28V6H30V16ZM8 15H6V10H8V15ZM3 14H1V8H3V14ZM16 13H13V11H16V13ZM21 13H19V6H21V13ZM10 10H8V8H10V10ZM5 8H3V5H5V8ZM15 8H10V6H15V8ZM28 6H21V4H28V6ZM8 5H5V3H8V5ZM14 1V3H8V1H14Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76408">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-phone-voice-input":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 30H5V28H17V30ZM5 28H3V4H5V28ZM19 28H17V4H19V28ZM14 26H8V24H14V26ZM29 12H28V15H27V17H28V20H29V23H27V20H26V17H25V15H26V12H27V9H29V12ZM12 21H10V19H12V21ZM24 14H23V18H24V21H22V18H21V14H22V11H24V14ZM10 19H8V17H10V19ZM14 19H12V17H14V19ZM8 17H6V15H8V17ZM12 17H10V11H12V17ZM16 17H14V15H16V17ZM14 5H8V4H5V2H17V4H14V5Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-privacy":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18 31H14V29H18V31ZM14 29H11V27H14V29ZM21 29H18V27H21V29ZM11 27H9V25H11V27ZM23 27H21V25H23V27ZM9 25H7V22H9V25ZM25 25H23V22H25V25ZM7 22H5V19H7V22ZM18.5 18H17V22H15V18H13.5V16H18.5V18ZM27 22H25V19H27V22ZM5 19H3V7H5V19ZM29 19H27V7H29V19ZM13.5 16H11.5V11H13.5V16ZM20.5 16H18.5V11H20.5V16ZM18.5 11H13.5V9H18.5V11ZM8 7H5V5H8V7ZM27 7H24V5H27V7ZM12 5H8V3H12V5ZM24 5H20V3H24V5ZM20 3H12V1H20V3Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-qr-code":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 27H5V17H15V27ZM20 27H18V25H20V27ZM25 27H23V25H25V27ZM7 25H13V19H7V25ZM21 24H19V22H21V24ZM27 24H25V22H27V24ZM24 22H22V20H24V22ZM20 20H18V18H20V20ZM27 20H25V18H27V20ZM15 15H5V5H15V15ZM27 15H17V5H27V15ZM7 13H13V7H7V13ZM19 13H25V7H19V13Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-quick-note":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M22 30H6V28H22V30ZM6 28H4V4H6V28ZM26 26H24V28H22V24H26V26ZM28 4V24H26V4H28ZM18 23H9V21H18V23ZM22 17H9V15H22V17ZM23 11H9V9H23V11ZM26 4H6V2H26V4Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-scan":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 30H4V28H9V30ZM28 30H23V28H28V30ZM4 28H2V23H4V28ZM30 28H28V23H30V28ZM30 17H2V15H30V17ZM4 9H2V4H4V9ZM30 9H28V4H30V9ZM9 4H4V2H9V4ZM28 4H24V2H28V4Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-screen-off":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="27" y="8" width="2" height="16" fill="#232323"/>
+<rect x="5" y="6" width="16" height="2" fill="#232323"/>
+<rect x="3" y="8" width="2" height="16" fill="#232323"/>
+<rect x="11" y="24" width="16" height="2" fill="#232323"/>
+<rect x="16" y="14" width="2" height="2" fill="#232323"/>
+<rect x="18" y="12" width="2" height="2" fill="#232323"/>
+<rect x="20" y="10" width="2" height="2" fill="#232323"/>
+<rect x="22" y="8" width="2" height="2" fill="#232323"/>
+<rect x="24" y="6" width="2" height="2" fill="#232323"/>
+<rect x="14" y="16" width="2" height="2" fill="#232323"/>
+<rect x="12" y="18" width="2" height="2" fill="#232323"/>
+<rect x="10" y="20" width="2" height="2" fill="#232323"/>
+<rect x="8" y="22" width="2" height="2" fill="#232323"/>
+<rect x="6" y="24" width="2" height="2" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-services":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18 31H14V29H18V31ZM14 29H12V27H14V29ZM27 29H18V27H27V29ZM18 27H14V25H18V27ZM29 27H27V19H29V27ZM5 21H3V19H5V21ZM3 19H1V12H3V19ZM7 19H5V12H3V10H5V7H7V19ZM27 10H29V12H27V19H25V7H27V10ZM31 19H29V12H31V19ZM9 7H7V5H9V7ZM25 7H23V5H25V7ZM23 5H9V3H23V5Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-stocks":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76420)">
+<path d="M5 28H3V18H5V28ZM11 28H9V22H11V28ZM17 28H15V18H17V28ZM23 28H21V14H23V28ZM29 10V28H27V10H29ZM11.5 18H8.5V16H11.5V18ZM8.5 16H5.5V14H8.5V16ZM14.5 16H11.5V14H14.5V16ZM5.5 14H2.5V12H5.5V14ZM17.5 14H14.5V12H17.5V14ZM20.5 12H17.5V10H20.5V12ZM23.5 10H20.5V8H23.5V10ZM26.5 8H23.5V6H26.5V8ZM29.5 6H26.5V4H29.5V6Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76420">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-study":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76460)">
+<path d="M11 5V22H25V5H11ZM7 23H9V6H7V23ZM22 19H15V17H22V19ZM22 15H15V13H22V15ZM22 10H15V8H22V10ZM27 24H9V25H7V26H9V27H25V25H27V28H25V29H9V28H7V27H5V5H7V4H9V3H27V24Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76460">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-teleprompt":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M29 28H3V26H29V28ZM5 21.5H3V19.5H5V21.5ZM29 21H12V19H29V21ZM7 19.5H5V17.5H7V19.5ZM9 17.5H7V15.5H9V17.5ZM7 15.5H5V13.5H7V15.5ZM29 14H12V12H29V14ZM5 13.5H3V11.5H5V13.5ZM29 7H3V5H29V7Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-theme":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76356)">
+<path d="M17 29H5V27H17V29ZM5 27H3V15H5V27ZM19 27H17V15H19V27ZM22 24H20V22H22V24ZM24 22H22V10H24V22ZM27 19H25V17H27V19ZM29 17H27V5H29V17ZM17 15H5V13H17V15ZM10 12H8V10H10V12ZM22 10H10V8H22V10ZM15 7H13V5H15V7ZM27 5H15V3H27V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76356">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-time-counting":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76352)">
+<path d="M27 29H5V27H27V29ZM5 27H3V5H5V27ZM29 27H27V5H29V27ZM17.9893 16.0039H15.9912V18.001H9.99512V16.001H15.9893V8.00488H17.9893V16.0039ZM27 5H5V3H27V5Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76352">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-transcribe":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M23 23H17V28H20V30H12V28H15V23H9V21H23V23ZM9 21H7V19H9V21ZM25 21H23V19H25V21ZM7 19H5V11H7V19ZM27 19H25V11H27V19ZM20 18H12V16H20V18ZM12 16H10V4H12V16ZM22 16H20V4H22V16ZM20 4H12V2H20V4Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-translate":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M26 32H24V30H26V32ZM24 30H22V28H24V30ZM22 28H20V26H22V28ZM30 28H24V26H30V28ZM24 26H22V24H24V26ZM32 26H30V16H32V26ZM26 24H24V22H26V24ZM13 18H19V16H21V22H19V20H13V22H11V16H13V18ZM2 16H0V6H2V16ZM15 16H13V12H15V16ZM19 16H17V12H19V16ZM17 12H15V8H17V12ZM8 9.99609H6V7.99609H8V9.99609ZM10.002 7.99609H8.00195V5.99609H10.002V7.99609ZM8 6H2V4H8V6ZM12.002 5.99609H10.002V3.99609H12.002V5.99609ZM8.00195 1.99609H10.002V3.99609H8.00195V2H6.00195V0H8.00195V1.99609Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-voice-print":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76384)">
+<path d="M9 30H4V28H9V30ZM28 30H23V28H28V30ZM4 28H2V23H4V28ZM30 28H28V23H30V28ZM17 25H15V7H17V25ZM11 21H9V11H11V21ZM23 21H21V11H23V21ZM5 18H3V14H5V18ZM29 18H27V14H29V18ZM4 9H2V4H4V9ZM30 9H28V4H30V9ZM9 4H4V2H9V4ZM28 4H24V2H28V4Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76384">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-wear-detect":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 28H2V26H8V28ZM30 28H24V26H30V28ZM2 26H0V21H2V26ZM32 26H30V21H32V26ZM12 22H6V20H12V22ZM26 22H20V20H26V22ZM6 20H4V13H6V20ZM14 20H12V17H14V20ZM20 20H18V17H20V20ZM28 20H26V13H28V20ZM18 17H14V13H18V17ZM14 13H6V11H14V13ZM26 13H18V11H26V13ZM2 11H0V6H2V11ZM32 11H30V6H32V11ZM8 6H2V4H8V6ZM30 6H24V4H30V6Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"feat-weather":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76360)">
+<path d="M4 27H28V25H4V27ZM28 25H30V20H28V25ZM2 25H4V20H2V25ZM26 20H28V18H26V20ZM4 20H7V18H4V20ZM23 18H26V16H23V18ZM7 16V18H9V16H7ZM21 16H23V14H21V16ZM9 16H11V14H9V16ZM23 14H26V12H23V14ZM11 14H21V12H11V14ZM26 12H28V9H26V12ZM9 12H11V9H9V12ZM24 9H26V7H24V9ZM11 9H14V7H11V9ZM14 7H24V5H14V7Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76360">
+<rect width="32" height="32" fill="white" transform="matrix(-1 0 0 1 32 0)"/>
+</clipPath>
+</defs>
+</svg>`,category:"Feature & Function"},"feat-wiki":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M30 28H2V26H30V28ZM2 26H0V11H2V26ZM32 26H30V11H32V26ZM17 22H26V24H6V22H15V7H17V22ZM6 22H4V11H2V9H4V7H6V22ZM28 9H30V11H28V22H26V7H28V9ZM13 18H8V16H13V18ZM24 18H19V16H24V18ZM13 13H8V11H13V13ZM24 13H19V11H24V13ZM15 7H6V5H15V7ZM26 7H17V5H26V7Z" fill="#232323"/>
+</svg>`,category:"Feature & Function"},"guide-back":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76515)">
+<path d="M16 29H14V27H16V29ZM14 27H12V25H14V27ZM12 25H10V23H12V25ZM10 23H8V21H10V23ZM8 21H6V19H8V21ZM6 19H4V17H6V19ZM4 15V17H2V15H4ZM30 17H6V15H30V17ZM6 15H4V13H6V15ZM8 13H6V11H8V13ZM10 11H8V9H10V11ZM12 9H10V7H12V9ZM14 7H12V5H14V7ZM16 5H14V3H16V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76515">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-chevron-drill-back":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76497)">
+<path d="M23 29H21V27H23V29ZM21 27H19V25H21V27ZM19 25H17V23H19V25ZM17 23H15V21H17V23ZM15 21H13V19H15V21ZM13 19H11V17H13V19ZM11 15V17H9V15H11ZM13 15H11V13H13V15ZM15 13H13V11H15V13ZM17 11H15V9H17V11ZM19 9H17V7H19V9ZM21 7H19V5H21V7ZM23 5H21V3H23V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76497">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-chevron-drill-down":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76489)">
+<path d="M17 21V23H15V21H17ZM15 21H13V19H15V21ZM19 21H17V19H19V21ZM13 19H11V17H13V19ZM21 19H19V17H21V19ZM11 17H9V15H11V17ZM23 17H21V15H23V17ZM9 15H7V13H9V15ZM25 15H23V13H25V15ZM7 13H5V11H7V13ZM27 13H25V11H27V13ZM5 11H3V9H5V11ZM29 11H27V9H29V11Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76489">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-chevron-drill-up":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76481)">
+<path d="M29 21L29 23L27 23L27 21L29 21ZM27 19L27 21L25 21L25 19L27 19ZM25 17L25 19L23 19L23 17L25 17ZM23 15L23 17L21 17L21 15L23 15ZM21 13L21 15L19 15L19 13L21 13ZM19 11L19 13L17 13L17 11L19 11ZM15 9L17 9L17 11L15 11L15 9ZM15 11L15 13L13 13L13 11L15 11ZM13 13L13 15L11 15L11 13L13 13ZM11 15L11 17L9 17L9 15L11 15ZM9 17L9 19L7 19L7 17L9 17ZM7 19L7 21L5 21L5 19L7 19ZM5 21L5 23L3 23L3 21L5 21Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76481">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-chevron-small-back":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76505)">
+<path d="M11 29H9V27H11V29ZM13 27H11V25H13V27ZM15 25H13V23H15V25ZM17 23H15V21H17V23ZM19 21H17V19H19V21ZM21 19H19V17H21V19ZM23 15V17H21V15H23ZM21 15H19V13H21V15ZM19 13H17V11H19V13ZM17 11H15V9H17V11ZM15 9H13V7H15V9ZM13 7H11V5H13V7ZM11 5H9V3H11V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76505">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-chevron-small-drill-back":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 25H18V23H20V25ZM18 23H16V21H18V23ZM16 21H14V19H16V21ZM14 19H12V17H14V19ZM12 15V17H10V15H12ZM14 15H12V13H14V15ZM16 13H14V11H16V13ZM18 11H16V9H18V11ZM20 9H18V7H20V9Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"guide-chevron-small-drill-down":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76493)">
+<path d="M17 20V22H15V20H17ZM15 20H13V18H15V20ZM19 20H17V18H19V20ZM13 18H11V16H13V18ZM21 18H19V16H21V18ZM11 16H9V14H11V16ZM23 16H21V14H23V16ZM9 14H7V12H9V14ZM25 14H23V12H25V14Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76493">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-chevron-small-drill-in":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M14 25H12V23H14V25ZM16 23H14V21H16V23ZM18 21H16V19H18V21ZM20 19H18V17H20V19ZM22 15V17H20V15H22ZM20 15H18V13H20V15ZM18 13H16V11H18V13ZM16 11H14V9H16V11ZM14 9H12V7H14V9Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"guide-chevron-small-drill-up":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76485)">
+<path d="M9 20H7V18H9V20ZM25 20H23V18H25V20ZM11 18H9V16H11V18ZM23 18H21V16H23V18ZM13 16H11V14H13V16ZM21 16H19V14H21V16ZM15 14H13V12H15V14ZM19 14H17V12H19V14ZM17 10V12H15V10H17Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76485">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-double-tap":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 31H11V29H24V31ZM11 29H9V27H11V29ZM26 29H24V20H26V29ZM9 27H7V20H9V27ZM16 11H17V18H15V11H13V24H11V20H9V18H11V11H12V9H16V11ZM24 20H17V18H24V20ZM14 2H15V5H14V6H11V5H10V2H11V1H14V2ZM21 2H22V5H21V6H18V5H17V2H18V1H21V2Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"guide-go":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76519)">
+<path d="M18 29H16V27H18V29ZM20 27H18V25H20V27ZM22 25H20V23H22V25ZM24 23H22V21H24V23ZM26 21H24V19H26V21ZM28 19H26V17H28V19ZM26 17H2V15H26V17ZM30 15V17H28V15H30ZM28 15H26V13H28V15ZM26 13H24V11H26V13ZM24 11H22V9H24V11ZM22 9H20V7H22V9ZM20 7H18V5H20V7ZM18 5H16V3H18V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76519">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-long-press":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 31H11V29H24V31ZM11 29H9V27H11V29ZM26 29H24V20H26V29ZM9 27H7V20H9V27ZM16 11H17V18H15V11H13V24H11V20H9V18H11V11H12V9H16V11ZM24 20H17V18H24V20ZM23 2H24V4H23V5H10V4H9V2H10V1H23V2Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"guide-maximize-card":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76531)">
+<path d="M27 29H5V27H27V29ZM5 27H3V5H5V27ZM29 27H27V21H29V27ZM19 23H11V21H19V23ZM11 21H9V13H11V21ZM14 20H12V18H14V20ZM16 18H14V16H16V18ZM18 16H16V14H18V16ZM28 6V14H26V6H28ZM21 13H19V11H21V13ZM23 11H21V9H23V11ZM25 9H23V7H25V9ZM26 6H18V4H26V6ZM11 5H5V3H11V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76531">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-maximize":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76523)">
+<path d="M16 30H4V28H16V30ZM4 28H2V16H4V28ZM8 26H6V24H8V26ZM10 24H8V22H10V24ZM12 22H10V20H12V22ZM14 20H12V18H14V20ZM30 4V16H28V4H30ZM20 14H18V12H20V14ZM22.333 12H20.333V10H22.333V12ZM24.333 10H22.333V8H24.333V10ZM26.333 8H24.333V6H26.333V8ZM28 4H16V2H28V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76523">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-minimize-card":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76535)">
+<path d="M27 29H5V27H27V29ZM5 27H3V5H5V27ZM29 27H27V21H29V27ZM10 24H8V22H10V24ZM18 24H16V16H18V24ZM12 22H10V20H12V22ZM14 20H12V18H14V20ZM16 16H8V14H16V16ZM28 14H20V12H28V14ZM20 4V12H18V4H20ZM24 10H22V8H24V10ZM26 8H24V6H26V8ZM28 6H26V4H28V6ZM11 5H5V3H11V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76535">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-minimize":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M16 30H14V18H16V30ZM6 28H4V26H6V28ZM8 26H6V24H8V26ZM10 24H8V22H10V24ZM12 22H10V20H12V22ZM14 18H2V16H14V18ZM30 16H18V14H30V16ZM18 2V14H16V2H18ZM21.667 12H19.667V10H21.667V12ZM23.667 10H21.667V8H23.667V10ZM25.667 8H23.667V6H25.667V8ZM28 6H26V4H28V6Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"guide-search":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M27 27H24V24H27V27ZM24 24H21V21H24V24ZM21 21H18V18H21V21ZM16 20H9V18H16V20ZM9 18H7V16H9V18ZM18 18H16V16H18V18ZM7 16H5V9H7V16ZM20 16H18V9H20V16ZM9 9H7V7H9V9ZM18 9H16V7H18V9ZM16 7H9V5H16V7Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"guide-shift-to-top":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76539)">
+<path d="M26 26H24V24H26V26ZM24 24H22V22H24V24ZM22 22H20V20H22V22ZM22 8H8V21H6V6H22V8ZM20 20H18V18H20V20ZM18 18H16V16H18V18ZM16 16H14V14H16V16ZM14 14H12V12H14V14ZM12 12H10V10H12V12Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76539">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Guide System"},"guide-single-tap":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M24 31H11V29H24V31ZM11 29H9V27H11V29ZM26 29H24V20H26V29ZM9 27H7V20H9V27ZM16 11H17V18H15V11H13V24H11V20H9V18H11V11H12V9H16V11ZM24 20H17V18H24V20ZM15 2H16V5H15V6H12V5H11V2H12V1H15V2Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"guide-swip":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M24.667 31.3334H11.667V29.3334H24.667V31.3334ZM11.667 29.3334H9.66699V27.3334H11.667V29.3334ZM26.667 29.3334H24.667V20.3334H26.667V29.3334ZM9.66699 27.3334H7.66699V20.3334H9.66699V27.3334ZM15.667 11.3334H16.667V14.3334H17.667V18.3334H15.667V14.3334H14.667V11.3334H11.667V14.3334H12.667V18.3334H13.667V24.3334H11.667V20.3334H9.66699V18.3334H10.667V14.3334H9.66699V11.3334H10.667V9.33337H15.667V11.3334ZM24.667 20.3334H17.667V18.3334H24.667V20.3334ZM10.667 5.33337H7.66699V4.33337H6.66699V2.33337H7.66699V1.33337H10.667V5.33337ZM13.667 5.33337H11.667V1.33337H13.667V5.33337ZM16.667 4.83337H14.667V1.83337H16.667V4.83337ZM19.667 4.33337H17.667V2.33337H19.667V4.33337ZM22.667 3.83337H20.667V2.83337H22.667V3.83337Z" fill="currentColor"/>
+</svg>`,category:"Guide System"},"health-HRV":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 27H15V25H17V27ZM15 25H13V23H15V25ZM19 25H17V23H19V25ZM13 23H11V21H13V23ZM21 23H19V21H21V23ZM11 21H9V19H11V21ZM23 21H21V19H23V21ZM16 20H14V18H16V20ZM9 19H7V17H9V19ZM25 19H23V17H25V19ZM13.999 18H11.999V16H13.999V18ZM18 18H16V15H18V18ZM11.999 16H3.99902V14H11.999V16ZM28.001 16H24V14H28.001V16ZM20 15H18V12H20V15ZM22.002 12H24V14H22V12H20.002V10H22.002V12ZM7 13H5V9H7V13ZM27 13H25V9H27V13ZM17 11H15V9H17V11ZM9 9H7V7H9V9ZM13.001 7H15V9H13V7H9V5H13.001V7ZM19 9H17V7H19V9ZM23.001 7H25V9H23V7H19V5H23.001V7Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-heart-rate":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 27H15V25H17V27ZM15 25H13V23H15V25ZM19 25H17V23H19V25ZM13 23H11V21H13V23ZM21 23H19V21H21V23ZM11 21H9V19H11V21ZM23 21H21V19H23V21ZM9 19H7V17H9V19ZM25 19H23V17H25V19ZM7 17H5V9H7V17ZM27 17H25V9H27V17ZM17 11H15V9H17V11ZM9 9H7V7H9V9ZM13.001 7H15V9H13V7H9V5H13.001V7ZM19 9H17V7H19V9ZM23.001 7H25V9H23V7H19V5H23.001V7Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-lift-2":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11 26.0007V30.0007H9V26.0007H11ZM23 30.0007H21V26.0007H23V30.0007ZM13 26.0007H11V24.0007H13V26.0007ZM21 26.0007H19V24.0007H21V26.0007ZM15 24.0007H13V22.0007H15V24.0007ZM19 24.0007H17V22.0007H19V24.0007ZM17 22.0007H15V20.0007H17V22.0007ZM6 13.0007H11V11.0007H13V13.0007H19V11.0007H21V13.0007H26V10.0007H28V18.0007H26V15.0007H19V19.9998H17V15.0007H15V19.9998H13V15.0007H6V18.0007H4V10.0007H6V13.0007ZM19 11.0007H13V9.00073H19V11.0007ZM17 7.99976H15V5.99976H17V7.99976Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-lift-3":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11 26.0012V30.0012H9V26.0012H11ZM23 30.0012H21V26.0012H23V30.0012ZM13 26.0012H11V24.0012H13V26.0012ZM21 26.0012H19V24.0012H21V26.0012ZM15 24.0012H13V22.0012H15V24.0012ZM19 24.0012H17V22.0012H19V24.0012ZM17 22.0012H15V20.0012H17V22.0012ZM15 20.0002H13V14.0002H15V20.0002ZM19 20.0002H17V14.0002H19V20.0002ZM6 3.00122H26V0.0012207H28V8.00122H26V5.00122H23V13.0012H21V14.0012H19V11.0012H21V5.00122H11V11.0012H13V14.0012H11V13.0012H9V5.00122H6V8.00122H4V0.0012207H6V3.00122ZM19 11.0012H13V9.00122H19V11.0012ZM17 8.00024H15V6.00024H17V8.00024Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-lift":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11 26.0007V30.0007H9V26.0007H11ZM23 30.0007H21V26.0007H23V30.0007ZM13 26.0007H11V24.0007H13V26.0007ZM21 26.0007H19V24.0007H21V26.0007ZM11 20.9998H15V20.0007H17V20.9998H21V13.0007H23V20.9998H26V17.9998H28V25.9998H26V22.9998H19V24.0007H17V22.9998H15V24.0007H13V22.9998H6V25.9998H4V17.9998H6V20.9998H9V13.0007H11V20.9998ZM15 19.9998H13V13.9998H15V19.9998ZM19 19.9998H17V13.9998H19V19.9998ZM13 13.0007H11V11.0007H13V13.0007ZM21 13.0007H19V11.0007H21V13.0007ZM19 11.0007H13V9.00073H19V11.0007ZM17 7.99976H15V5.99976H17V7.99976Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-run":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M22 24.001H24V28.001H26V30.001H22V26.001H20V20.001H22V24.001ZM14 22.001H6V24.001H4V20.001H14V22.001ZM18 22.001H16V12.001H18V22.001ZM12 16.001H10V12.001H12V16.001ZM20 8.00098H24V14.001H26V16.001H22V10.001H20V12.001H18V8.00098H14V12.001H12V8.00098H14V6.00098H20V8.00098ZM24 5.00098H21V2.00098H24V5.00098Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-sleep":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_77058)">
+<path d="M4 20H15V14H17V20H28V14H30V25H28V22H4V26H2V6H4V20ZM11 17H8V15H11V17ZM8 15H6V12H8V15ZM13 15H11V12H13V15ZM28 14H17V12H28V14ZM11 10V12H8V10H11Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_77058">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Health"},"health-spo2":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 29H12V27H19V29ZM12 27H10V25H12V27ZM21 27H19V25H21V27ZM10 25H8V23H10V25ZM23 25H21V23H23V25ZM9 14H8V23H6V14H7V12H9V14ZM20 22H16V20H20V22ZM16 20H14V16H16V20ZM22 20H20V16H22V20ZM20 16H16V14H20V16ZM11 12H9V9H11V12ZM23 12H21V9H23V12ZM13 9H11V6H13V9ZM21 9H19V6H21V9ZM15 6H13V4H15V6ZM19 6H17V4H19V6ZM17 4H15V2H17V4Z" fill="#232323"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23 16L23 14L27 14L27 16L23 16Z" fill="#232323"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23 20L23 18L25 18L25 20L23 20Z" fill="#232323"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M25 18L25 16L27 16L27 18L25 18Z" fill="#232323"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M23 22L23 20L27 20L27 22L23 22Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-stand":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 22.001V30.001H11V22.001H13ZM21 30.001H19V22.001H21V30.001ZM15 22.001H13V20.001H15V22.001ZM19 22.001H17V20.001H19V22.001ZM17 20.001H15V10.001H17V20.001ZM12 17.001H10V10.001H12V17.001ZM22 17.001H20V10.001H22V17.001ZM19 8.00098H20V10.001H18V8.00098H14V10.001H12V8.00098H13V6.00098H19V8.00098ZM17.667 4.66797H15V2.00098H17.667V4.66797Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-steps":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_77030)">
+<path d="M11 31H8V29H11V31ZM8 29H6V25H8V29ZM12 21H13V29H11V21H10V18H12V21ZM6 25H4V21H6V25ZM24 25H21V23H24V25ZM22 15H21V23H19V15H20V12H22V15ZM26 23H24V19H26V23ZM4 21H2V15H4V21ZM28 19H26V15H28V19ZM14 18H12V13H14V18ZM7 15H4V13H7V15ZM30 15H28V9H30V15ZM3 14H1V12H3V14ZM12 13H7V11H12V13ZM5 12H3V10H5V12ZM20 7V12H18V7H20ZM7 10H5V8H7V10ZM14 10H12V7H14V10ZM10 9H8V7H10V9ZM28 9H25V7H28V9ZM31 8H29V6H31V8ZM25 7H20V5H25V7ZM29 6H27V4H29V6ZM20 4H18V1H20V4ZM27 4H25V2H27V4ZM24 3H22V1H24V3Z" fill="#232323"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_77030">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Health"},"health-temperature":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 29H12V27H20V29ZM12 27H10V25H12V27ZM22 27H20V25H22V27ZM17 18H19V20H21V24H19V26H13V24H11V20H13V18H15V11H17V18ZM10 25H8V19H10V25ZM24 25H22V19H24V25ZM12 19H10V17H12V19ZM22 19H20V17H22V19ZM14 17H12V5H14V17ZM20 17H18V5H20V17ZM26 9H24V7H26V9ZM24 7H22V5H24V7ZM28 7H26V5H28V7ZM18 5H14V3H18V5ZM26 5H24V3H26V5Z" fill="#232323"/>
+</svg>`,category:"Health"},"health-walk":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 30.0012H8V24.0012H10V30.0012ZM20 24.0012H21V28.0012H22V30.0012H19V24.0012H18V22.0012H20V24.0012ZM12 24.0012H10V22.0012H12V24.0012ZM14 22.0012H12V20.0012H14V22.0012ZM18 22.0012H16V20.0012H18V22.0012ZM16 20.0012H14V10.0012H16V20.0012ZM10 17.0012H8V10.0012H10V17.0012ZM24 16.0012H22V14.0012H24V16.0012ZM22 12.0012V14.0012H20V12.0012H22ZM20 12.0012H18V8.00122H20V12.0012ZM12 10.0012H10V8.00122H12V10.0012ZM18 8.00122H12V6.00122H18V8.00122ZM17.667 4.66821H15V2.00122H17.667V4.66821Z" fill="#232323"/>
+</svg>`,category:"Health"},"menu-even-hub-highlighted":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76297)">
+<path d="M13 19H15V28H13V30H4V28H2V19H4V17H13V19ZM26 30H21V28H26V30ZM21 28H19V26H21V28ZM28 28H26V26H28V28ZM19 26H17V21H19V26ZM30 26H28V21H30V26ZM21 21H19V19H21V21ZM28 21H26V19H28V21ZM26 19H21V17H26V19ZM13 4H15V13H13V15H4V13H2V4H4V2H13V4ZM28 4H30V13H28V15H19V13H17V4H19V2H28V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76297">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"menu-even-hub":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76293)">
+<path d="M13 30H4V28H13V30ZM26 30H21V28H26V30ZM4 28H2V19H4V28ZM15 28H13V19H15V28ZM21 28H19V26H21V28ZM28 28H26V26H28V28ZM19 26H17V21H19V26ZM30 26H28V21H30V26ZM21 21H19V19H21V21ZM28 21H26V19H28V21ZM13 19H4V17H13V19ZM26 19H21V17H26V19ZM13 15H4V13H13V15ZM28 15H19V13H28V15ZM4 13H2V4H4V13ZM15 13H13V4H15V13ZM19 13H17V4H19V13ZM30 13H28V4H30V13ZM13 4H4V2H13V4ZM28 4H19V2H28V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76293">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"menu-gear-highlighted":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76305)">
+<path d="M17 3H19V7H21V6H23V5H25V6H26V7H27V9H26V11H25V13H29V15H30V17H29V19H25V21H26V23H27V25H26V26H25V27H23V26H21V25H19V29H17V30H15V29H13V25H11V26H9V27H7V26H6V25H5V23H6V21H7V19H3V17H2V15H3V13H7V11H6V9H5V7H6V6H7V5H9V6H11V7H13V3H15V2H17V3ZM13 12V13H12V19H13V20H19V19H20V13H19V12H13Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76305">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"menu-gear":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76301)">
+<path d="M15 28H17V25H19V29H17V30H15V29H13V25H15V28ZM9 22H8V23H7V24H8V25H9V24H10V23H13V25H11V26H9V27H7V26H6V25H5V23H6V21H7V19H9V22ZM22 24H23V25H24V24H25V23H24V22H23V19H25V21H26V23H27V25H26V26H25V27H23V26H21V25H19V23H22V24ZM19 21H13V19H19V21ZM7 15H4V17H7V19H3V17H2V15H3V13H7V15ZM13 19H11V13H13V19ZM21 19H19V13H21V19ZM29 15H30V17H29V19H25V17H28V15H25V13H29V15ZM9 6H11V7H13V9H10V8H9V7H8V8H7V9H8V10H9V13H7V11H6V9H5V7H6V6H7V5H9V6ZM19 13H13V11H19V13ZM25 6H26V7H27V9H26V11H25V13H23V10H24V9H25V8H24V7H23V8H22V9H19V7H21V6H23V5H25V6ZM17 3H19V7H17V4H15V7H13V3H15V2H17V3Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76301">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"menu-healt-highlighted":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76289)">
+<path d="M13 5H15V7H17V5H19V3H24V5H27V7H29V9H30V13H29V14H31V15H26V12H24V10H22V12H20V15H18V18H16V21H14V19H12V21H14V23H16V21H18V18H20V15H22V12H24V15H26V17H31V18H27V19H26V21H24V23H22V25H20V27H18V29H14V27H12V25H10V23H8V21H6V19H5V18H1V17H10V19H12V17H10V15H1V14H2V9H3V7H5V5H8V3H13V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76289">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"menu-healt":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76285)">
+<path d="M18 29H14V27H18V29ZM14 27H12V25H14V27ZM20 27H18V25H20V27ZM12 25H10V23H12V25ZM22 25H20V23H22V25ZM10 23H8V21H10V23ZM16 23H14V21H16V23ZM24 23H22V21H24V23ZM8 21H6V19H8V21ZM14 21H12V19H14V21ZM18 21H16V18H18V21ZM26 21H24V19H26V21ZM12 19H10V17H12V19ZM20 18H18V15H20V18ZM10 17H1V15H10V17ZM31 17H26V15H31V17ZM22 15H20V12H22V15ZM26 15H24V12H26V15ZM5 9H4V13H2V9H3V7H5V9ZM29 9H30V13H28V9H27V7H29V9ZM24 12H22V10H24V12ZM17 9H15V7H17V9ZM8 7H5V5H8V7ZM15 7H13V5H15V7ZM19 7H17V5H19V7ZM27 7H24V5H27V7ZM13 5H8V3H13V5ZM24 5H19V3H24V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76285">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"menu-home-highlighted":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76281)">
+<path d="M17 5H19V7H21V9H23V11H25V13H27V15H29V17H27V27H25V29H7V27H5V17H3V15H5V13H7V11H9V9H11V7H13V5H15V3H17V5ZM13 23H19V20H13V23ZM3 19H1V17H3V19ZM31 19H29V17H31V19Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76281">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"menu-home":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76277)">
+<path d="M25 29H7V27H25V29ZM7 27H5V17H7V27ZM27 27H25V17H27V27ZM21 25H11V18H21V25ZM13 23H19V20H13V23ZM3 19H1V17H3V19ZM31 19H29V17H31V19ZM5 17H3V15H5V17ZM29 17H27V15H29V17ZM7 15H5V13H7V15ZM27 15H25V13H27V15ZM9 13H7V11H9V13ZM25 13H23V11H25V13ZM11 11H9V9H11V11ZM23 11H21V9H23V11ZM13 9H11V7H13V9ZM21 9H19V7H21V9ZM15 7H13V5H15V7ZM19 7H17V5H19V7ZM17 5H15V3H17V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76277">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Menu Bar"},"nav-bicycle":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76967)">
+<path d="M11 28H5V26H11V28ZM27 28H21V26H27V28ZM5 26H3V24H5V26ZM13 26H11V24H13V26ZM21 18H20V24H21V26H19V24H18V18H19V16H21V18ZM29 18H30V24H29V26H27V24H28V18H27V16H29V18ZM3 24H1V18H3V24ZM15 24H13V18H15V24ZM23 14H27V16H25V22H23V16H21V14H11V12H21V8H23V14ZM5 18H3V16H5V18ZM13 18H11V16H13V18ZM11 16H5V14H11V16ZM11 10V12H7V10H11ZM21 8H19V5H21V8ZM19 5H14V3H19V5ZM23 5H21V3H23V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76967">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-bus":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76975)">
+<path d="M25.001 25.001V19.001H7V25.001H25.001ZM14 23.001H8V21.001H14.001L14 23.001ZM24.001 23.001H18.001V21.001H24.001V23.001ZM7 17.001H25.001V9H7V17.001ZM4 14.001H2V9H4V14.001ZM30.001 14.001H28.001V9H30.001V14.001ZM25.001 5H7V3H25.001V5ZM27.001 27.001H26.001V29.001H22.001V27.001H10V29.001H6V27.001H5V5H7V7H25.001V5H27.001V27.001Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76975">
+<rect width="32.0013" height="32.0013" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-business":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76983)">
+<path d="M27 28H5V26H27V28ZM5 26H3V12H5V26ZM29 26H27V12H29V26ZM11 10H21V6H23V10H27V12H23V19H21V12H11V19H9V12H5V10H9V6H11V10ZM21 6H11V4H21V6Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76983">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-cloth-shop":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76995)">
+<path d="M24 29H8V27H24V29ZM4 14H6V10H8V27H6V16H2V9H4V14ZM30 16H26V27H24V10H26V14H28V9H30V16ZM6 9H4V7H6V9ZM17 9H15V7H17V9ZM28 9H26V7H28V9ZM8 7H6V5H8V7ZM15 7H13V5H15V7ZM19 7H17V5H19V7ZM26 7H24V5H26V7ZM13 5H8V3H13V5ZM24 5H19V3H24V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76995">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-coffee-shop":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_77003)">
+<path d="M28 29H2V27H28V29ZM21 25H7V23H21V25ZM7 23H5V21H7V23ZM23 23H21V21H23V23ZM5 21H3V11H5V21ZM25 16H27V18H25V21H23V11H25V16ZM29 16H27V11H29V16ZM23 11H5V9H23V11ZM27 11H25V9H27V11ZM11 8H9V6H11V8ZM17 8H15V6H17V8ZM13 6H11V4H13V6ZM19 6H17V4H19V6ZM11 4H9V2H11V4ZM17 4H15V2H17V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_77003">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-compass":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 27H8V29H3V24H5V27ZM12 27H8V25H12V27ZM16 25H12V23H16V25ZM7 24H5V20H7V24ZM23 21H21V23H16V21H19V19H21V16H23V21ZM9 20H7V16H9V20ZM19 19H13V13H19V19ZM15 17H17V15H15V17ZM16 11H13V13H11V16H9V11H11V9H16V11ZM25 16H23V12H25V16ZM27 12H25V8H27V12ZM20 9H16V7H20V9ZM29 3V8H27V5H24V3H29ZM24 7H20V5H24V7Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-crown":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M26 28.001H6V26.001H26V28.001ZM27 24.001H28V26.001H26V24.001H6V26.001H4V24.001H5V22.001H27V24.001ZM5 22.001H3V10.001H5V22.001ZM29 22.001H27V10.001H29V22.001ZM17 20.001H15V18.001H17V20.001ZM15 18.001H13V15.001H15V18.001ZM19 18.001H17V15.001H19V18.001ZM17 15.001H15V13.001H17V15.001ZM11 14.001H9V12.001H11V14.001ZM23 14.001H21V12.001H23V14.001ZM9 12.001H7V10.001H9V12.001ZM13 12.001H11V9.00098H13V12.001ZM21 12.001H19V9.00098H21V12.001ZM25 12.001H23V10.001H25V12.001ZM7 10.001H5V8.00098H7V10.001ZM27 10.001H25V8.00098H27V10.001ZM15 9.00098H13V6.00098H15V9.00098ZM19 9.00098H17V6.00098H19V9.00098ZM17 6.00098H15V4.00098H17V6.00098Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-direction":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_77019)">
+<path d="M10 24.667H8V14.667H10V24.667ZM20 18.667V20.667H18V18.667H20ZM22 18.667H20V16.667H22V18.667ZM24 16.667H22V14.667H24V16.667ZM22 14.667H10V12.667H22V14.667ZM26 14.667H24V12.667H26V14.667ZM24 12.667H22V10.667H24V12.667ZM22 10.667H20V8.66699H22V10.667ZM20 8.66699H18V6.66602H20V8.66699Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_77019">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-end-location":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 23.001H11V21.001H21V23.001ZM11 11.001V21.001H9V11.001H11ZM23 21.001H21V11.001H23V21.001ZM18 18.001H14V14.001H18V18.001ZM21 11.001H11V9.00098H21V11.001Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-flag":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7 19H21V21H7V30H5V5H7V19ZM23 19H21V17H23V19ZM25 17H23V15H25V17ZM27 15H25V13H27V15ZM29 13H27V11H29V13ZM27 11H25V9H27V11ZM25 9H23V7H25V9ZM23 7H21V5H23V7ZM21 5H7V3H21V5Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-gift":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 10.501H17V8.50098H19V10.501H29.5V12.501H27V25.501H25V12.501H17V25.501H25V27.501H7V25.501H15V12.501H7V25.501H5V12.501H2.5V10.501H13V8.50098H15V10.501ZM13 8.50098H11V6.50098H13V8.50098ZM21 8.50098H19V6.50098H21V8.50098ZM11 6.50098H9V4.50098H11V6.50098ZM23 6.50098H21V4.50098H23V6.50098Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-groceries":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76991)">
+<path d="M12 28H10V26H12V28ZM25 28H23V26H25V28ZM25 25H10V23H25V25ZM10 23H8V20H10V23ZM25 20H10V18H25V20ZM10 18H8V14H10V18ZM27 18H25V14H27V18ZM8 8H27V10H8V14H6V6H8V8ZM29 14H27V10H29V14ZM6 6H3V4H6V6Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76991">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-home-address":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76931)">
+<path d="M20 27H25V29H7V27H12V17H20V27ZM7 27H5V17H7V27ZM14 27H18V19H14V27ZM27 27H25V17H27V27ZM3 19H1V17H3V19ZM31 19H29V17H31V19ZM5 17H3V15H5V17ZM29 17H27V15H29V17ZM7 15H5V13H7V15ZM27 15H25V13H27V15ZM9 13H7V11H9V13ZM25 13H23V11H25V13ZM11 11H9V9H11V11ZM23 11H21V9H23V11ZM13 9H11V7H13V9ZM21 9H19V7H21V9ZM15 7H13V5H15V7ZM19 7H17V5H19V7ZM17 5H15V3H17V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76931">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-hotel":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76999)">
+<path d="M4 20H15V14H17V20H28V14H30V25H28V22H4V26H2V6H4V20ZM11 17H8V15H11V17ZM8 15H6V12H8V15ZM13 15H11V12H13V15ZM28 14H17V12H28V14ZM11 10V12H8V10H11Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76999">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-location":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 30H15V28H17V30ZM15 28H13V26H15V28ZM19 28H17V26H19V28ZM13 26H11V24H13V26ZM21 26H19V24H21V26ZM11 24H9V21H11V24ZM23 24H21V21H23V24ZM9 21H7V18H9V21ZM25 21H23V18H25V21ZM7 18H5V8H7V18ZM19 18H13V16H19V18ZM27 18H25V8H27V18ZM13 16H11V10H13V16ZM21 16H19V10H21V16ZM19 10H13V8H19V10ZM9 8H7V6H9V8ZM25 8H23V6H25V8ZM11 6H9V4H11V6ZM23 6H21V4H23V6ZM21 4H11V2H21V4Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-office-address":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76935)">
+<path d="M20 10H26V12H20V27H26V12H28V27H30V29H2V27H4V9H6V27H18V5H20V10ZM16 25H8V23H16V25ZM16 21H8V19H16V21ZM16 17H8V15H16V17ZM16 13H8V11H16V13ZM10 9H6V7H10V9ZM14 7H10V5H14V7ZM18 5H14V3H18V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76935">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-relocate":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76947)">
+<path d="M17 31H15V29H17V31ZM15 29H13V25H15V29ZM19 29H17V25H19V29ZM13 25H11V21H13V25ZM21 25H19V21H21V25ZM11 21H7V19H11V21ZM23 21H21V16H23V21ZM7 19H3V17H7V19ZM3 17H1V15H3V17ZM25 16H23V12H25V16ZM7 15H3V13H7V15ZM11 13H7V11H11V13ZM27 12H25V8H27V12ZM16 11H11V9H16V11ZM20 9H16V7H20V9ZM29 3V8H27V5H24V3H29ZM24 7H20V5H24V7Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76947">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-restaurant":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76979)">
+<path d="M11 29H9V15H11V29ZM23 29H21V15H23V29ZM11 12H12V14H8V12H9V3H11V12ZM24 14H20V12H24V14ZM8 12H6V4H8V12ZM14 12H12V4H14V12ZM20 12H18V5H20V12ZM26 12H24V5H26V12ZM24 5H20V3H24V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76979">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-shopping":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M28 29.0012H4V27.0012H28V29.0012ZM11 10.0012H6V15.0012H5V21.0012H4V27.0012H2V21.0012H3V15.0012H4V9.00122H6V8.00122H9V4.00122H11V10.0012ZM23 8.00122H26V9.00122H28V15.0012H29V21.0012H30V27.0012H28V21.0012H27V15.0012H26V10.0012H13V8.00122H21V4.00122H23V8.00122ZM19 21.0012H13V19.0012H19V21.0012ZM13 19.0012H11V17.0012H13V19.0012ZM21 19.0012H19V17.0012H21V19.0012ZM11 17.0012H9V13.0012H11V17.0012ZM23 17.0012H21V13.0012H23V17.0012ZM21 4.00122H11V2.00122H21V4.00122Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-train":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76971)">
+<path d="M12 28H20V26H12V28ZM7 24H5V6H7V24ZM27 24H25V6H27V24ZM22 15H10V8H22V15ZM12 13H20V10H12V13ZM13 6H7V4H13V6ZM19 4H17V6H15V4H13V2H19V4ZM25 6H19V4H25V6ZM22 28H27V30H5V28H10V26H7V24H25V26H22V28Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76971">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Navigate"},"nav-walk":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 30.0007H8V24.0007H10V30.0007ZM20 24.0007H21V28.0007H22V30.0007H19V24.0007H18V22.0007H20V24.0007ZM12 24.0007H10V22.0007H12V24.0007ZM14 22.0007H12V20.0007H14V22.0007ZM18 22.0007H16V20.0007H18V22.0007ZM16 20.0007H14V18.0007H16V20.0007ZM14 18.0007H12V10.0007H14V18.0007ZM18 18.0007H16V12.0007H18V18.0007ZM10 17.0007H8V10.0007H10V17.0007ZM24 16.0007H22V14.0007H24V16.0007ZM22 12.0007V14.0007H20V12.0007H22ZM20 12.0007H18V8.00073H20V12.0007ZM12 10.0007H10V8.00073H12V10.0007ZM18 8.00073H12V6.00073H18V8.00073ZM17.667 4.66772H15V2.00073H17.667V4.66772Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-zoom-in":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M25 25H23V23H25V25ZM23 23H21V21H23V23ZM17 21H9V19H17V21ZM21 21H19V19H21V21ZM9 19H7V17H9V19ZM19 19H17V17H19V19ZM7 17H5V9H7V17ZM14 12H17V14H14V17H12V14H9V12H12V9H14V12ZM21 17H19V9H21V17ZM9 9H7V7H9V9ZM19 9H17V7H19V9ZM17 7H9V5H17V7Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"nav-zoom-out":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M25 25H23V23H25V25ZM23 23H21V21H23V23ZM17 21H9V19H17V21ZM21 21H19V19H21V21ZM9 19H7V17H9V19ZM19 19H17V17H19V19ZM7 17H5V9H7V17ZM21 17H19V9H21V17ZM17 14H9V12H17V14ZM9 9H7V7H9V9ZM19 9H17V7H19V9ZM17 7H9V5H17V7Z" fill="currentColor"/>
+</svg>`,category:"Navigate"},"status-alert":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g opacity="0.9">
+<path d="M26 28H6V26H26V28ZM6 26H4V6H6V26ZM28 26H26V6H28V26ZM17 23H15V21H17V23ZM17 19H15V9H17V19ZM26 6H6V4H26V6Z" fill="currentColor"/>
+</g>
+</svg>`,category:"Status"},"status-archived-file":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M26 30H6V28H26V30ZM6 28H4V4H6V28ZM28 28H26V4H28V28ZM11 23H9V21H11V23ZM12 20H10V18H12V20ZM10 18H8V16H10V18ZM12 16H10V14H12V16ZM10 14H8V12H10V14ZM12 12H10V10H12V12ZM10 10H8V8H10V10ZM12 8H10V6H12V8ZM26 4H10V6H8V4H6V2H26V4Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-bad-pressed":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="26" y="8" width="2" height="10" fill="#7B7B7B"/>
+<rect x="24" y="8" width="2" height="10" fill="#7B7B7B"/>
+<rect x="24" y="18" width="2" height="2" fill="#7B7B7B"/>
+<rect x="20" y="18" width="2" height="2" fill="#7B7B7B"/>
+<rect x="12" y="20" width="8" height="2" fill="#7B7B7B"/>
+<rect x="12" y="22" width="6" height="2" fill="#7B7B7B"/>
+<rect x="10" y="24" width="6" height="2" fill="#7B7B7B"/>
+<rect x="10" y="26" width="4" height="2" fill="#7B7B7B"/>
+<rect x="10" y="28" width="2" height="2" fill="#7B7B7B"/>
+<rect x="3" y="12" width="2" height="6" fill="#7B7B7B"/>
+<rect x="5" y="12" width="17" height="6" fill="#7B7B7B"/>
+<rect x="7" y="8" width="15" height="4" fill="#7B7B7B"/>
+<rect x="5" y="8" width="2" height="4" fill="#7B7B7B"/>
+<rect x="7" y="6" width="2" height="2" fill="#7B7B7B"/>
+<rect x="20" y="6" width="2" height="2" fill="#7B7B7B"/>
+<rect x="9" y="4" width="11" height="2" fill="#7B7B7B"/>
+<rect x="9" y="6" width="11" height="2" fill="#7B7B7B"/>
+<rect x="5" y="18" width="15" height="2" fill="#7B7B7B"/>
+<rect x="8" y="24" width="2" height="4" fill="#7B7B7B"/>
+<rect x="10" y="22" width="2" height="2" fill="#7B7B7B"/>
+<rect x="24" y="6" width="2" height="2" fill="#7B7B7B"/>
+</svg>`,category:"Status"},"status-bad":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="26" y="8" width="2" height="10" fill="#7B7B7B"/>
+<rect x="22" y="8" width="2" height="10" fill="#7B7B7B"/>
+<rect x="24" y="18" width="2" height="2" fill="#7B7B7B"/>
+<rect x="20" y="18" width="2" height="2" fill="#7B7B7B"/>
+<rect x="18" y="20" width="2" height="2" fill="#7B7B7B"/>
+<rect x="16" y="22" width="2" height="2" fill="#7B7B7B"/>
+<rect x="14" y="24" width="2" height="2" fill="#7B7B7B"/>
+<rect x="12" y="26" width="2" height="2" fill="#7B7B7B"/>
+<rect x="10" y="28" width="2" height="2" fill="#7B7B7B"/>
+<rect x="3" y="12" width="2" height="6" fill="#7B7B7B"/>
+<rect x="5" y="8" width="2" height="4" fill="#7B7B7B"/>
+<rect x="7" y="6" width="2" height="2" fill="#7B7B7B"/>
+<rect x="20" y="6" width="2" height="2" fill="#7B7B7B"/>
+<rect x="9" y="4" width="11" height="2" fill="#7B7B7B"/>
+<rect x="5" y="18" width="9" height="2" fill="#7B7B7B"/>
+<rect x="8" y="24" width="2" height="4" fill="#7B7B7B"/>
+<rect x="10" y="20" width="2" height="4" fill="#7B7B7B"/>
+<rect x="24" y="6" width="2" height="2" fill="#7B7B7B"/>
+</svg>`,category:"Status"},"status-battery-50":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76761)">
+<path d="M26 24H3V22H26V24ZM3 22H1V10H3V22ZM28 13H30V19H28V22H26V10H28V13ZM8 20H6V12H8V20ZM13 20H11V12H13V20ZM26 10H3V8H26V10Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76761">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-battery-75":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76757)">
+<path d="M26 24H3V22H26V24ZM3 22H1V10H3V22ZM28 13H30V19H28V22H26V10H28V13ZM8 20H6V12H8V20ZM13 20H11V12H13V20ZM18 20H16V12H18V20ZM26 10H3V8H26V10Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76757">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-battery-dying":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76769)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3 22L26 22L26 24L3 24L3 22Z" fill="currentColor"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3 8L26 8L26 10L3 10L3 8Z" fill="currentColor"/>
+<rect x="26" y="10" width="2" height="12" fill="currentColor"/>
+<rect x="28" y="13" width="2" height="6" fill="currentColor"/>
+<rect x="1" y="10" width="2" height="12" fill="currentColor"/>
+<rect x="6" y="12" width="2" height="8" fill="#FF453A"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76769">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-battery-full":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76753)">
+<path d="M26 24H3V22H26V24ZM3 22H1V10H3V22ZM28 13H30V19H28V22H26V10H28V13ZM8 20H6V12H8V20ZM13 20H11V12H13V20ZM18 20H16V12H18V20ZM23 20H21V12H23V20ZM26 10H3V8H26V10Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76753">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-battery-low":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76765)">
+<path d="M26 24H3V22H26V24ZM3 22H1V10H3V22ZM28 13H30V19H28V22H26V10H28V13ZM8 20H6V12H8V20ZM26 10H3V8H26V10Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76765">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-bluetooth-disconnected":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19.9971 28.9971H17.9971V26.9971H19.9971V28.9971ZM21.9971 26.9971H19.9971V24.9971H21.9971V26.9971ZM17.9971 26.9951H15.9971V18H17.9971V26.9951ZM8 26H6V24H8V26ZM23.9971 24.9971H21.9971V22.9971H23.9971V24.9971ZM10 24H8V22H10V24ZM26 22.9971H24V20.9971H26V22.9971ZM12 22H10V20H12V22ZM23.9971 20.9971H21.9971V18.9971H23.9971V20.9971ZM14 20H12V18H14V20ZM14 14H12V12H14V14ZM19.9971 4.99707H21.9971V6.99707H19.9971V5H17.9971V14H15.9971V4.99707H17.9971V3H19.9971V4.99707ZM23.9971 12.9971H21.9971V10.9971H23.9971V12.9971ZM12 12H10V10H12V12ZM26 10.9971H24V8.99707H26V10.9971ZM10 10H8V8H10V10ZM23.9971 9H21.9971V7H23.9971V9ZM8 8H6V6H8V8Z" fill="#FF453A"/>
+</svg>`,category:"Status"},"status-bluetooth":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76741)">
+<path d="M19.998 28.9971H17.998V26.9971H19.998V28.9971ZM23.9971 24.999H21.998V26.9971H19.998V24.9971H21.9971V22.999H23.9971V24.999ZM17.998 14.999H19.998V16.9971H21.998V18.9971H19.998V16.999H17.998V26.9961H15.998V18H14V14H15.998V4.99902H17.998V14.999ZM8 26H6V24H8V26ZM10 24H8V22H10V24ZM26 22.9971H24V20.9971H26V22.9971ZM12 22H10V20H12V22ZM23.9971 20.999H21.9971V18.999H23.9971V20.999ZM14 20H12V18H14V20ZM21.998 15H19.998V13H21.998V15ZM14 14H12V12H14V14ZM23.9971 12.999H21.9971V10.999H23.9971V12.999ZM12 12H10V10H12V12ZM26 10.999H24V8.99902H26V10.999ZM10 10H8V8H10V10ZM23.9971 9H21.9971V7H23.9971V9ZM8 8H6V6H8V8ZM21.998 6.99902H19.998V4.99902H21.998V6.99902ZM19.998 5H17.998V3H19.998V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76741">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-brightness-auto":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 26H27V23H29V30H27V28H20V30H18V23H20V26ZM6 28H4V26H6V28ZM15 23H11V21H15V23ZM22 23H20V20H22V23ZM27 23H25V20H27V23ZM11 21H9V11H11V21ZM25 20H22V18H25V20ZM4 17H2V15H4V17ZM30 17H28V15H30V17ZM23 15H21V11H23V15ZM21 11H11V9H21V11ZM6 6H4V4H6V6ZM28 6H26V4H28V6ZM17 4H15V2H17V4Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-brightness":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 30H15V28H17V30ZM6 28H4V26H6V28ZM28 26V28H26V26H28ZM21 23H11V21H21V23ZM11 21H9V11H11V21ZM23 21H21V11H23V21ZM4 17H2V15H4V17ZM30 17H28V15H30V17ZM21 11H11V9H21V11ZM6 6H4V4H6V6ZM28 6H26V4H28V6ZM17 4H15V2H17V4Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-case-battery":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M28 26H18V24H28V26ZM14 24H4V22H14V24ZM18 24H16V19H18V24ZM30 20H31V23H30V24H28V19H30V20ZM4 18H14V20H4V22H2V9H4V18ZM28 19H18V17H28V19ZM18 16H14V14H18V16ZM30 15H28V9H30V15ZM28 9H4V7H28V9Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-case-charging":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M4 22L14 22L14 24L4 24L4 22Z" fill="currentColor"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M4 7L28 7L28 9L4 9L4 7Z" fill="currentColor"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M4 18L14 18L14 20L4 20L4 18Z" fill="currentColor"/>
+<rect x="2" y="9" width="2" height="13" fill="currentColor"/>
+<rect x="28" y="9" width="2" height="6" fill="currentColor"/>
+<rect x="14" y="14" width="4" height="2" fill="currentColor"/>
+<path d="M18 17H28V19H18V17Z" fill="currentColor"/>
+<path d="M18 19H28V24H18V19Z" fill="#FEF991"/>
+<path d="M18 24H28V26H18V24Z" fill="currentColor"/>
+<path d="M28 19H30V24H28V19Z" fill="currentColor"/>
+<path d="M30 20H31V23H30V20Z" fill="currentColor"/>
+<rect x="16" y="19" width="2" height="5" fill="currentColor"/>
+</svg>`,category:"Status"},"status-case":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M28 24H4V22H28V24ZM4 18H28V9H30V22H28V20H4V22H2V9H4V18ZM18 16H14V14H18V16ZM28 9H4V7H28V9Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-checkbox":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M23 25H9V23H23V25ZM9 23H7V9H9V23ZM25 23H23V9H25V23ZM23 9H9V7H23V9Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-checkmark":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 24H11V22H13V24ZM11 22H9V20H11V22ZM15 22H13V20H15V22ZM9 20H7V18H9V20ZM17 20H15V18H17V20ZM7 18H5V16H7V18ZM19 18H17V16H19V18ZM21 16H19V14H21V16ZM23 14H21V12H23V14ZM25 12H23V10H25V12ZM27 10H25V8H27V10Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-clickbox":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 23H11V21H21V23ZM11 21H9V11H11V21ZM23 21H21V11H23V21ZM21 11H11V9H21V11Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-complete":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76829)">
+<path d="M12 26H10V24H12V26ZM10 24H8V22H10V24ZM14 24H12V22H14V24ZM8 22H6V20H8V22ZM16 22H14V20H16V22ZM6 20H4V18H6V20ZM18 20H16V18H18V20ZM4 18H2V16H4V18ZM20 18H18V16H20V18ZM22 16H20V14H22V16ZM24 14H22V12H24V14ZM26 12H24V10H26V12ZM28 10H26V8H28V10ZM30 8H28V6H30V8Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76829">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-disconnected":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76733)">
+<path d="M25 29H20V27H25V29ZM7.00098 27H5.00098V25H7.00098V27ZM20 27H18V25H20V27ZM27 27H25V25H27V27ZM9.00098 25H7.00098V23H9.00098V25ZM18 25H16V23H18V25ZM29 25H27V20H29V25ZM11.001 23H9.00098V21H11.001V23ZM15 19H13.001V21H11.001V19H13V17H15V19ZM27 20H25V18H27V20ZM25 18H23V16H25V18ZM9 16H7V14H9V16ZM19 15H17V13H19V15ZM7 14H5V12H7V14ZM21.001 13H19.001V11H21.001V13ZM5 12H3V7H5V12ZM23.001 11H21.001V9H23.001V11ZM16 9H14V7H16V9ZM25.001 9H23.001V7H25.001V9ZM7 7H5V5H7V7ZM14 7H12V5H14V7ZM27.001 7H25.001V5H27.001V7ZM12 5H7V3H12V5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76733">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-display-adj-off":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="3" y="6" width="20" height="15" fill="#FEF991"/>
+<rect x="3" y="6" width="20" height="2" fill="currentColor"/>
+<rect x="3" y="20" width="20" height="2" fill="currentColor"/>
+<rect x="6" y="24" width="2" height="4" fill="currentColor"/>
+<rect x="27" y="16" width="4" height="2" fill="currentColor"/>
+<rect x="2" y="25" width="22" height="2" fill="currentColor"/>
+<rect x="28" y="7" width="2" height="14" fill="currentColor"/>
+<rect x="1" y="8" width="2" height="12" fill="currentColor"/>
+<rect x="23" y="8" width="2" height="12" fill="currentColor"/>
+</svg>`,category:"Status"},"status-dot":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76809)">
+<path d="M18 14H19V18H18V19H14V18H13V14H14V13H18V14Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76809">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-eye-closed":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 22H8V20H10V22ZM24 22H22V20H24V22ZM6 20H4V18H6V20ZM22 20H10V18H22V20ZM28 20H26V18H28V20ZM10 18H6V16H10V18ZM26 18H22V16H26V18ZM6 16H4V14H6V16ZM28 16H26V14H28V16ZM4 14H2V12H4V14ZM30 14H28V12H30V14ZM2 12H0V10H2V12ZM32 10V12H30V10H32Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-eye-open":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M22 25H10V23H22V25ZM10 23H6V21H10V23ZM26 23H22V21H26V23ZM6 21H4V19H6V21ZM19 21H13V19H19V21ZM28 21H26V19H28V21ZM4 19H2V17H4V19ZM13 19H11V13H13V19ZM21 19H19V13H21V19ZM30 19H28V17H30V19ZM2 17H0V15H2V17ZM32 15V17H30V15H32ZM4 15H2V13H4V15ZM30 15H28V13H30V15ZM6 13H4V11H6V13ZM19 13H13V11H19V13ZM28 13H26V11H28V13ZM10 11H6V9H10V11ZM26 11H22V9H26V11ZM22 9H10V7H22V9Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-faqs":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76781)">
+<path d="M26 28H6V26H26V28ZM6 26H4V6H6V26ZM28 26H26V6H28V26ZM17 24H15V22H17V24ZM17 21H15V16H17V21ZM19 16H17V14H19V16ZM13 14H11V10H13V14ZM21 14H19V10H21V14ZM19 10H13V8H19V10ZM26 6H6V4H26V6Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76781">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-fast":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15 20H17V22H18V24H21V23H23V25H21V26H9V24H16V22H15V21H13V19H15V20ZM9 24H7V22H6V20H4V18H7V16H9V18H8V22H9V24ZM27 23H23V21H27V23ZM30 19H29V21H27V19H28V15H30V19ZM4 18H2V14H4V18ZM20 12H21V14H20V16H18V15H11V16H9V15H7V14H4V12H7V13H9V14H11V13H18V14H19V12H18V10H20V12ZM28 15H26V13H28V15ZM26 13H24V11H26V13ZM24 11H22V9H24V11ZM18 10H16V7H18V10ZM22 9H20V7H22V9ZM20 7H18V5H20V7Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-fav":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="4" y="7" width="24" height="12" fill="#FEF991"/>
+<rect width="16" height="4" transform="matrix(1 0 0 -1 8 23)" fill="#FEF991"/>
+<rect x="12" y="23" width="8" height="4" fill="#FEF991"/>
+<rect x="7" y="5" width="8" height="4" fill="#FEF991"/>
+<rect x="18" y="5" width="8" height="4" fill="#FEF991"/>
+<rect x="8" y="3" width="5" height="2" fill="currentColor"/>
+<rect x="19" y="3" width="5" height="2" fill="currentColor"/>
+<rect x="2" y="9" width="2" height="8" fill="currentColor"/>
+<rect x="28" y="9" width="2" height="8" fill="currentColor"/>
+<rect x="15" y="7" width="2" height="2" fill="currentColor"/>
+<rect x="6" y="19" width="2" height="2" fill="currentColor"/>
+<rect x="4" y="17" width="2" height="2" fill="currentColor"/>
+<rect x="26" y="19" width="2" height="2" transform="rotate(90 26 19)" fill="currentColor"/>
+<rect x="28" y="17" width="2" height="2" transform="rotate(90 28 17)" fill="currentColor"/>
+<rect x="10" y="23" width="2" height="2" fill="currentColor"/>
+<rect x="8" y="21" width="2" height="2" fill="currentColor"/>
+<rect x="24" y="21" width="2" height="2" transform="rotate(90 24 21)" fill="currentColor"/>
+<rect x="12" y="25" width="2" height="2" fill="currentColor"/>
+<rect x="22" y="23" width="2" height="2" transform="rotate(90 22 23)" fill="currentColor"/>
+<rect x="20" y="25" width="2" height="2" transform="rotate(90 20 25)" fill="currentColor"/>
+<rect x="18" y="27" width="2" height="4" transform="rotate(90 18 27)" fill="currentColor"/>
+<rect x="13" y="5" width="2" height="2" fill="currentColor"/>
+<rect x="6" y="5" width="2" height="2" fill="currentColor"/>
+<rect x="24" y="5" width="2" height="2" fill="currentColor"/>
+<rect x="4" y="7" width="2" height="2" fill="currentColor"/>
+<rect x="26" y="7" width="2" height="2" fill="currentColor"/>
+<rect x="17" y="5" width="2" height="2" fill="currentColor"/>
+</svg>`,category:"Status"},"status-file":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76901)">
+<path d="M21 30H7V28H21V30ZM7 28H5V4H7V28ZM25 26H23V28H21V24H25V26ZM27 24H25V4H27V24ZM25 4H7V2H25V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76901">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-first-floor":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 29H6V27H8V29ZM12 29H10V27H12V29ZM16 29H14V27H16V29ZM20 29H18V27H20V29ZM24 29H22V27H24V29ZM28 29H26V27H28V29ZM6 27H4V25H6V27ZM10 27H8V25H10V27ZM14 27H12V25H14V27ZM18 27H16V25H18V27ZM22 27H20V25H22V27ZM26 27H24V25H26V27ZM8 25H6V23H8V25ZM12 25H10V23H12V25ZM16 25H14V23H16V25ZM20 25H18V23H20V25ZM24 25H22V23H24V25ZM28 25H26V23H28V25ZM6 23H4V21H6V23ZM10 23H8V21H10V23ZM14 23H12V21H14V23ZM18 23H16V21H18V23ZM22 23H20V21H22V23ZM26 23H24V21H26V23ZM8 21H6V19H8V21ZM12 21H10V19H12V21ZM16 21H14V19H16V21ZM20 21H18V19H20V21ZM24 21H22V19H24V21ZM28 21H26V19H28V21ZM30 17H2V15H30V17Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-glasses-battery":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M28 25H18V23H28V25ZM18 23H16V18H18V23ZM30 19H31V22H30V23H28V18H30V19ZM11.999 20.002H3.99902V18.002H11.999V20.002ZM17.999 12.002H18.001V14.002H14.001V18H12.001V14H14.001V9.99902H17.999V12.002ZM28 18H18V16H28V18ZM13.999 10H4V17.999H2V9.99902H3.99902V8H13.999V10ZM28.002 10H30V14H28V10H18.002V8H28.002V10Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-glasses-charging":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18 18H28V23H18V18Z" fill="#FEF991"/>
+<path d="M2 9.99854H4.00007V17.9988H2V9.99854Z" fill="currentColor"/>
+<path d="M18 16H28V18H18V16Z" fill="currentColor"/>
+<path d="M18 23H28V25H18V23Z" fill="currentColor"/>
+<path d="M15.999 9.99854H17.9991V13.9987H15.999V9.99854Z" fill="currentColor"/>
+<path d="M14.001 9.99854H16.001V13.9987H14.001V9.99854Z" fill="currentColor"/>
+<path d="M14.001 12.0015H18.0011V14.0015H14.001V12.0015Z" fill="currentColor"/>
+<path d="M12.001 14H14.001V18.0001H12.001V14Z" fill="currentColor"/>
+<path d="M28 10H30V14H28V10Z" fill="currentColor"/>
+<path d="M3.99902 8H13.9994V10.0001H3.99902V8Z" fill="currentColor"/>
+<path d="M18.002 8H28.0023V10.0001H18.002V8Z" fill="currentColor"/>
+<path d="M3.99902 18.0015H11.9993V20.0015H3.99902V18.0015Z" fill="currentColor"/>
+<path d="M28 18H30V23H28V18Z" fill="currentColor"/>
+<path d="M30 19H31V22H30V19Z" fill="currentColor"/>
+<rect x="16" y="18" width="2" height="5" fill="currentColor"/>
+</svg>`,category:"Status"},"status-glasses":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11.999 22.002H3.99902V20.002H11.999V22.002ZM28.001 22.002H20.001V20.002H28.001V22.002ZM18 14.002H18.001V16.002H14.002V20H12.002V16H14.001V11.999H18V14.002ZM20.002 20H18.002V16H20.002V20ZM13.999 12H4V19.999H2V11.999H3.99902V10H13.999V12ZM28.002 11.999H30V19.999H28V12H18.002V10H28.002V11.999Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-good-pressed":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="3" y="14" width="2" height="10" fill="#7B7B7B"/>
+<rect x="5" y="14" width="2" height="10" fill="#7B7B7B"/>
+<rect x="17" y="14" width="5" height="12" fill="#7B7B7B"/>
+<rect x="9" y="14" width="2" height="10" fill="#7B7B7B"/>
+<rect x="22" y="14" width="2" height="10" fill="#7B7B7B"/>
+<rect x="11" y="12" width="2" height="14" fill="#7B7B7B"/>
+<rect x="13" y="10" width="2" height="16" fill="#7B7B7B"/>
+<rect x="15" y="8" width="2" height="18" fill="#7B7B7B"/>
+<rect x="5" y="12" width="2" height="2" fill="#7B7B7B"/>
+<rect x="9" y="12" width="2" height="2" fill="#7B7B7B"/>
+<rect x="11" y="10" width="2" height="2" fill="#7B7B7B"/>
+<rect x="13" y="8" width="2" height="2" fill="#7B7B7B"/>
+<rect x="15" y="6" width="2" height="2" fill="#7B7B7B"/>
+<rect x="17" y="4" width="2" height="2" fill="#7B7B7B"/>
+<rect x="19" y="2" width="2" height="2" fill="#7B7B7B"/>
+<rect x="26" y="14" width="2" height="6" fill="#7B7B7B"/>
+<rect x="24" y="14" width="2" height="6" fill="#7B7B7B"/>
+<rect x="17" y="6" width="2" height="6" fill="#7B7B7B"/>
+<rect x="24" y="20" width="2" height="4" fill="#7B7B7B"/>
+<rect x="22" y="24" width="2" height="2" fill="#7B7B7B"/>
+<rect x="9" y="24" width="2" height="2" fill="#7B7B7B"/>
+<rect x="11" y="26" width="11" height="2" fill="#7B7B7B"/>
+<rect x="17" y="12" width="9" height="2" fill="#7B7B7B"/>
+<rect x="21" y="4" width="2" height="4" fill="#7B7B7B"/>
+<rect x="19" y="4" width="2" height="4" fill="#7B7B7B"/>
+<rect x="19" y="8" width="2" height="2" fill="#7B7B7B"/>
+<rect x="5" y="24" width="2" height="2" fill="#7B7B7B"/>
+</svg>`,category:"Status"},"status-good":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="3" y="14" width="2" height="10" fill="#7B7B7B"/>
+<rect x="7" y="14" width="2" height="10" fill="#7B7B7B"/>
+<rect x="5" y="12" width="2" height="2" fill="#7B7B7B"/>
+<rect x="9" y="12" width="2" height="2" fill="#7B7B7B"/>
+<rect x="11" y="10" width="2" height="2" fill="#7B7B7B"/>
+<rect x="13" y="8" width="2" height="2" fill="#7B7B7B"/>
+<rect x="15" y="6" width="2" height="2" fill="#7B7B7B"/>
+<rect x="17" y="4" width="2" height="2" fill="#7B7B7B"/>
+<rect x="19" y="2" width="2" height="2" fill="#7B7B7B"/>
+<rect x="26" y="14" width="2" height="6" fill="#7B7B7B"/>
+<rect x="24" y="20" width="2" height="4" fill="#7B7B7B"/>
+<rect x="22" y="24" width="2" height="2" fill="#7B7B7B"/>
+<rect x="9" y="24" width="2" height="2" fill="#7B7B7B"/>
+<rect x="11" y="26" width="11" height="2" fill="#7B7B7B"/>
+<rect x="17" y="12" width="9" height="2" fill="#7B7B7B"/>
+<rect x="21" y="4" width="2" height="4" fill="#7B7B7B"/>
+<rect x="19" y="8" width="2" height="4" fill="#7B7B7B"/>
+<rect x="5" y="24" width="2" height="2" fill="#7B7B7B"/>
+</svg>`,category:"Status"},"status-grabber":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76793)">
+<path d="M28 25H4V23H28V25ZM28 17H4V15H28V17ZM28 9H4V7H28V9Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76793">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-head-up":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M11.999 25.002H3.99902V23.002H11.999V25.002ZM28.001 25.002H20.001V23.002H28.001V25.002ZM18 17.002H18.001V19.002H14.002V23H12.002V19H14.001V14.999H18V17.002ZM20.002 23H18.002V19H20.002V23ZM13.999 15H4V22.999H2V14.999H3.99902V13H13.999V15ZM30 22.999H28V14.999H30V22.999ZM28 15H18V13H28V15ZM17 13H15V7H17V13ZM13 9H11V7H13V9ZM21 9H19V7H21V9ZM15 7H13V5H15V7ZM19 7H17V5H19V7ZM17 5H15V3H17V5Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-hint":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76920)">
+<path d="M13 11H19V13.0001H13V11Z" fill="currentColor"/>
+<path d="M13 19H19V21.0001H13V19Z" fill="currentColor"/>
+<path d="M19 13H21V19H19V13Z" fill="currentColor"/>
+<path d="M11 13H13V19H11V13Z" fill="currentColor"/>
+<path d="M13 13H19V19H13V13Z" fill="#FEF991"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76920">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-info":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76785)">
+<path d="M26 28H6V26H26V28ZM6 26H4V6H6V26ZM28 26H26V6H28V26ZM17 21H18V23H14V21H15V15H14V13H17V21ZM17 11H15V9H17V11ZM26 6H6V4H26V6Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76785">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-login":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76909)">
+<path d="M26 30H10V28H26V30ZM10 28H8V22H10V28ZM28 28H26V4H28V28ZM17 23H15V21H17V23ZM19 21H17V19H19V21ZM21 19H19V17H21V19ZM19 17H4V15H19V17ZM23 17H21V15H23V17ZM21 15H19V13H21V15ZM19 13H17V11H19V13ZM17 11H15V9H17V11ZM10 10H8V4H10V10ZM26 4H10V2H26V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76909">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-logout":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76913)">
+<path d="M20 30H6V28H20V30ZM6 28H4V4H6V28ZM22 28H20V21H22V28ZM26 23H24V21H26V23ZM28 21H26V19H28V21ZM30 19H28V17H30V19ZM28 17H11V15H28V17ZM32 17H30V15H32V17ZM30 15H28V13H30V15ZM28 13H26V11H28V13ZM22 11H20V4H22V11ZM26 11H24V9H26V11ZM20 4H6V2H20V4Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76913">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-more":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7 18H3V14H7V18ZM18 18H14V14H18V18ZM29 18H25V14H29V18Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-network-error":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M29 29H27V27H29V29ZM27 27H25V25H27V27ZM19 24H17V26H15V24H13V22H19V24ZM25 25H23V23H25V25ZM23 23H21V21H23V23ZM21 21H19V19H21V21ZM9 20H7V18H9V20ZM25 20H23V18H25V20ZM23 18H19V19H17V17H19V16H23V18ZM13 18H9V16H13V18ZM15 14H19V16H17V17H15V16H13V13H15V14ZM4 15H2V13H4V15ZM30 15H28V13H30V15ZM7 13H4V11H7V13ZM13 13H11V11H13V13ZM28 13H25V11H28V13ZM9 9H11V11H7V7H9V9ZM25 11H21V9H25V11ZM21 9H11V7H21V9ZM7 7H5V5H7V7ZM5 5H3V3H5V5Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-reset":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 24H2V22H12V24ZM30 22V24H22V22H30ZM14 22H12V20H14V22ZM22 22H20V20H22V22ZM16 20H14V18H16V20ZM20 20H18V18H20V20ZM18 18H16V16H18V18ZM8 16H6V14H8V16ZM16 16H14V14H16V16ZM20 16H18V14H20V16ZM6 14H4V12H6V14ZM14 14H12V12H14V14ZM22 14H20V12H22V14ZM4 12H2V10H4V12ZM12 12H6V10H12V12ZM30 12H22V10H30V12ZM6 10H4V8H6V10ZM8 8H6V6H8V8Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-saved":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76885)">
+<path d="M9 26H12V28H9V29H7V6H9V26ZM25 29H23V28H20V26H23V6H25V29ZM15 26H12V24H15V26ZM20 26H17V24H20V26ZM17 24H15V22H17V24ZM23 6H9V4H23V6Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76885">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-second-floor":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M30 17H2V15H30V17ZM8 13H6V11H8V13ZM12 13H10V11H12V13ZM16 13H14V11H16V13ZM20 13H18V11H20V13ZM24 13H22V11H24V13ZM28 13H26V11H28V13ZM6 11H4V9H6V11ZM10 11H8V9H10V11ZM14 11H12V9H14V11ZM18 11H16V9H18V11ZM22 11H20V9H22V11ZM26 11H24V9H26V11ZM8 9H6V7H8V9ZM12 9H10V7H12V9ZM16 9H14V7H16V9ZM20 9H18V7H20V9ZM24 9H22V7H24V9ZM28 9H26V7H28V9ZM6 7H4V5H6V7ZM10 7H8V5H10V7ZM14 7H12V5H14V7ZM18 7H16V5H18V7ZM22 7H20V5H22V7ZM26 7H24V5H26V7ZM8 5H6V3H8V5ZM12 5H10V3H12V5ZM16 5H14V3H16V5ZM20 5H18V3H20V5ZM24 5H22V3H24V5ZM28 5H26V3H28V5Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-sele":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M25 27H7V25H25V27ZM7 25H5V7H7V25ZM27 25H25V7H27V25ZM25 7H7V5H25V7Z" fill="#232323"/>
+</svg>`,category:"Status"},"status-selected-box":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M26 6H28V26H26V28H6V26H4V6H6V4H26V6ZM22 13H20V15H18V17H16V19H14V21H12V19H10V17H8V19H10V21H12V23H14V21H16V19H18V17H20V15H22V13H24V11H22V13Z" fill="#232323"/>
+</svg>`,category:"Status"},"status-selected":{svg:`<svg width="33" height="32" viewBox="0 0 33 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M21.333 23H11.333V21H21.333V23ZM11.333 21H9.33301V11H11.333V21ZM23.333 21H21.333V11H23.333V21ZM18.333 18H14.333V14H18.333V18ZM21.333 11H11.333V9H21.333V11Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-slow":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9 25H4V23H9V25ZM25 25H21V23H25V25ZM18 8H20V9H22V11H23V12H24V13H29V14H31V19H29V15H24V16H25V19H29V21H27V23H25V21H21V23H19V22H11V23H9V22H8V21H6V20H5V21H4V23H2V21H3V19H4V16H5V12H6V11H7V9H9V8H11V7H18V8ZM11 10H9V11H8V13H7V16H6V19H8V20H21V19H23V16H22V13H21V11H20V10H18V9H11V10Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-speaker-off":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 30H14V28H17V24H19V30ZM14 28H12V26H14V28ZM12 26H10V24H12V26ZM10 24H4V22H10V24ZM4 22H2V20H4V22ZM19 22H17V20H19V22ZM27 22H25V20H27V22ZM2 20H0V14H2V20ZM21 20H19V18H21V20ZM25 20H23V18H25V20ZM23 18H21V16H23V18ZM21 16H19V14H21V16ZM25 16H23V14H25V16ZM4 14H2V12H4V14ZM19 14H17V12H19V14ZM27 14H25V12H27V14ZM10 12H4V10H10V12ZM12 10H10V8H12V10ZM19 10H17V6H14V4H19V10ZM14 8H12V6H14V8Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-speaker-on":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 30H14V28H17V6H14V4H19V30ZM28 29H26V27H28V29ZM14 28H12V26H14V28ZM30 10H31V13H32V21H31V24H30V27H28V24H29V21H30V13H29V10H28V7H30V10ZM12 26H10V24H12V26ZM24 10H25V12H26V15H27V19H26V22H25V24H24V26H22V24H23V22H24V19H25V15H24V12H23V10H22V8H24V10ZM10 24H4V22H10V24ZM4 22H2V20H4V22ZM2 20H0V14H2V20ZM4 14H2V12H4V14ZM10 12H4V10H10V12ZM12 10H10V8H12V10ZM14 8H12V6H14V8ZM28 7H26V5H28V7Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-text-sizing":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 6H13V26H16V28H8V26H11V6H4V4H20V6ZM26 28H20V26H22V14H18V12H28V14H24V26H26V28ZM18 16H16V14H18V16ZM30 16H28V14H30V16ZM4 8H2V6H4V8ZM22 8H20V6H22V8Z" fill="currentColor"/>
+</svg>`,category:"Status"},"status-unbind":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76737)">
+<path d="M18 27H16V23H5V21H16V17H5V15H16V11H5V9H16V5H18V27ZM27 23H20V21H27V23ZM5 21H3V19H5V21ZM29 21H27V19H29V21ZM3 19H1V13H3V19ZM31 19H29V13H31V19ZM27 17H21V15H27V17ZM5 13H3V11H5V13ZM29 13H27V11H29V13ZM27 11H20V9H27V11Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76737">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-undisturb":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_10001_76749)">
+<path d="M14.001 25.5H22V27.5H14V25.5H10.001V23.5H14.001V25.5ZM24 25.5H22V23.5H24V25.5ZM10 23.5H8V19.5H10V23.5ZM22 23.5H18V21.5H22V23.5ZM18 21.5H16V19.5H18V21.5ZM8 12.5V19.5H6V12.5H8ZM16 19.5H14V12.5H16V19.5ZM18 12.5H16V10.5H18V12.5ZM10 12.499H8V8.49902H10V12.499ZM22 10.499H18V8.49902H22V10.499ZM14 8.5H10V6.5H14V8.5ZM24 8.5H22V6.5H24V8.5ZM22 6.5H14V4.5H22V6.5Z" fill="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_10001_76749">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>`,category:"Status"},"status-unfav":{svg:`<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18 29H14V27H18V29ZM14 27H12V25H14V27ZM20 27H18V25H20V27ZM12 25H10V23H12V25ZM22 25H20V23H22V25ZM10 23H8V21H10V23ZM24 23H22V21H24V23ZM8 21H6V19H8V21ZM26 21H24V19H26V21ZM6 19H4V17H6V19ZM28 19H26V17H28V19ZM4 17H2V9H4V17ZM30 17H28V9H30V17ZM6 9H4V7H6V9ZM17 9H15V7H17V9ZM28 9H26V7H28V9ZM8 7H6V5H8V7ZM15 7H13V5H15V7ZM19 7H17V5H19V7ZM26 7H24V5H26V7ZM13 5H8V3H13V5ZM24 5H19V3H24V5Z" fill="currentColor"/>
+</svg>`,category:"Status"}},x7=Object.keys(A7);x7.length;const B0=e=>typeof e=="boolean"?`${e}`:e===0?"0":e,D0=Ug,N1=(e,t)=>i=>{var n;if((t==null?void 0:t.variants)==null)return D0(e,i==null?void 0:i.class,i==null?void 0:i.className);const{variants:l,defaultVariants:s}=t,a=Object.keys(l).map(d=>{const v=i==null?void 0:i[d],Z=s==null?void 0:s[d];if(v===null)return null;const V=B0(v)||B0(Z);return l[d][V]}),o=i&&Object.entries(i).reduce((d,v)=>{let[Z,V]=v;return V===void 0||(d[Z]=V),d},{}),c=t==null||(n=t.compoundVariants)===null||n===void 0?void 0:n.reduce((d,v)=>{let{class:Z,className:V,...b}=v;return Object.entries(b).every(C=>{let[O,R]=C;return Array.isArray(R)?R.includes({...s,...o}[O]):{...s,...o}[O]===R})?[...d,Z,V]:d},[]);return D0(e,a,c,i==null?void 0:i.class,i==null?void 0:i.className)},C7=N1("inline-flex items-center justify-center gap-4 rounded-[6px] font-normal transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none text-[17px] tracking-[-0.17px]",{variants:{variant:{highlight:"bg-accent text-text-highlight hover:opacity-90",default:"bg-surface text-text hover:bg-surface-light",ghost:"text-text-dim hover:text-text hover:bg-surface-light",danger:"bg-surface text-negative hover:bg-surface-light",secondary:"bg-surface-light text-text-dim hover:text-text hover:bg-surface-lighter"},size:{sm:"h-9 px-4 text-[15px] tracking-[-0.15px]",default:"h-12 px-4",lg:"h-12 px-6",icon:"h-9 w-9 text-[15px]"}},defaultVariants:{variant:"highlight",size:"default"}}),mc=mt.forwardRef(({className:e,variant:t,size:i,type:n="button",...l},s)=>Y.jsx("button",{ref:s,type:n,className:Ee(C7({variant:t,size:i,className:e})),...l}));mc.displayName="Button";const O7=N1("rounded-[6px] bg-surface",{variants:{variant:{default:"",elevated:"shadow-lg shadow-black/12",interactive:"transition-colors hover:bg-surface-light cursor-pointer"},padding:{none:"p-0",sm:"p-3",default:"p-4",lg:"p-6"}},defaultVariants:{variant:"default",padding:"default"}}),i3=mt.forwardRef(({className:e,variant:t,padding:i,...n},l)=>Y.jsx("div",{ref:l,className:Ee(O7({variant:t,padding:i,className:e})),...n}));i3.displayName="Card";const N7=N1("inline-flex items-center rounded-[6px] px-2 py-0.5 text-[11px] tracking-[-0.11px] font-normal",{variants:{variant:{positive:"bg-positive-alpha text-positive",negative:"bg-negative-alpha text-negative",accent:"bg-accent-alpha text-accent",neutral:"bg-surface-light text-text-dim"}},defaultVariants:{variant:"neutral"}}),R7=mt.forwardRef(({className:e,variant:t,...i},n)=>Y.jsx("span",{ref:n,className:Ee(N7({variant:t,className:e})),...i}));R7.displayName="Badge";const B7=mt.forwardRef(({className:e,type:t="text",...i},n)=>Y.jsx("input",{ref:n,type:t,className:Ee("h-9 w-full bg-input-bg text-text rounded-[6px] px-4 text-[17px] tracking-[-0.17px] outline-none placeholder:text-text-dim transition-colors",e),...i}));B7.displayName="Input";const D7=mt.forwardRef(({className:e,rows:t=3,...i},n)=>Y.jsx("textarea",{ref:n,rows:t,className:Ee("w-full bg-input-bg text-text rounded-[6px] px-4 py-3 text-[17px] tracking-[-0.17px] outline-none placeholder:text-text-dim transition-colors resize-none",e),...i}));D7.displayName="Textarea";const L7=mt.forwardRef(({value:e,className:t,...i},n)=>Y.jsx("div",{ref:n,className:Ee("h-1 w-full rounded-full bg-surface-lighter overflow-hidden",t),...i,children:Y.jsx("div",{className:"h-full rounded-full bg-accent transition-all duration-500 ease-out",style:{width:`${Math.min(100,Math.max(0,e))}%`}})}));L7.displayName="Progress";const k7=mt.forwardRef(({className:e,...t},i)=>Y.jsx("div",{ref:i,className:"w-full overflow-x-auto rounded-[6px] bg-surface",children:Y.jsx("table",{className:Ee("w-full border-collapse text-[15px] tracking-[-0.15px]",e),...t})}));k7.displayName="Table";const I7=mt.forwardRef(({className:e,...t},i)=>Y.jsx("thead",{ref:i,className:Ee("bg-surface-light/50",e),...t}));I7.displayName="TableHeader";const z7=mt.forwardRef(({className:e,...t},i)=>Y.jsx("tbody",{ref:i,className:Ee("",e),...t}));z7.displayName="TableBody";const U7=mt.forwardRef(({className:e,...t},i)=>Y.jsx("tr",{ref:i,className:Ee("transition-colors hover:bg-surface-light border-b border-border/50 last:border-0",e),...t}));U7.displayName="TableRow";const j7=mt.forwardRef(({className:e,...t},i)=>Y.jsx("th",{ref:i,className:Ee("text-left text-text-dim font-normal px-4 py-3 text-[13px] tracking-[-0.13px] whitespace-nowrap",e),...t}));j7.displayName="TableHead";const P7=mt.forwardRef(({className:e,...t},i)=>Y.jsx("td",{ref:i,className:Ee("px-4 py-3 tabular-nums whitespace-nowrap",e),...t}));P7.displayName="TableCell";const G7=mt.forwardRef(({className:e,placeholder:t="Search...",...i},n)=>Y.jsxs("div",{className:Ee("relative",e),children:[Y.jsx(T7,{className:"absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-text-dim pointer-events-none"}),Y.jsx("input",{ref:n,type:"search",placeholder:t,className:"h-9 w-full bg-input-bg text-text rounded-[6px] pl-11 pr-4 text-[17px] tracking-[-0.17px] outline-none placeholder:text-text-dim transition-colors",...i})]}));G7.displayName="SearchBar";Array.from({length:24},(e,t)=>t);mt.createContext(null);Y.jsx("svg",{width:"20",height:"20",viewBox:"0 0 20 20",fill:"none",xmlns:"http://www.w3.org/2000/svg",children:Y.jsx("path",{d:"M12.5 15L7.5 10L12.5 5",stroke:"currentColor",strokeWidth:"1.5",strokeLinecap:"round",strokeLinejoin:"round"})});const q7=()=>{};var L0={};/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const n3=function(e){const t=[];let i=0;for(let n=0;n<e.length;n++){let l=e.charCodeAt(n);l<128?t[i++]=l:l<2048?(t[i++]=l>>6|192,t[i++]=l&63|128):(l&64512)===55296&&n+1<e.length&&(e.charCodeAt(n+1)&64512)===56320?(l=65536+((l&1023)<<10)+(e.charCodeAt(++n)&1023),t[i++]=l>>18|240,t[i++]=l>>12&63|128,t[i++]=l>>6&63|128,t[i++]=l&63|128):(t[i++]=l>>12|224,t[i++]=l>>6&63|128,t[i++]=l&63|128)}return t},Y7=function(e){const t=[];let i=0,n=0;for(;i<e.length;){const l=e[i++];if(l<128)t[n++]=String.fromCharCode(l);else if(l>191&&l<224){const s=e[i++];t[n++]=String.fromCharCode((l&31)<<6|s&63)}else if(l>239&&l<365){const s=e[i++],a=e[i++],o=e[i++],c=((l&7)<<18|(s&63)<<12|(a&63)<<6|o&63)-65536;t[n++]=String.fromCharCode(55296+(c>>10)),t[n++]=String.fromCharCode(56320+(c&1023))}else{const s=e[i++],a=e[i++];t[n++]=String.fromCharCode((l&15)<<12|(s&63)<<6|a&63)}}return t.join("")},l3={byteToCharMap_:null,charToByteMap_:null,byteToCharMapWebSafe_:null,charToByteMapWebSafe_:null,ENCODED_VALS_BASE:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",get ENCODED_VALS(){return this.ENCODED_VALS_BASE+"+/="},get ENCODED_VALS_WEBSAFE(){return this.ENCODED_VALS_BASE+"-_."},HAS_NATIVE_SUPPORT:typeof atob=="function",encodeByteArray(e,t){if(!Array.isArray(e))throw Error("encodeByteArray takes an array as a parameter");this.init_();const i=t?this.byteToCharMapWebSafe_:this.byteToCharMap_,n=[];for(let l=0;l<e.length;l+=3){const s=e[l],a=l+1<e.length,o=a?e[l+1]:0,c=l+2<e.length,d=c?e[l+2]:0,v=s>>2,Z=(s&3)<<4|o>>4;let V=(o&15)<<2|d>>6,b=d&63;c||(b=64,a||(V=64)),n.push(i[v],i[Z],i[V],i[b])}return n.join("")},encodeString(e,t){return this.HAS_NATIVE_SUPPORT&&!t?btoa(e):this.encodeByteArray(n3(e),t)},decodeString(e,t){return this.HAS_NATIVE_SUPPORT&&!t?atob(e):Y7(this.decodeStringToByteArray(e,t))},decodeStringToByteArray(e,t){this.init_();const i=t?this.charToByteMapWebSafe_:this.charToByteMap_,n=[];for(let l=0;l<e.length;){const s=i[e.charAt(l++)],o=l<e.length?i[e.charAt(l)]:0;++l;const d=l<e.length?i[e.charAt(l)]:64;++l;const Z=l<e.length?i[e.charAt(l)]:64;if(++l,s==null||o==null||d==null||Z==null)throw new X7;const V=s<<2|o>>4;if(n.push(V),d!==64){const b=o<<4&240|d>>2;if(n.push(b),Z!==64){const C=d<<6&192|Z;n.push(C)}}}return n},init_(){if(!this.byteToCharMap_){this.byteToCharMap_={},this.charToByteMap_={},this.byteToCharMapWebSafe_={},this.charToByteMapWebSafe_={};for(let e=0;e<this.ENCODED_VALS.length;e++)this.byteToCharMap_[e]=this.ENCODED_VALS.charAt(e),this.charToByteMap_[this.byteToCharMap_[e]]=e,this.byteToCharMapWebSafe_[e]=this.ENCODED_VALS_WEBSAFE.charAt(e),this.charToByteMapWebSafe_[this.byteToCharMapWebSafe_[e]]=e,e>=this.ENCODED_VALS_BASE.length&&(this.charToByteMap_[this.ENCODED_VALS_WEBSAFE.charAt(e)]=e,this.charToByteMapWebSafe_[this.ENCODED_VALS.charAt(e)]=e)}}};class X7 extends Error{constructor(){super(...arguments),this.name="DecodeBase64StringError"}}const F7=function(e){const t=n3(e);return l3.encodeByteArray(t,!0)},Eo=function(e){return F7(e).replace(/\./g,"")},s3=function(e){try{return l3.decodeString(e,!0)}catch(t){console.error("base64Decode failed: ",t)}return null};/**
+ * @license
+ * Copyright 2022 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function K7(){if(typeof self<"u")return self;if(typeof window<"u")return window;if(typeof global<"u")return global;throw new Error("Unable to locate global object.")}/**
+ * @license
+ * Copyright 2022 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Q7=()=>K7().__FIREBASE_DEFAULTS__,J7=()=>{if(typeof process>"u"||typeof L0>"u")return;const e=L0.__FIREBASE_DEFAULTS__;if(e)return JSON.parse(e)},$7=()=>{if(typeof document>"u")return;let e;try{e=document.cookie.match(/__FIREBASE_DEFAULTS__=([^;]+)/)}catch{return}const t=e&&s3(e[1]);return t&&JSON.parse(t)},R1=()=>{try{return q7()||Q7()||J7()||$7()}catch(e){console.info(`Unable to get __FIREBASE_DEFAULTS__ due to: ${e}`);return}},r3=e=>{var t,i;return(i=(t=R1())===null||t===void 0?void 0:t.emulatorHosts)===null||i===void 0?void 0:i[e]},a3=e=>{const t=r3(e);if(!t)return;const i=t.lastIndexOf(":");if(i<=0||i+1===t.length)throw new Error(`Invalid host ${t} with no separate hostname and port!`);const n=parseInt(t.substring(i+1),10);return t[0]==="["?[t.substring(1,i-1),n]:[t.substring(0,i),n]},o3=()=>{var e;return(e=R1())===null||e===void 0?void 0:e.config},u3=e=>{var t;return(t=R1())===null||t===void 0?void 0:t[`_${e}`]};/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class W7{constructor(){this.reject=()=>{},this.resolve=()=>{},this.promise=new Promise((t,i)=>{this.resolve=t,this.reject=i})}wrapCallback(t){return(i,n)=>{i?this.reject(i):this.resolve(n),typeof t=="function"&&(this.promise.catch(()=>{}),t.length===1?t(i):t(i,n))}}}/**
+ * @license
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function dl(e){try{return(e.startsWith("http://")||e.startsWith("https://")?new URL(e).hostname:e).endsWith(".cloudworkstations.dev")}catch{return!1}}async function n2(e){return(await fetch(e,{credentials:"include"})).ok}/**
+ * @license
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function tM(e,t){if(e.uid)throw new Error('The "uid" field is no longer supported by mockUserToken. Please use "sub" instead for Firebase Auth User ID.');const i={alg:"none",type:"JWT"},n=t||"demo-project",l=e.iat||0,s=e.sub||e.user_id;if(!s)throw new Error("mockUserToken must contain 'sub' or 'user_id' field!");const a=Object.assign({iss:`https://securetoken.google.com/${n}`,aud:n,iat:l,exp:l+3600,auth_time:l,sub:s,user_id:s,firebase:{sign_in_provider:"custom",identities:{}}},e);return[Eo(JSON.stringify(i)),Eo(JSON.stringify(a)),""].join(".")}const lr={};function eM(){const e={prod:[],emulator:[]};for(const t of Object.keys(lr))lr[t]?e.emulator.push(t):e.prod.push(t);return e}function iM(e){let t=document.getElementById(e),i=!1;return t||(t=document.createElement("div"),t.setAttribute("id",e),i=!0),{created:i,element:t}}let k0=!1;function B1(e,t){if(typeof window>"u"||typeof document>"u"||!dl(window.location.host)||lr[e]===t||lr[e]||k0)return;lr[e]=t;function i(V){return`__firebase__banner__${V}`}const n="__firebase__banner",s=eM().prod.length>0;function a(){const V=document.getElementById(n);V&&V.remove()}function o(V){V.style.display="flex",V.style.background="#7faaf0",V.style.position="fixed",V.style.bottom="5px",V.style.left="5px",V.style.padding=".5em",V.style.borderRadius="5px",V.style.alignItems="center"}function c(V,b){V.setAttribute("width","24"),V.setAttribute("id",b),V.setAttribute("height","24"),V.setAttribute("viewBox","0 0 24 24"),V.setAttribute("fill","none"),V.style.marginLeft="-6px"}function d(){const V=document.createElement("span");return V.style.cursor="pointer",V.style.marginLeft="16px",V.style.fontSize="24px",V.innerHTML=" &times;",V.onclick=()=>{k0=!0,a()},V}function v(V,b){V.setAttribute("id",b),V.innerText="Learn more",V.href="https://firebase.google.com/docs/studio/preview-apps#preview-backend",V.setAttribute("target","__blank"),V.style.paddingLeft="5px",V.style.textDecoration="underline"}function Z(){const V=iM(n),b=i("text"),C=document.getElementById(b)||document.createElement("span"),O=i("learnmore"),R=document.getElementById(O)||document.createElement("a"),w=i("preprendIcon"),m=document.getElementById(w)||document.createElementNS("http://www.w3.org/2000/svg","svg");if(V.created){const _=V.element;o(_),v(R,O);const A=d();c(m,w),_.append(m,C,R,A),document.body.appendChild(_)}s?(C.innerText="Preview backend disconnected.",m.innerHTML=`<g clip-path="url(#clip0_6013_33858)">
+<path d="M4.8 17.6L12 5.6L19.2 17.6H4.8ZM6.91667 16.4H17.0833L12 7.93333L6.91667 16.4ZM12 15.6C12.1667 15.6 12.3056 15.5444 12.4167 15.4333C12.5389 15.3111 12.6 15.1667 12.6 15C12.6 14.8333 12.5389 14.6944 12.4167 14.5833C12.3056 14.4611 12.1667 14.4 12 14.4C11.8333 14.4 11.6889 14.4611 11.5667 14.5833C11.4556 14.6944 11.4 14.8333 11.4 15C11.4 15.1667 11.4556 15.3111 11.5667 15.4333C11.6889 15.5444 11.8333 15.6 12 15.6ZM11.4 13.6H12.6V10.4H11.4V13.6Z" fill="#212121"/>
+</g>
+<defs>
+<clipPath id="clip0_6013_33858">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>`):(m.innerHTML=`<g clip-path="url(#clip0_6083_34804)">
+<path d="M11.4 15.2H12.6V11.2H11.4V15.2ZM12 10C12.1667 10 12.3056 9.94444 12.4167 9.83333C12.5389 9.71111 12.6 9.56667 12.6 9.4C12.6 9.23333 12.5389 9.09444 12.4167 8.98333C12.3056 8.86111 12.1667 8.8 12 8.8C11.8333 8.8 11.6889 8.86111 11.5667 8.98333C11.4556 9.09444 11.4 9.23333 11.4 9.4C11.4 9.56667 11.4556 9.71111 11.5667 9.83333C11.6889 9.94444 11.8333 10 12 10ZM12 18.4C11.1222 18.4 10.2944 18.2333 9.51667 17.9C8.73889 17.5667 8.05556 17.1111 7.46667 16.5333C6.88889 15.9444 6.43333 15.2611 6.1 14.4833C5.76667 13.7056 5.6 12.8778 5.6 12C5.6 11.1111 5.76667 10.2833 6.1 9.51667C6.43333 8.73889 6.88889 8.06111 7.46667 7.48333C8.05556 6.89444 8.73889 6.43333 9.51667 6.1C10.2944 5.76667 11.1222 5.6 12 5.6C12.8889 5.6 13.7167 5.76667 14.4833 6.1C15.2611 6.43333 15.9389 6.89444 16.5167 7.48333C17.1056 8.06111 17.5667 8.73889 17.9 9.51667C18.2333 10.2833 18.4 11.1111 18.4 12C18.4 12.8778 18.2333 13.7056 17.9 14.4833C17.5667 15.2611 17.1056 15.9444 16.5167 16.5333C15.9389 17.1111 15.2611 17.5667 14.4833 17.9C13.7167 18.2333 12.8889 18.4 12 18.4ZM12 17.2C13.4444 17.2 14.6722 16.6944 15.6833 15.6833C16.6944 14.6722 17.2 13.4444 17.2 12C17.2 10.5556 16.6944 9.32778 15.6833 8.31667C14.6722 7.30555 13.4444 6.8 12 6.8C10.5556 6.8 9.32778 7.30555 8.31667 8.31667C7.30556 9.32778 6.8 10.5556 6.8 12C6.8 13.4444 7.30556 14.6722 8.31667 15.6833C9.32778 16.6944 10.5556 17.2 12 17.2Z" fill="#212121"/>
+</g>
+<defs>
+<clipPath id="clip0_6083_34804">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>`,C.innerText="Preview backend running in this workspace."),C.setAttribute("id",b)}document.readyState==="loading"?window.addEventListener("DOMContentLoaded",Z):Z()}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function se(){return typeof navigator<"u"&&typeof navigator.userAgent=="string"?navigator.userAgent:""}function nM(){return typeof window<"u"&&!!(window.cordova||window.phonegap||window.PhoneGap)&&/ios|iphone|ipod|ipad|android|blackberry|iemobile/i.test(se())}function lM(){return typeof navigator<"u"&&navigator.userAgent==="Cloudflare-Workers"}function sM(){const e=typeof chrome=="object"?chrome.runtime:typeof browser=="object"?browser.runtime:void 0;return typeof e=="object"&&e.id!==void 0}function rM(){return typeof navigator=="object"&&navigator.product==="ReactNative"}function aM(){const e=se();return e.indexOf("MSIE ")>=0||e.indexOf("Trident/")>=0}function oM(){try{return typeof indexedDB=="object"}catch{return!1}}function uM(){return new Promise((e,t)=>{try{let i=!0;const n="validate-browser-context-for-indexeddb-analytics-module",l=self.indexedDB.open(n);l.onsuccess=()=>{l.result.close(),i||self.indexedDB.deleteDatabase(n),e(!0)},l.onupgradeneeded=()=>{i=!1},l.onerror=()=>{var s;t(((s=l.error)===null||s===void 0?void 0:s.message)||"")}}catch(i){t(i)}})}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const cM="FirebaseError";class ai extends Error{constructor(t,i,n){super(i),this.code=t,this.customData=n,this.name=cM,Object.setPrototypeOf(this,ai.prototype),Error.captureStackTrace&&Error.captureStackTrace(this,zr.prototype.create)}}class zr{constructor(t,i,n){this.service=t,this.serviceName=i,this.errors=n}create(t,...i){const n=i[0]||{},l=`${this.service}/${t}`,s=this.errors[t],a=s?hM(s,n):"Error",o=`${this.serviceName}: ${a} (${l}).`;return new ai(l,o,n)}}function hM(e,t){return e.replace(fM,(i,n)=>{const l=t[n];return l!=null?String(l):`<${n}?>`})}const fM=/\{\$([^}]+)}/g;function dM(e){for(const t in e)if(Object.prototype.hasOwnProperty.call(e,t))return!1;return!0}function Sn(e,t){if(e===t)return!0;const i=Object.keys(e),n=Object.keys(t);for(const l of i){if(!n.includes(l))return!1;const s=e[l],a=t[l];if(I0(s)&&I0(a)){if(!Sn(s,a))return!1}else if(s!==a)return!1}for(const l of n)if(!i.includes(l))return!1;return!0}function I0(e){return e!==null&&typeof e=="object"}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Ur(e){const t=[];for(const[i,n]of Object.entries(e))Array.isArray(n)?n.forEach(l=>{t.push(encodeURIComponent(i)+"="+encodeURIComponent(l))}):t.push(encodeURIComponent(i)+"="+encodeURIComponent(n));return t.length?"&"+t.join("&"):""}function HM(e,t){const i=new VM(e,t);return i.subscribe.bind(i)}class VM{constructor(t,i){this.observers=[],this.unsubscribes=[],this.observerCount=0,this.task=Promise.resolve(),this.finalized=!1,this.onNoObservers=i,this.task.then(()=>{t(this)}).catch(n=>{this.error(n)})}next(t){this.forEachObserver(i=>{i.next(t)})}error(t){this.forEachObserver(i=>{i.error(t)}),this.close(t)}complete(){this.forEachObserver(t=>{t.complete()}),this.close()}subscribe(t,i,n){let l;if(t===void 0&&i===void 0&&n===void 0)throw new Error("Missing Observer.");gM(t,["next","error","complete"])?l=t:l={next:t,error:i,complete:n},l.next===void 0&&(l.next=du),l.error===void 0&&(l.error=du),l.complete===void 0&&(l.complete=du);const s=this.unsubscribeOne.bind(this,this.observers.length);return this.finalized&&this.task.then(()=>{try{this.finalError?l.error(this.finalError):l.complete()}catch{}}),this.observers.push(l),s}unsubscribeOne(t){this.observers===void 0||this.observers[t]===void 0||(delete this.observers[t],this.observerCount-=1,this.observerCount===0&&this.onNoObservers!==void 0&&this.onNoObservers(this))}forEachObserver(t){if(!this.finalized)for(let i=0;i<this.observers.length;i++)this.sendOne(i,t)}sendOne(t,i){this.task.then(()=>{if(this.observers!==void 0&&this.observers[t]!==void 0)try{i(this.observers[t])}catch(n){typeof console<"u"&&console.error&&console.error(n)}})}close(t){this.finalized||(this.finalized=!0,t!==void 0&&(this.finalError=t),this.task.then(()=>{this.observers=void 0,this.onNoObservers=void 0}))}}function gM(e,t){if(typeof e!="object"||e===null)return!1;for(const i of t)if(i in e&&typeof e[i]=="function")return!0;return!1}function du(){}/**
+ * @license
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Fe(e){return e&&e._delegate?e._delegate:e}class En{constructor(t,i,n){this.name=t,this.instanceFactory=i,this.type=n,this.multipleInstances=!1,this.serviceProps={},this.instantiationMode="LAZY",this.onInstanceCreated=null}setInstantiationMode(t){return this.instantiationMode=t,this}setMultipleInstances(t){return this.multipleInstances=t,this}setServiceProps(t){return this.serviceProps=t,this}setInstanceCreatedCallback(t){return this.onInstanceCreated=t,this}}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const jn="[DEFAULT]";/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class pM{constructor(t,i){this.name=t,this.container=i,this.component=null,this.instances=new Map,this.instancesDeferred=new Map,this.instancesOptions=new Map,this.onInitCallbacks=new Map}get(t){const i=this.normalizeInstanceIdentifier(t);if(!this.instancesDeferred.has(i)){const n=new W7;if(this.instancesDeferred.set(i,n),this.isInitialized(i)||this.shouldAutoInitialize())try{const l=this.getOrInitializeService({instanceIdentifier:i});l&&n.resolve(l)}catch{}}return this.instancesDeferred.get(i).promise}getImmediate(t){var i;const n=this.normalizeInstanceIdentifier(t==null?void 0:t.identifier),l=(i=t==null?void 0:t.optional)!==null&&i!==void 0?i:!1;if(this.isInitialized(n)||this.shouldAutoInitialize())try{return this.getOrInitializeService({instanceIdentifier:n})}catch(s){if(l)return null;throw s}else{if(l)return null;throw Error(`Service ${this.name} is not available`)}}getComponent(){return this.component}setComponent(t){if(t.name!==this.name)throw Error(`Mismatching Component ${t.name} for Provider ${this.name}.`);if(this.component)throw Error(`Component for ${this.name} has already been provided`);if(this.component=t,!!this.shouldAutoInitialize()){if(vM(t))try{this.getOrInitializeService({instanceIdentifier:jn})}catch{}for(const[i,n]of this.instancesDeferred.entries()){const l=this.normalizeInstanceIdentifier(i);try{const s=this.getOrInitializeService({instanceIdentifier:l});n.resolve(s)}catch{}}}}clearInstance(t=jn){this.instancesDeferred.delete(t),this.instancesOptions.delete(t),this.instances.delete(t)}async delete(){const t=Array.from(this.instances.values());await Promise.all([...t.filter(i=>"INTERNAL"in i).map(i=>i.INTERNAL.delete()),...t.filter(i=>"_delete"in i).map(i=>i._delete())])}isComponentSet(){return this.component!=null}isInitialized(t=jn){return this.instances.has(t)}getOptions(t=jn){return this.instancesOptions.get(t)||{}}initialize(t={}){const{options:i={}}=t,n=this.normalizeInstanceIdentifier(t.instanceIdentifier);if(this.isInitialized(n))throw Error(`${this.name}(${n}) has already been initialized`);if(!this.isComponentSet())throw Error(`Component ${this.name} has not been registered yet`);const l=this.getOrInitializeService({instanceIdentifier:n,options:i});for(const[s,a]of this.instancesDeferred.entries()){const o=this.normalizeInstanceIdentifier(s);n===o&&a.resolve(l)}return l}onInit(t,i){var n;const l=this.normalizeInstanceIdentifier(i),s=(n=this.onInitCallbacks.get(l))!==null&&n!==void 0?n:new Set;s.add(t),this.onInitCallbacks.set(l,s);const a=this.instances.get(l);return a&&t(a,l),()=>{s.delete(t)}}invokeOnInitCallbacks(t,i){const n=this.onInitCallbacks.get(i);if(n)for(const l of n)try{l(t,i)}catch{}}getOrInitializeService({instanceIdentifier:t,options:i={}}){let n=this.instances.get(t);if(!n&&this.component&&(n=this.component.instanceFactory(this.container,{instanceIdentifier:mM(t),options:i}),this.instances.set(t,n),this.instancesOptions.set(t,i),this.invokeOnInitCallbacks(n,t),this.component.onInstanceCreated))try{this.component.onInstanceCreated(this.container,t,n)}catch{}return n||null}normalizeInstanceIdentifier(t=jn){return this.component?this.component.multipleInstances?t:jn:t}shouldAutoInitialize(){return!!this.component&&this.component.instantiationMode!=="EXPLICIT"}}function mM(e){return e===jn?void 0:e}function vM(e){return e.instantiationMode==="EAGER"}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class MM{constructor(t){this.name=t,this.providers=new Map}addComponent(t){const i=this.getProvider(t.name);if(i.isComponentSet())throw new Error(`Component ${t.name} has already been registered with ${this.name}`);i.setComponent(t)}addOrOverwriteComponent(t){this.getProvider(t.name).isComponentSet()&&this.providers.delete(t.name),this.addComponent(t)}getProvider(t){if(this.providers.has(t))return this.providers.get(t);const i=new pM(t,this);return this.providers.set(t,i),i}getProviders(){return Array.from(this.providers.values())}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */var rt;(function(e){e[e.DEBUG=0]="DEBUG",e[e.VERBOSE=1]="VERBOSE",e[e.INFO=2]="INFO",e[e.WARN=3]="WARN",e[e.ERROR=4]="ERROR",e[e.SILENT=5]="SILENT"})(rt||(rt={}));const yM={debug:rt.DEBUG,verbose:rt.VERBOSE,info:rt.INFO,warn:rt.WARN,error:rt.ERROR,silent:rt.SILENT},wM=rt.INFO,ZM={[rt.DEBUG]:"log",[rt.VERBOSE]:"log",[rt.INFO]:"info",[rt.WARN]:"warn",[rt.ERROR]:"error"},_M=(e,t,...i)=>{if(t<e.logLevel)return;const n=new Date().toISOString(),l=ZM[t];if(l)console[l](`[${n}]  ${e.name}:`,...i);else throw new Error(`Attempted to log a message with an invalid logType (value: ${t})`)};class D1{constructor(t){this.name=t,this._logLevel=wM,this._logHandler=_M,this._userLogHandler=null}get logLevel(){return this._logLevel}set logLevel(t){if(!(t in rt))throw new TypeError(`Invalid value "${t}" assigned to \`logLevel\``);this._logLevel=t}setLogLevel(t){this._logLevel=typeof t=="string"?yM[t]:t}get logHandler(){return this._logHandler}set logHandler(t){if(typeof t!="function")throw new TypeError("Value assigned to `logHandler` must be a function");this._logHandler=t}get userLogHandler(){return this._userLogHandler}set userLogHandler(t){this._userLogHandler=t}debug(...t){this._userLogHandler&&this._userLogHandler(this,rt.DEBUG,...t),this._logHandler(this,rt.DEBUG,...t)}log(...t){this._userLogHandler&&this._userLogHandler(this,rt.VERBOSE,...t),this._logHandler(this,rt.VERBOSE,...t)}info(...t){this._userLogHandler&&this._userLogHandler(this,rt.INFO,...t),this._logHandler(this,rt.INFO,...t)}warn(...t){this._userLogHandler&&this._userLogHandler(this,rt.WARN,...t),this._logHandler(this,rt.WARN,...t)}error(...t){this._userLogHandler&&this._userLogHandler(this,rt.ERROR,...t),this._logHandler(this,rt.ERROR,...t)}}const bM=(e,t)=>t.some(i=>e instanceof i);let z0,U0;function SM(){return z0||(z0=[IDBDatabase,IDBObjectStore,IDBIndex,IDBCursor,IDBTransaction])}function EM(){return U0||(U0=[IDBCursor.prototype.advance,IDBCursor.prototype.continue,IDBCursor.prototype.continuePrimaryKey])}const c3=new WeakMap,vc=new WeakMap,h3=new WeakMap,Hu=new WeakMap,L1=new WeakMap;function TM(e){const t=new Promise((i,n)=>{const l=()=>{e.removeEventListener("success",s),e.removeEventListener("error",a)},s=()=>{i(vn(e.result)),l()},a=()=>{n(e.error),l()};e.addEventListener("success",s),e.addEventListener("error",a)});return t.then(i=>{i instanceof IDBCursor&&c3.set(i,e)}).catch(()=>{}),L1.set(t,e),t}function AM(e){if(vc.has(e))return;const t=new Promise((i,n)=>{const l=()=>{e.removeEventListener("complete",s),e.removeEventListener("error",a),e.removeEventListener("abort",a)},s=()=>{i(),l()},a=()=>{n(e.error||new DOMException("AbortError","AbortError")),l()};e.addEventListener("complete",s),e.addEventListener("error",a),e.addEventListener("abort",a)});vc.set(e,t)}let Mc={get(e,t,i){if(e instanceof IDBTransaction){if(t==="done")return vc.get(e);if(t==="objectStoreNames")return e.objectStoreNames||h3.get(e);if(t==="store")return i.objectStoreNames[1]?void 0:i.objectStore(i.objectStoreNames[0])}return vn(e[t])},set(e,t,i){return e[t]=i,!0},has(e,t){return e instanceof IDBTransaction&&(t==="done"||t==="store")?!0:t in e}};function xM(e){Mc=e(Mc)}function CM(e){return e===IDBDatabase.prototype.transaction&&!("objectStoreNames"in IDBTransaction.prototype)?function(t,...i){const n=e.call(Vu(this),t,...i);return h3.set(n,t.sort?t.sort():[t]),vn(n)}:EM().includes(e)?function(...t){return e.apply(Vu(this),t),vn(c3.get(this))}:function(...t){return vn(e.apply(Vu(this),t))}}function OM(e){return typeof e=="function"?CM(e):(e instanceof IDBTransaction&&AM(e),bM(e,SM())?new Proxy(e,Mc):e)}function vn(e){if(e instanceof IDBRequest)return TM(e);if(Hu.has(e))return Hu.get(e);const t=OM(e);return t!==e&&(Hu.set(e,t),L1.set(t,e)),t}const Vu=e=>L1.get(e);function NM(e,t,{blocked:i,upgrade:n,blocking:l,terminated:s}={}){const a=indexedDB.open(e,t),o=vn(a);return n&&a.addEventListener("upgradeneeded",c=>{n(vn(a.result),c.oldVersion,c.newVersion,vn(a.transaction),c)}),i&&a.addEventListener("blocked",c=>i(c.oldVersion,c.newVersion,c)),o.then(c=>{s&&c.addEventListener("close",()=>s()),l&&c.addEventListener("versionchange",d=>l(d.oldVersion,d.newVersion,d))}).catch(()=>{}),o}const RM=["get","getKey","getAll","getAllKeys","count"],BM=["put","add","delete","clear"],gu=new Map;function j0(e,t){if(!(e instanceof IDBDatabase&&!(t in e)&&typeof t=="string"))return;if(gu.get(t))return gu.get(t);const i=t.replace(/FromIndex$/,""),n=t!==i,l=BM.includes(i);if(!(i in(n?IDBIndex:IDBObjectStore).prototype)||!(l||RM.includes(i)))return;const s=async function(a,...o){const c=this.transaction(a,l?"readwrite":"readonly");let d=c.store;return n&&(d=d.index(o.shift())),(await Promise.all([d[i](...o),l&&c.done]))[0]};return gu.set(t,s),s}xM(e=>({...e,get:(t,i,n)=>j0(t,i)||e.get(t,i,n),has:(t,i)=>!!j0(t,i)||e.has(t,i)}));/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class DM{constructor(t){this.container=t}getPlatformInfoString(){return this.container.getProviders().map(i=>{if(LM(i)){const n=i.getImmediate();return`${n.library}/${n.version}`}else return null}).filter(i=>i).join(" ")}}function LM(e){const t=e.getComponent();return(t==null?void 0:t.type)==="VERSION"}const yc="@firebase/app",P0="0.13.2";/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Di=new D1("@firebase/app"),kM="@firebase/app-compat",IM="@firebase/analytics-compat",zM="@firebase/analytics",UM="@firebase/app-check-compat",jM="@firebase/app-check",PM="@firebase/auth",GM="@firebase/auth-compat",qM="@firebase/database",YM="@firebase/data-connect",XM="@firebase/database-compat",FM="@firebase/functions",KM="@firebase/functions-compat",QM="@firebase/installations",JM="@firebase/installations-compat",$M="@firebase/messaging",WM="@firebase/messaging-compat",ty="@firebase/performance",ey="@firebase/performance-compat",iy="@firebase/remote-config",ny="@firebase/remote-config-compat",ly="@firebase/storage",sy="@firebase/storage-compat",ry="@firebase/firestore",ay="@firebase/ai",oy="@firebase/firestore-compat",uy="firebase",cy="11.10.0";/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const wc="[DEFAULT]",hy={[yc]:"fire-core",[kM]:"fire-core-compat",[zM]:"fire-analytics",[IM]:"fire-analytics-compat",[jM]:"fire-app-check",[UM]:"fire-app-check-compat",[PM]:"fire-auth",[GM]:"fire-auth-compat",[qM]:"fire-rtdb",[YM]:"fire-data-connect",[XM]:"fire-rtdb-compat",[FM]:"fire-fn",[KM]:"fire-fn-compat",[QM]:"fire-iid",[JM]:"fire-iid-compat",[$M]:"fire-fcm",[WM]:"fire-fcm-compat",[ty]:"fire-perf",[ey]:"fire-perf-compat",[iy]:"fire-rc",[ny]:"fire-rc-compat",[ly]:"fire-gcs",[sy]:"fire-gcs-compat",[ry]:"fire-fst",[oy]:"fire-fst-compat",[ay]:"fire-vertex","fire-js":"fire-js",[uy]:"fire-js-all"};/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Zr=new Map,fy=new Map,Zc=new Map;function G0(e,t){try{e.container.addComponent(t)}catch(i){Di.debug(`Component ${t.name} failed to register with FirebaseApp ${e.name}`,i)}}function ll(e){const t=e.name;if(Zc.has(t))return Di.debug(`There were multiple attempts to register component ${t}.`),!1;Zc.set(t,e);for(const i of Zr.values())G0(i,e);for(const i of fy.values())G0(i,e);return!0}function jr(e,t){const i=e.container.getProvider("heartbeat").getImmediate({optional:!0});return i&&i.triggerHeartbeat(),e.container.getProvider(t)}function ve(e){return e==null?!1:e.settings!==void 0}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const dy={"no-app":"No Firebase App '{$appName}' has been created - call initializeApp() first","bad-app-name":"Illegal App name: '{$appName}'","duplicate-app":"Firebase App named '{$appName}' already exists with different options or config","app-deleted":"Firebase App named '{$appName}' already deleted","server-app-deleted":"Firebase Server App has been deleted","no-options":"Need to provide options, when not being deployed to hosting via source.","invalid-app-argument":"firebase.{$appName}() takes either no argument or a Firebase App instance.","invalid-log-argument":"First argument to `onLog` must be null or a function.","idb-open":"Error thrown when opening IndexedDB. Original error: {$originalErrorMessage}.","idb-get":"Error thrown when reading from IndexedDB. Original error: {$originalErrorMessage}.","idb-set":"Error thrown when writing to IndexedDB. Original error: {$originalErrorMessage}.","idb-delete":"Error thrown when deleting from IndexedDB. Original error: {$originalErrorMessage}.","finalization-registry-not-supported":"FirebaseServerApp deleteOnDeref field defined but the JS runtime does not support FinalizationRegistry.","invalid-server-app-environment":"FirebaseServerApp is not for use in browser environments."},Mn=new zr("app","Firebase",dy);/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Hy{constructor(t,i,n){this._isDeleted=!1,this._options=Object.assign({},t),this._config=Object.assign({},i),this._name=i.name,this._automaticDataCollectionEnabled=i.automaticDataCollectionEnabled,this._container=n,this.container.addComponent(new En("app",()=>this,"PUBLIC"))}get automaticDataCollectionEnabled(){return this.checkDestroyed(),this._automaticDataCollectionEnabled}set automaticDataCollectionEnabled(t){this.checkDestroyed(),this._automaticDataCollectionEnabled=t}get name(){return this.checkDestroyed(),this._name}get options(){return this.checkDestroyed(),this._options}get config(){return this.checkDestroyed(),this._config}get container(){return this._container}get isDeleted(){return this._isDeleted}set isDeleted(t){this._isDeleted=t}checkDestroyed(){if(this.isDeleted)throw Mn.create("app-deleted",{appName:this._name})}}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Vs=cy;function f3(e,t={}){let i=e;typeof t!="object"&&(t={name:t});const n=Object.assign({name:wc,automaticDataCollectionEnabled:!0},t),l=n.name;if(typeof l!="string"||!l)throw Mn.create("bad-app-name",{appName:String(l)});if(i||(i=o3()),!i)throw Mn.create("no-options");const s=Zr.get(l);if(s){if(Sn(i,s.options)&&Sn(n,s.config))return s;throw Mn.create("duplicate-app",{appName:l})}const a=new MM(l);for(const c of Zc.values())a.addComponent(c);const o=new Hy(i,n,a);return Zr.set(l,o),o}function k1(e=wc){const t=Zr.get(e);if(!t&&e===wc&&o3())return f3();if(!t)throw Mn.create("no-app",{appName:e});return t}function q0(){return Array.from(Zr.values())}function ii(e,t,i){var n;let l=(n=hy[e])!==null&&n!==void 0?n:e;i&&(l+=`-${i}`);const s=l.match(/\s|\//),a=t.match(/\s|\//);if(s||a){const o=[`Unable to register library "${l}" with version "${t}":`];s&&o.push(`library name "${l}" contains illegal characters (whitespace or "/")`),s&&a&&o.push("and"),a&&o.push(`version name "${t}" contains illegal characters (whitespace or "/")`),Di.warn(o.join(" "));return}ll(new En(`${l}-version`,()=>({library:l,version:t}),"VERSION"))}/**
+ * @license
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Vy="firebase-heartbeat-database",gy=1,_r="firebase-heartbeat-store";let pu=null;function d3(){return pu||(pu=NM(Vy,gy,{upgrade:(e,t)=>{switch(t){case 0:try{e.createObjectStore(_r)}catch(i){console.warn(i)}}}}).catch(e=>{throw Mn.create("idb-open",{originalErrorMessage:e.message})})),pu}async function py(e){try{const i=(await d3()).transaction(_r),n=await i.objectStore(_r).get(H3(e));return await i.done,n}catch(t){if(t instanceof ai)Di.warn(t.message);else{const i=Mn.create("idb-get",{originalErrorMessage:t==null?void 0:t.message});Di.warn(i.message)}}}async function Y0(e,t){try{const n=(await d3()).transaction(_r,"readwrite");await n.objectStore(_r).put(t,H3(e)),await n.done}catch(i){if(i instanceof ai)Di.warn(i.message);else{const n=Mn.create("idb-set",{originalErrorMessage:i==null?void 0:i.message});Di.warn(n.message)}}}function H3(e){return`${e.name}!${e.options.appId}`}/**
+ * @license
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const my=1024,vy=30;class My{constructor(t){this.container=t,this._heartbeatsCache=null;const i=this.container.getProvider("app").getImmediate();this._storage=new wy(i),this._heartbeatsCachePromise=this._storage.read().then(n=>(this._heartbeatsCache=n,n))}async triggerHeartbeat(){var t,i;try{const l=this.container.getProvider("platform-logger").getImmediate().getPlatformInfoString(),s=X0();if(((t=this._heartbeatsCache)===null||t===void 0?void 0:t.heartbeats)==null&&(this._heartbeatsCache=await this._heartbeatsCachePromise,((i=this._heartbeatsCache)===null||i===void 0?void 0:i.heartbeats)==null)||this._heartbeatsCache.lastSentHeartbeatDate===s||this._heartbeatsCache.heartbeats.some(a=>a.date===s))return;if(this._heartbeatsCache.heartbeats.push({date:s,agent:l}),this._heartbeatsCache.heartbeats.length>vy){const a=Zy(this._heartbeatsCache.heartbeats);this._heartbeatsCache.heartbeats.splice(a,1)}return this._storage.overwrite(this._heartbeatsCache)}catch(n){Di.warn(n)}}async getHeartbeatsHeader(){var t;try{if(this._heartbeatsCache===null&&await this._heartbeatsCachePromise,((t=this._heartbeatsCache)===null||t===void 0?void 0:t.heartbeats)==null||this._heartbeatsCache.heartbeats.length===0)return"";const i=X0(),{heartbeatsToSend:n,unsentEntries:l}=yy(this._heartbeatsCache.heartbeats),s=Eo(JSON.stringify({version:2,heartbeats:n}));return this._heartbeatsCache.lastSentHeartbeatDate=i,l.length>0?(this._heartbeatsCache.heartbeats=l,await this._storage.overwrite(this._heartbeatsCache)):(this._heartbeatsCache.heartbeats=[],this._storage.overwrite(this._heartbeatsCache)),s}catch(i){return Di.warn(i),""}}}function X0(){return new Date().toISOString().substring(0,10)}function yy(e,t=my){const i=[];let n=e.slice();for(const l of e){const s=i.find(a=>a.agent===l.agent);if(s){if(s.dates.push(l.date),F0(i)>t){s.dates.pop();break}}else if(i.push({agent:l.agent,dates:[l.date]}),F0(i)>t){i.pop();break}n=n.slice(1)}return{heartbeatsToSend:i,unsentEntries:n}}class wy{constructor(t){this.app=t,this._canUseIndexedDBPromise=this.runIndexedDBEnvironmentCheck()}async runIndexedDBEnvironmentCheck(){return oM()?uM().then(()=>!0).catch(()=>!1):!1}async read(){if(await this._canUseIndexedDBPromise){const i=await py(this.app);return i!=null&&i.heartbeats?i:{heartbeats:[]}}else return{heartbeats:[]}}async overwrite(t){var i;if(await this._canUseIndexedDBPromise){const l=await this.read();return Y0(this.app,{lastSentHeartbeatDate:(i=t.lastSentHeartbeatDate)!==null&&i!==void 0?i:l.lastSentHeartbeatDate,heartbeats:t.heartbeats})}else return}async add(t){var i;if(await this._canUseIndexedDBPromise){const l=await this.read();return Y0(this.app,{lastSentHeartbeatDate:(i=t.lastSentHeartbeatDate)!==null&&i!==void 0?i:l.lastSentHeartbeatDate,heartbeats:[...l.heartbeats,...t.heartbeats]})}else return}}function F0(e){return Eo(JSON.stringify({version:2,heartbeats:e})).length}function Zy(e){if(e.length===0)return-1;let t=0,i=e[0].date;for(let n=1;n<e.length;n++)e[n].date<i&&(i=e[n].date,t=n);return t}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function _y(e){ll(new En("platform-logger",t=>new DM(t),"PRIVATE")),ll(new En("heartbeat",t=>new My(t),"PRIVATE")),ii(yc,P0,e),ii(yc,P0,"esm2017"),ii("fire-js","")}_y("");function I1(e,t){var i={};for(var n in e)Object.prototype.hasOwnProperty.call(e,n)&&t.indexOf(n)<0&&(i[n]=e[n]);if(e!=null&&typeof Object.getOwnPropertySymbols=="function")for(var l=0,n=Object.getOwnPropertySymbols(e);l<n.length;l++)t.indexOf(n[l])<0&&Object.prototype.propertyIsEnumerable.call(e,n[l])&&(i[n[l]]=e[n[l]]);return i}function V3(){return{"dependent-sdk-initialized-before-auth":"Another Firebase SDK was initialized and is trying to use Auth before Auth is initialized. Please be sure to call `initializeAuth` or `getAuth` before starting any other Firebase SDK."}}const by=V3,g3=new zr("auth","Firebase",V3());/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const To=new D1("@firebase/auth");function Sy(e,...t){To.logLevel<=rt.WARN&&To.warn(`Auth (${Vs}): ${e}`,...t)}function qa(e,...t){To.logLevel<=rt.ERROR&&To.error(`Auth (${Vs}): ${e}`,...t)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function li(e,...t){throw U1(e,...t)}function qe(e,...t){return U1(e,...t)}function z1(e,t,i){const n=Object.assign(Object.assign({},by()),{[t]:i});return new zr("auth","Firebase",n).create(t,{appName:e.name})}function yn(e){return z1(e,"operation-not-supported-in-this-environment","Operations that alter the current user are not supported in conjunction with FirebaseServerApp")}function p3(e,t,i){const n=i;if(!(t instanceof n))throw n.name!==t.constructor.name&&li(e,"argument-error"),z1(e,"argument-error",`Type of ${t.constructor.name} does not match expected instance.Did you pass a reference from a different Auth SDK?`)}function U1(e,...t){if(typeof e!="string"){const i=t[0],n=[...t.slice(1)];return n[0]&&(n[0].appName=e.name),e._errorFactory.create(i,...n)}return g3.create(e,...t)}function q(e,t,...i){if(!e)throw U1(t,...i)}function Si(e){const t="INTERNAL ASSERTION FAILED: "+e;throw qa(t),new Error(t)}function Li(e,t){e||Si(t)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function _c(){var e;return typeof self<"u"&&((e=self.location)===null||e===void 0?void 0:e.href)||""}function Ey(){return K0()==="http:"||K0()==="https:"}function K0(){var e;return typeof self<"u"&&((e=self.location)===null||e===void 0?void 0:e.protocol)||null}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Ty(){return typeof navigator<"u"&&navigator&&"onLine"in navigator&&typeof navigator.onLine=="boolean"&&(Ey()||sM()||"connection"in navigator)?navigator.onLine:!0}function Ay(){if(typeof navigator>"u")return null;const e=navigator;return e.languages&&e.languages[0]||e.language||null}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Pr{constructor(t,i){this.shortDelay=t,this.longDelay=i,Li(i>t,"Short delay should be less than long delay!"),this.isMobile=nM()||rM()}get(){return Ty()?this.isMobile?this.longDelay:this.shortDelay:Math.min(5e3,this.shortDelay)}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function j1(e,t){Li(e.emulator,"Emulator should always be set here");const{url:i}=e.emulator;return t?`${i}${t.startsWith("/")?t.slice(1):t}`:i}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class m3{static initialize(t,i,n){this.fetchImpl=t,i&&(this.headersImpl=i),n&&(this.responseImpl=n)}static fetch(){if(this.fetchImpl)return this.fetchImpl;if(typeof self<"u"&&"fetch"in self)return self.fetch;if(typeof globalThis<"u"&&globalThis.fetch)return globalThis.fetch;if(typeof fetch<"u")return fetch;Si("Could not find fetch implementation, make sure you call FetchProvider.initialize() with an appropriate polyfill")}static headers(){if(this.headersImpl)return this.headersImpl;if(typeof self<"u"&&"Headers"in self)return self.Headers;if(typeof globalThis<"u"&&globalThis.Headers)return globalThis.Headers;if(typeof Headers<"u")return Headers;Si("Could not find Headers implementation, make sure you call FetchProvider.initialize() with an appropriate polyfill")}static response(){if(this.responseImpl)return this.responseImpl;if(typeof self<"u"&&"Response"in self)return self.Response;if(typeof globalThis<"u"&&globalThis.Response)return globalThis.Response;if(typeof Response<"u")return Response;Si("Could not find Response implementation, make sure you call FetchProvider.initialize() with an appropriate polyfill")}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const xy={CREDENTIAL_MISMATCH:"custom-token-mismatch",MISSING_CUSTOM_TOKEN:"internal-error",INVALID_IDENTIFIER:"invalid-email",MISSING_CONTINUE_URI:"internal-error",INVALID_PASSWORD:"wrong-password",MISSING_PASSWORD:"missing-password",INVALID_LOGIN_CREDENTIALS:"invalid-credential",EMAIL_EXISTS:"email-already-in-use",PASSWORD_LOGIN_DISABLED:"operation-not-allowed",INVALID_IDP_RESPONSE:"invalid-credential",INVALID_PENDING_TOKEN:"invalid-credential",FEDERATED_USER_ID_ALREADY_LINKED:"credential-already-in-use",MISSING_REQ_TYPE:"internal-error",EMAIL_NOT_FOUND:"user-not-found",RESET_PASSWORD_EXCEED_LIMIT:"too-many-requests",EXPIRED_OOB_CODE:"expired-action-code",INVALID_OOB_CODE:"invalid-action-code",MISSING_OOB_CODE:"internal-error",CREDENTIAL_TOO_OLD_LOGIN_AGAIN:"requires-recent-login",INVALID_ID_TOKEN:"invalid-user-token",TOKEN_EXPIRED:"user-token-expired",USER_NOT_FOUND:"user-token-expired",TOO_MANY_ATTEMPTS_TRY_LATER:"too-many-requests",PASSWORD_DOES_NOT_MEET_REQUIREMENTS:"password-does-not-meet-requirements",INVALID_CODE:"invalid-verification-code",INVALID_SESSION_INFO:"invalid-verification-id",INVALID_TEMPORARY_PROOF:"invalid-credential",MISSING_SESSION_INFO:"missing-verification-id",SESSION_EXPIRED:"code-expired",MISSING_ANDROID_PACKAGE_NAME:"missing-android-pkg-name",UNAUTHORIZED_DOMAIN:"unauthorized-continue-uri",INVALID_OAUTH_CLIENT_ID:"invalid-oauth-client-id",ADMIN_ONLY_OPERATION:"admin-restricted-operation",INVALID_MFA_PENDING_CREDENTIAL:"invalid-multi-factor-session",MFA_ENROLLMENT_NOT_FOUND:"multi-factor-info-not-found",MISSING_MFA_ENROLLMENT_ID:"missing-multi-factor-info",MISSING_MFA_PENDING_CREDENTIAL:"missing-multi-factor-session",SECOND_FACTOR_EXISTS:"second-factor-already-in-use",SECOND_FACTOR_LIMIT_EXCEEDED:"maximum-second-factor-count-exceeded",BLOCKING_FUNCTION_ERROR_RESPONSE:"internal-error",RECAPTCHA_NOT_ENABLED:"recaptcha-not-enabled",MISSING_RECAPTCHA_TOKEN:"missing-recaptcha-token",INVALID_RECAPTCHA_TOKEN:"invalid-recaptcha-token",INVALID_RECAPTCHA_ACTION:"invalid-recaptcha-action",MISSING_CLIENT_TYPE:"missing-client-type",MISSING_RECAPTCHA_VERSION:"missing-recaptcha-version",INVALID_RECAPTCHA_VERSION:"invalid-recaptcha-version",INVALID_REQ_TYPE:"invalid-req-type"};/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Cy=["/v1/accounts:signInWithCustomToken","/v1/accounts:signInWithEmailLink","/v1/accounts:signInWithIdp","/v1/accounts:signInWithPassword","/v1/accounts:signInWithPhoneNumber","/v1/token"],Oy=new Pr(3e4,6e4);function P1(e,t){return e.tenantId&&!t.tenantId?Object.assign(Object.assign({},t),{tenantId:e.tenantId}):t}async function gs(e,t,i,n,l={}){return v3(e,l,async()=>{let s={},a={};n&&(t==="GET"?a=n:s={body:JSON.stringify(n)});const o=Ur(Object.assign({key:e.config.apiKey},a)).slice(1),c=await e._getAdditionalHeaders();c["Content-Type"]="application/json",e.languageCode&&(c["X-Firebase-Locale"]=e.languageCode);const d=Object.assign({method:t,headers:c},s);return lM()||(d.referrerPolicy="no-referrer"),e.emulatorConfig&&dl(e.emulatorConfig.host)&&(d.credentials="include"),m3.fetch()(await M3(e,e.config.apiHost,i,o),d)})}async function v3(e,t,i){e._canInitEmulator=!1;const n=Object.assign(Object.assign({},xy),t);try{const l=new Ry(e),s=await Promise.race([i(),l.promise]);l.clearNetworkTimeout();const a=await s.json();if("needConfirmation"in a)throw Sa(e,"account-exists-with-different-credential",a);if(s.ok&&!("errorMessage"in a))return a;{const o=s.ok?a.errorMessage:a.error.message,[c,d]=o.split(" : ");if(c==="FEDERATED_USER_ID_ALREADY_LINKED")throw Sa(e,"credential-already-in-use",a);if(c==="EMAIL_EXISTS")throw Sa(e,"email-already-in-use",a);if(c==="USER_DISABLED")throw Sa(e,"user-disabled",a);const v=n[c]||c.toLowerCase().replace(/[_\s]+/g,"-");if(d)throw z1(e,v,d);li(e,v)}}catch(l){if(l instanceof ai)throw l;li(e,"network-request-failed",{message:String(l)})}}async function Ny(e,t,i,n,l={}){const s=await gs(e,t,i,n,l);return"mfaPendingCredential"in s&&li(e,"multi-factor-auth-required",{_serverResponse:s}),s}async function M3(e,t,i,n){const l=`${t}${i}?${n}`,s=e,a=s.config.emulator?j1(e.config,l):`${e.config.apiScheme}://${l}`;return Cy.includes(i)&&(await s._persistenceManagerAvailable,s._getPersistenceType()==="COOKIE")?s._getPersistence()._getFinalTarget(a).toString():a}class Ry{clearNetworkTimeout(){clearTimeout(this.timer)}constructor(t){this.auth=t,this.timer=null,this.promise=new Promise((i,n)=>{this.timer=setTimeout(()=>n(qe(this.auth,"network-request-failed")),Oy.get())})}}function Sa(e,t,i){const n={appName:e.name};i.email&&(n.email=i.email),i.phoneNumber&&(n.phoneNumber=i.phoneNumber);const l=qe(e,t,n);return l.customData._tokenResponse=i,l}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function By(e,t){return gs(e,"POST","/v1/accounts:delete",t)}async function Ao(e,t){return gs(e,"POST","/v1/accounts:lookup",t)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function sr(e){if(e)try{const t=new Date(Number(e));if(!isNaN(t.getTime()))return t.toUTCString()}catch{}}async function Dy(e,t=!1){const i=Fe(e),n=await i.getIdToken(t),l=G1(n);q(l&&l.exp&&l.auth_time&&l.iat,i.auth,"internal-error");const s=typeof l.firebase=="object"?l.firebase:void 0,a=s==null?void 0:s.sign_in_provider;return{claims:l,token:n,authTime:sr(mu(l.auth_time)),issuedAtTime:sr(mu(l.iat)),expirationTime:sr(mu(l.exp)),signInProvider:a||null,signInSecondFactor:(s==null?void 0:s.sign_in_second_factor)||null}}function mu(e){return Number(e)*1e3}function G1(e){const[t,i,n]=e.split(".");if(t===void 0||i===void 0||n===void 0)return qa("JWT malformed, contained fewer than 3 sections"),null;try{const l=s3(i);return l?JSON.parse(l):(qa("Failed to decode base64 JWT payload"),null)}catch(l){return qa("Caught error parsing JWT payload as JSON",l==null?void 0:l.toString()),null}}function Q0(e){const t=G1(e);return q(t,"internal-error"),q(typeof t.exp<"u","internal-error"),q(typeof t.iat<"u","internal-error"),Number(t.exp)-Number(t.iat)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function br(e,t,i=!1){if(i)return t;try{return await t}catch(n){throw n instanceof ai&&Ly(n)&&e.auth.currentUser===e&&await e.auth.signOut(),n}}function Ly({code:e}){return e==="auth/user-disabled"||e==="auth/user-token-expired"}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class ky{constructor(t){this.user=t,this.isRunning=!1,this.timerId=null,this.errorBackoff=3e4}_start(){this.isRunning||(this.isRunning=!0,this.schedule())}_stop(){this.isRunning&&(this.isRunning=!1,this.timerId!==null&&clearTimeout(this.timerId))}getInterval(t){var i;if(t){const n=this.errorBackoff;return this.errorBackoff=Math.min(this.errorBackoff*2,96e4),n}else{this.errorBackoff=3e4;const l=((i=this.user.stsTokenManager.expirationTime)!==null&&i!==void 0?i:0)-Date.now()-3e5;return Math.max(0,l)}}schedule(t=!1){if(!this.isRunning)return;const i=this.getInterval(t);this.timerId=setTimeout(async()=>{await this.iteration()},i)}async iteration(){try{await this.user.getIdToken(!0)}catch(t){(t==null?void 0:t.code)==="auth/network-request-failed"&&this.schedule(!0);return}this.schedule()}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class bc{constructor(t,i){this.createdAt=t,this.lastLoginAt=i,this._initializeTime()}_initializeTime(){this.lastSignInTime=sr(this.lastLoginAt),this.creationTime=sr(this.createdAt)}_copy(t){this.createdAt=t.createdAt,this.lastLoginAt=t.lastLoginAt,this._initializeTime()}toJSON(){return{createdAt:this.createdAt,lastLoginAt:this.lastLoginAt}}}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function xo(e){var t;const i=e.auth,n=await e.getIdToken(),l=await br(e,Ao(i,{idToken:n}));q(l==null?void 0:l.users.length,i,"internal-error");const s=l.users[0];e._notifyReloadListener(s);const a=!((t=s.providerUserInfo)===null||t===void 0)&&t.length?y3(s.providerUserInfo):[],o=zy(e.providerData,a),c=e.isAnonymous,d=!(e.email&&s.passwordHash)&&!(o!=null&&o.length),v=c?d:!1,Z={uid:s.localId,displayName:s.displayName||null,photoURL:s.photoUrl||null,email:s.email||null,emailVerified:s.emailVerified||!1,phoneNumber:s.phoneNumber||null,tenantId:s.tenantId||null,providerData:o,metadata:new bc(s.createdAt,s.lastLoginAt),isAnonymous:v};Object.assign(e,Z)}async function Iy(e){const t=Fe(e);await xo(t),await t.auth._persistUserIfCurrent(t),t.auth._notifyListenersIfCurrent(t)}function zy(e,t){return[...e.filter(n=>!t.some(l=>l.providerId===n.providerId)),...t]}function y3(e){return e.map(t=>{var{providerId:i}=t,n=I1(t,["providerId"]);return{providerId:i,uid:n.rawId||"",displayName:n.displayName||null,email:n.email||null,phoneNumber:n.phoneNumber||null,photoURL:n.photoUrl||null}})}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function Uy(e,t){const i=await v3(e,{},async()=>{const n=Ur({grant_type:"refresh_token",refresh_token:t}).slice(1),{tokenApiHost:l,apiKey:s}=e.config,a=await M3(e,l,"/v1/token",`key=${s}`),o=await e._getAdditionalHeaders();o["Content-Type"]="application/x-www-form-urlencoded";const c={method:"POST",headers:o,body:n};return e.emulatorConfig&&dl(e.emulatorConfig.host)&&(c.credentials="include"),m3.fetch()(a,c)});return{accessToken:i.access_token,expiresIn:i.expires_in,refreshToken:i.refresh_token}}async function jy(e,t){return gs(e,"POST","/v2/accounts:revokeToken",P1(e,t))}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Pl{constructor(){this.refreshToken=null,this.accessToken=null,this.expirationTime=null}get isExpired(){return!this.expirationTime||Date.now()>this.expirationTime-3e4}updateFromServerResponse(t){q(t.idToken,"internal-error"),q(typeof t.idToken<"u","internal-error"),q(typeof t.refreshToken<"u","internal-error");const i="expiresIn"in t&&typeof t.expiresIn<"u"?Number(t.expiresIn):Q0(t.idToken);this.updateTokensAndExpiration(t.idToken,t.refreshToken,i)}updateFromIdToken(t){q(t.length!==0,"internal-error");const i=Q0(t);this.updateTokensAndExpiration(t,null,i)}async getToken(t,i=!1){return!i&&this.accessToken&&!this.isExpired?this.accessToken:(q(this.refreshToken,t,"user-token-expired"),this.refreshToken?(await this.refresh(t,this.refreshToken),this.accessToken):null)}clearRefreshToken(){this.refreshToken=null}async refresh(t,i){const{accessToken:n,refreshToken:l,expiresIn:s}=await Uy(t,i);this.updateTokensAndExpiration(n,l,Number(s))}updateTokensAndExpiration(t,i,n){this.refreshToken=i||null,this.accessToken=t||null,this.expirationTime=Date.now()+n*1e3}static fromJSON(t,i){const{refreshToken:n,accessToken:l,expirationTime:s}=i,a=new Pl;return n&&(q(typeof n=="string","internal-error",{appName:t}),a.refreshToken=n),l&&(q(typeof l=="string","internal-error",{appName:t}),a.accessToken=l),s&&(q(typeof s=="number","internal-error",{appName:t}),a.expirationTime=s),a}toJSON(){return{refreshToken:this.refreshToken,accessToken:this.accessToken,expirationTime:this.expirationTime}}_assign(t){this.accessToken=t.accessToken,this.refreshToken=t.refreshToken,this.expirationTime=t.expirationTime}_clone(){return Object.assign(new Pl,this.toJSON())}_performRefresh(){return Si("not implemented")}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Xi(e,t){q(typeof e=="string"||typeof e>"u","internal-error",{appName:t})}class Pe{constructor(t){var{uid:i,auth:n,stsTokenManager:l}=t,s=I1(t,["uid","auth","stsTokenManager"]);this.providerId="firebase",this.proactiveRefresh=new ky(this),this.reloadUserInfo=null,this.reloadListener=null,this.uid=i,this.auth=n,this.stsTokenManager=l,this.accessToken=l.accessToken,this.displayName=s.displayName||null,this.email=s.email||null,this.emailVerified=s.emailVerified||!1,this.phoneNumber=s.phoneNumber||null,this.photoURL=s.photoURL||null,this.isAnonymous=s.isAnonymous||!1,this.tenantId=s.tenantId||null,this.providerData=s.providerData?[...s.providerData]:[],this.metadata=new bc(s.createdAt||void 0,s.lastLoginAt||void 0)}async getIdToken(t){const i=await br(this,this.stsTokenManager.getToken(this.auth,t));return q(i,this.auth,"internal-error"),this.accessToken!==i&&(this.accessToken=i,await this.auth._persistUserIfCurrent(this),this.auth._notifyListenersIfCurrent(this)),i}getIdTokenResult(t){return Dy(this,t)}reload(){return Iy(this)}_assign(t){this!==t&&(q(this.uid===t.uid,this.auth,"internal-error"),this.displayName=t.displayName,this.photoURL=t.photoURL,this.email=t.email,this.emailVerified=t.emailVerified,this.phoneNumber=t.phoneNumber,this.isAnonymous=t.isAnonymous,this.tenantId=t.tenantId,this.providerData=t.providerData.map(i=>Object.assign({},i)),this.metadata._copy(t.metadata),this.stsTokenManager._assign(t.stsTokenManager))}_clone(t){const i=new Pe(Object.assign(Object.assign({},this),{auth:t,stsTokenManager:this.stsTokenManager._clone()}));return i.metadata._copy(this.metadata),i}_onReload(t){q(!this.reloadListener,this.auth,"internal-error"),this.reloadListener=t,this.reloadUserInfo&&(this._notifyReloadListener(this.reloadUserInfo),this.reloadUserInfo=null)}_notifyReloadListener(t){this.reloadListener?this.reloadListener(t):this.reloadUserInfo=t}_startProactiveRefresh(){this.proactiveRefresh._start()}_stopProactiveRefresh(){this.proactiveRefresh._stop()}async _updateTokensIfNecessary(t,i=!1){let n=!1;t.idToken&&t.idToken!==this.stsTokenManager.accessToken&&(this.stsTokenManager.updateFromServerResponse(t),n=!0),i&&await xo(this),await this.auth._persistUserIfCurrent(this),n&&this.auth._notifyListenersIfCurrent(this)}async delete(){if(ve(this.auth.app))return Promise.reject(yn(this.auth));const t=await this.getIdToken();return await br(this,By(this.auth,{idToken:t})),this.stsTokenManager.clearRefreshToken(),this.auth.signOut()}toJSON(){return Object.assign(Object.assign({uid:this.uid,email:this.email||void 0,emailVerified:this.emailVerified,displayName:this.displayName||void 0,isAnonymous:this.isAnonymous,photoURL:this.photoURL||void 0,phoneNumber:this.phoneNumber||void 0,tenantId:this.tenantId||void 0,providerData:this.providerData.map(t=>Object.assign({},t)),stsTokenManager:this.stsTokenManager.toJSON(),_redirectEventId:this._redirectEventId},this.metadata.toJSON()),{apiKey:this.auth.config.apiKey,appName:this.auth.name})}get refreshToken(){return this.stsTokenManager.refreshToken||""}static _fromJSON(t,i){var n,l,s,a,o,c,d,v;const Z=(n=i.displayName)!==null&&n!==void 0?n:void 0,V=(l=i.email)!==null&&l!==void 0?l:void 0,b=(s=i.phoneNumber)!==null&&s!==void 0?s:void 0,C=(a=i.photoURL)!==null&&a!==void 0?a:void 0,O=(o=i.tenantId)!==null&&o!==void 0?o:void 0,R=(c=i._redirectEventId)!==null&&c!==void 0?c:void 0,w=(d=i.createdAt)!==null&&d!==void 0?d:void 0,m=(v=i.lastLoginAt)!==null&&v!==void 0?v:void 0,{uid:_,emailVerified:A,isAnonymous:L,providerData:U,stsTokenManager:p}=i;q(_&&p,t,"internal-error");const f=Pl.fromJSON(this.name,p);q(typeof _=="string",t,"internal-error"),Xi(Z,t.name),Xi(V,t.name),q(typeof A=="boolean",t,"internal-error"),q(typeof L=="boolean",t,"internal-error"),Xi(b,t.name),Xi(C,t.name),Xi(O,t.name),Xi(R,t.name),Xi(w,t.name),Xi(m,t.name);const g=new Pe({uid:_,auth:t,email:V,emailVerified:A,displayName:Z,isAnonymous:L,photoURL:C,phoneNumber:b,tenantId:O,stsTokenManager:f,createdAt:w,lastLoginAt:m});return U&&Array.isArray(U)&&(g.providerData=U.map(M=>Object.assign({},M))),R&&(g._redirectEventId=R),g}static async _fromIdTokenResponse(t,i,n=!1){const l=new Pl;l.updateFromServerResponse(i);const s=new Pe({uid:i.localId,auth:t,stsTokenManager:l,isAnonymous:n});return await xo(s),s}static async _fromGetAccountInfoResponse(t,i,n){const l=i.users[0];q(l.localId!==void 0,"internal-error");const s=l.providerUserInfo!==void 0?y3(l.providerUserInfo):[],a=!(l.email&&l.passwordHash)&&!(s!=null&&s.length),o=new Pl;o.updateFromIdToken(n);const c=new Pe({uid:l.localId,auth:t,stsTokenManager:o,isAnonymous:a}),d={uid:l.localId,displayName:l.displayName||null,photoURL:l.photoUrl||null,email:l.email||null,emailVerified:l.emailVerified||!1,phoneNumber:l.phoneNumber||null,tenantId:l.tenantId||null,providerData:s,metadata:new bc(l.createdAt,l.lastLoginAt),isAnonymous:!(l.email&&l.passwordHash)&&!(s!=null&&s.length)};return Object.assign(c,d),c}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const J0=new Map;function Ei(e){Li(e instanceof Function,"Expected a class definition");let t=J0.get(e);return t?(Li(t instanceof e,"Instance stored in cache mismatched with class"),t):(t=new e,J0.set(e,t),t)}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class w3{constructor(){this.type="NONE",this.storage={}}async _isAvailable(){return!0}async _set(t,i){this.storage[t]=i}async _get(t){const i=this.storage[t];return i===void 0?null:i}async _remove(t){delete this.storage[t]}_addListener(t,i){}_removeListener(t,i){}}w3.type="NONE";const $0=w3;/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Ya(e,t,i){return`firebase:${e}:${t}:${i}`}class Gl{constructor(t,i,n){this.persistence=t,this.auth=i,this.userKey=n;const{config:l,name:s}=this.auth;this.fullUserKey=Ya(this.userKey,l.apiKey,s),this.fullPersistenceKey=Ya("persistence",l.apiKey,s),this.boundEventHandler=i._onStorageEvent.bind(i),this.persistence._addListener(this.fullUserKey,this.boundEventHandler)}setCurrentUser(t){return this.persistence._set(this.fullUserKey,t.toJSON())}async getCurrentUser(){const t=await this.persistence._get(this.fullUserKey);if(!t)return null;if(typeof t=="string"){const i=await Ao(this.auth,{idToken:t}).catch(()=>{});return i?Pe._fromGetAccountInfoResponse(this.auth,i,t):null}return Pe._fromJSON(this.auth,t)}removeCurrentUser(){return this.persistence._remove(this.fullUserKey)}savePersistenceForRedirect(){return this.persistence._set(this.fullPersistenceKey,this.persistence.type)}async setPersistence(t){if(this.persistence===t)return;const i=await this.getCurrentUser();if(await this.removeCurrentUser(),this.persistence=t,i)return this.setCurrentUser(i)}delete(){this.persistence._removeListener(this.fullUserKey,this.boundEventHandler)}static async create(t,i,n="authUser"){if(!i.length)return new Gl(Ei($0),t,n);const l=(await Promise.all(i.map(async d=>{if(await d._isAvailable())return d}))).filter(d=>d);let s=l[0]||Ei($0);const a=Ya(n,t.config.apiKey,t.name);let o=null;for(const d of i)try{const v=await d._get(a);if(v){let Z;if(typeof v=="string"){const V=await Ao(t,{idToken:v}).catch(()=>{});if(!V)break;Z=await Pe._fromGetAccountInfoResponse(t,V,v)}else Z=Pe._fromJSON(t,v);d!==s&&(o=Z),s=d;break}}catch{}const c=l.filter(d=>d._shouldAllowMigration);return!s._shouldAllowMigration||!c.length?new Gl(s,t,n):(s=c[0],o&&await s._set(a,o.toJSON()),await Promise.all(i.map(async d=>{if(d!==s)try{await d._remove(a)}catch{}})),new Gl(s,t,n))}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function W0(e){const t=e.toLowerCase();if(t.includes("opera/")||t.includes("opr/")||t.includes("opios/"))return"Opera";if(S3(t))return"IEMobile";if(t.includes("msie")||t.includes("trident/"))return"IE";if(t.includes("edge/"))return"Edge";if(Z3(t))return"Firefox";if(t.includes("silk/"))return"Silk";if(T3(t))return"Blackberry";if(A3(t))return"Webos";if(_3(t))return"Safari";if((t.includes("chrome/")||b3(t))&&!t.includes("edge/"))return"Chrome";if(E3(t))return"Android";{const i=/([a-zA-Z\d\.]+)\/[a-zA-Z\d\.]*$/,n=e.match(i);if((n==null?void 0:n.length)===2)return n[1]}return"Other"}function Z3(e=se()){return/firefox\//i.test(e)}function _3(e=se()){const t=e.toLowerCase();return t.includes("safari/")&&!t.includes("chrome/")&&!t.includes("crios/")&&!t.includes("android")}function b3(e=se()){return/crios\//i.test(e)}function S3(e=se()){return/iemobile/i.test(e)}function E3(e=se()){return/android/i.test(e)}function T3(e=se()){return/blackberry/i.test(e)}function A3(e=se()){return/webos/i.test(e)}function q1(e=se()){return/iphone|ipad|ipod/i.test(e)||/macintosh/i.test(e)&&/mobile/i.test(e)}function Py(e=se()){var t;return q1(e)&&!!(!((t=window.navigator)===null||t===void 0)&&t.standalone)}function Gy(){return aM()&&document.documentMode===10}function x3(e=se()){return q1(e)||E3(e)||A3(e)||T3(e)||/windows phone/i.test(e)||S3(e)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function C3(e,t=[]){let i;switch(e){case"Browser":i=W0(se());break;case"Worker":i=`${W0(se())}-${e}`;break;default:i=e}const n=t.length?t.join(","):"FirebaseCore-web";return`${i}/JsCore/${Vs}/${n}`}/**
+ * @license
+ * Copyright 2022 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class qy{constructor(t){this.auth=t,this.queue=[]}pushCallback(t,i){const n=s=>new Promise((a,o)=>{try{const c=t(s);a(c)}catch(c){o(c)}});n.onAbort=i,this.queue.push(n);const l=this.queue.length-1;return()=>{this.queue[l]=()=>Promise.resolve()}}async runMiddleware(t){if(this.auth.currentUser===t)return;const i=[];try{for(const n of this.queue)await n(t),n.onAbort&&i.push(n.onAbort)}catch(n){i.reverse();for(const l of i)try{l()}catch{}throw this.auth._errorFactory.create("login-blocked",{originalMessage:n==null?void 0:n.message})}}}/**
+ * @license
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function Yy(e,t={}){return gs(e,"GET","/v2/passwordPolicy",P1(e,t))}/**
+ * @license
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Xy=6;class Fy{constructor(t){var i,n,l,s;const a=t.customStrengthOptions;this.customStrengthOptions={},this.customStrengthOptions.minPasswordLength=(i=a.minPasswordLength)!==null&&i!==void 0?i:Xy,a.maxPasswordLength&&(this.customStrengthOptions.maxPasswordLength=a.maxPasswordLength),a.containsLowercaseCharacter!==void 0&&(this.customStrengthOptions.containsLowercaseLetter=a.containsLowercaseCharacter),a.containsUppercaseCharacter!==void 0&&(this.customStrengthOptions.containsUppercaseLetter=a.containsUppercaseCharacter),a.containsNumericCharacter!==void 0&&(this.customStrengthOptions.containsNumericCharacter=a.containsNumericCharacter),a.containsNonAlphanumericCharacter!==void 0&&(this.customStrengthOptions.containsNonAlphanumericCharacter=a.containsNonAlphanumericCharacter),this.enforcementState=t.enforcementState,this.enforcementState==="ENFORCEMENT_STATE_UNSPECIFIED"&&(this.enforcementState="OFF"),this.allowedNonAlphanumericCharacters=(l=(n=t.allowedNonAlphanumericCharacters)===null||n===void 0?void 0:n.join(""))!==null&&l!==void 0?l:"",this.forceUpgradeOnSignin=(s=t.forceUpgradeOnSignin)!==null&&s!==void 0?s:!1,this.schemaVersion=t.schemaVersion}validatePassword(t){var i,n,l,s,a,o;const c={isValid:!0,passwordPolicy:this};return this.validatePasswordLengthOptions(t,c),this.validatePasswordCharacterOptions(t,c),c.isValid&&(c.isValid=(i=c.meetsMinPasswordLength)!==null&&i!==void 0?i:!0),c.isValid&&(c.isValid=(n=c.meetsMaxPasswordLength)!==null&&n!==void 0?n:!0),c.isValid&&(c.isValid=(l=c.containsLowercaseLetter)!==null&&l!==void 0?l:!0),c.isValid&&(c.isValid=(s=c.containsUppercaseLetter)!==null&&s!==void 0?s:!0),c.isValid&&(c.isValid=(a=c.containsNumericCharacter)!==null&&a!==void 0?a:!0),c.isValid&&(c.isValid=(o=c.containsNonAlphanumericCharacter)!==null&&o!==void 0?o:!0),c}validatePasswordLengthOptions(t,i){const n=this.customStrengthOptions.minPasswordLength,l=this.customStrengthOptions.maxPasswordLength;n&&(i.meetsMinPasswordLength=t.length>=n),l&&(i.meetsMaxPasswordLength=t.length<=l)}validatePasswordCharacterOptions(t,i){this.updatePasswordCharacterOptionsStatuses(i,!1,!1,!1,!1);let n;for(let l=0;l<t.length;l++)n=t.charAt(l),this.updatePasswordCharacterOptionsStatuses(i,n>="a"&&n<="z",n>="A"&&n<="Z",n>="0"&&n<="9",this.allowedNonAlphanumericCharacters.includes(n))}updatePasswordCharacterOptionsStatuses(t,i,n,l,s){this.customStrengthOptions.containsLowercaseLetter&&(t.containsLowercaseLetter||(t.containsLowercaseLetter=i)),this.customStrengthOptions.containsUppercaseLetter&&(t.containsUppercaseLetter||(t.containsUppercaseLetter=n)),this.customStrengthOptions.containsNumericCharacter&&(t.containsNumericCharacter||(t.containsNumericCharacter=l)),this.customStrengthOptions.containsNonAlphanumericCharacter&&(t.containsNonAlphanumericCharacter||(t.containsNonAlphanumericCharacter=s))}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Ky{constructor(t,i,n,l){this.app=t,this.heartbeatServiceProvider=i,this.appCheckServiceProvider=n,this.config=l,this.currentUser=null,this.emulatorConfig=null,this.operations=Promise.resolve(),this.authStateSubscription=new td(this),this.idTokenSubscription=new td(this),this.beforeStateQueue=new qy(this),this.redirectUser=null,this.isProactiveRefreshEnabled=!1,this.EXPECTED_PASSWORD_POLICY_SCHEMA_VERSION=1,this._canInitEmulator=!0,this._isInitialized=!1,this._deleted=!1,this._initializationPromise=null,this._popupRedirectResolver=null,this._errorFactory=g3,this._agentRecaptchaConfig=null,this._tenantRecaptchaConfigs={},this._projectPasswordPolicy=null,this._tenantPasswordPolicies={},this._resolvePersistenceManagerAvailable=void 0,this.lastNotifiedUid=void 0,this.languageCode=null,this.tenantId=null,this.settings={appVerificationDisabledForTesting:!1},this.frameworks=[],this.name=t.name,this.clientVersion=l.sdkClientVersion,this._persistenceManagerAvailable=new Promise(s=>this._resolvePersistenceManagerAvailable=s)}_initializeWithPersistence(t,i){return i&&(this._popupRedirectResolver=Ei(i)),this._initializationPromise=this.queue(async()=>{var n,l,s;if(!this._deleted&&(this.persistenceManager=await Gl.create(this,t),(n=this._resolvePersistenceManagerAvailable)===null||n===void 0||n.call(this),!this._deleted)){if(!((l=this._popupRedirectResolver)===null||l===void 0)&&l._shouldInitProactively)try{await this._popupRedirectResolver._initialize(this)}catch{}await this.initializeCurrentUser(i),this.lastNotifiedUid=((s=this.currentUser)===null||s===void 0?void 0:s.uid)||null,!this._deleted&&(this._isInitialized=!0)}}),this._initializationPromise}async _onStorageEvent(){if(this._deleted)return;const t=await this.assertedPersistence.getCurrentUser();if(!(!this.currentUser&&!t)){if(this.currentUser&&t&&this.currentUser.uid===t.uid){this._currentUser._assign(t),await this.currentUser.getIdToken();return}await this._updateCurrentUser(t,!0)}}async initializeCurrentUserFromIdToken(t){try{const i=await Ao(this,{idToken:t}),n=await Pe._fromGetAccountInfoResponse(this,i,t);await this.directlySetCurrentUser(n)}catch(i){console.warn("FirebaseServerApp could not login user with provided authIdToken: ",i),await this.directlySetCurrentUser(null)}}async initializeCurrentUser(t){var i;if(ve(this.app)){const a=this.app.settings.authIdToken;return a?new Promise(o=>{setTimeout(()=>this.initializeCurrentUserFromIdToken(a).then(o,o))}):this.directlySetCurrentUser(null)}const n=await this.assertedPersistence.getCurrentUser();let l=n,s=!1;if(t&&this.config.authDomain){await this.getOrInitRedirectPersistenceManager();const a=(i=this.redirectUser)===null||i===void 0?void 0:i._redirectEventId,o=l==null?void 0:l._redirectEventId,c=await this.tryRedirectSignIn(t);(!a||a===o)&&(c!=null&&c.user)&&(l=c.user,s=!0)}if(!l)return this.directlySetCurrentUser(null);if(!l._redirectEventId){if(s)try{await this.beforeStateQueue.runMiddleware(l)}catch(a){l=n,this._popupRedirectResolver._overrideRedirectResult(this,()=>Promise.reject(a))}return l?this.reloadAndSetCurrentUserOrClear(l):this.directlySetCurrentUser(null)}return q(this._popupRedirectResolver,this,"argument-error"),await this.getOrInitRedirectPersistenceManager(),this.redirectUser&&this.redirectUser._redirectEventId===l._redirectEventId?this.directlySetCurrentUser(l):this.reloadAndSetCurrentUserOrClear(l)}async tryRedirectSignIn(t){let i=null;try{i=await this._popupRedirectResolver._completeRedirectFn(this,t,!0)}catch{await this._setRedirectUser(null)}return i}async reloadAndSetCurrentUserOrClear(t){try{await xo(t)}catch(i){if((i==null?void 0:i.code)!=="auth/network-request-failed")return this.directlySetCurrentUser(null)}return this.directlySetCurrentUser(t)}useDeviceLanguage(){this.languageCode=Ay()}async _delete(){this._deleted=!0}async updateCurrentUser(t){if(ve(this.app))return Promise.reject(yn(this));const i=t?Fe(t):null;return i&&q(i.auth.config.apiKey===this.config.apiKey,this,"invalid-user-token"),this._updateCurrentUser(i&&i._clone(this))}async _updateCurrentUser(t,i=!1){if(!this._deleted)return t&&q(this.tenantId===t.tenantId,this,"tenant-id-mismatch"),i||await this.beforeStateQueue.runMiddleware(t),this.queue(async()=>{await this.directlySetCurrentUser(t),this.notifyAuthListeners()})}async signOut(){return ve(this.app)?Promise.reject(yn(this)):(await this.beforeStateQueue.runMiddleware(null),(this.redirectPersistenceManager||this._popupRedirectResolver)&&await this._setRedirectUser(null),this._updateCurrentUser(null,!0))}setPersistence(t){return ve(this.app)?Promise.reject(yn(this)):this.queue(async()=>{await this.assertedPersistence.setPersistence(Ei(t))})}_getRecaptchaConfig(){return this.tenantId==null?this._agentRecaptchaConfig:this._tenantRecaptchaConfigs[this.tenantId]}async validatePassword(t){this._getPasswordPolicyInternal()||await this._updatePasswordPolicy();const i=this._getPasswordPolicyInternal();return i.schemaVersion!==this.EXPECTED_PASSWORD_POLICY_SCHEMA_VERSION?Promise.reject(this._errorFactory.create("unsupported-password-policy-schema-version",{})):i.validatePassword(t)}_getPasswordPolicyInternal(){return this.tenantId===null?this._projectPasswordPolicy:this._tenantPasswordPolicies[this.tenantId]}async _updatePasswordPolicy(){const t=await Yy(this),i=new Fy(t);this.tenantId===null?this._projectPasswordPolicy=i:this._tenantPasswordPolicies[this.tenantId]=i}_getPersistenceType(){return this.assertedPersistence.persistence.type}_getPersistence(){return this.assertedPersistence.persistence}_updateErrorMap(t){this._errorFactory=new zr("auth","Firebase",t())}onAuthStateChanged(t,i,n){return this.registerStateListener(this.authStateSubscription,t,i,n)}beforeAuthStateChanged(t,i){return this.beforeStateQueue.pushCallback(t,i)}onIdTokenChanged(t,i,n){return this.registerStateListener(this.idTokenSubscription,t,i,n)}authStateReady(){return new Promise((t,i)=>{if(this.currentUser)t();else{const n=this.onAuthStateChanged(()=>{n(),t()},i)}})}async revokeAccessToken(t){if(this.currentUser){const i=await this.currentUser.getIdToken(),n={providerId:"apple.com",tokenType:"ACCESS_TOKEN",token:t,idToken:i};this.tenantId!=null&&(n.tenantId=this.tenantId),await jy(this,n)}}toJSON(){var t;return{apiKey:this.config.apiKey,authDomain:this.config.authDomain,appName:this.name,currentUser:(t=this._currentUser)===null||t===void 0?void 0:t.toJSON()}}async _setRedirectUser(t,i){const n=await this.getOrInitRedirectPersistenceManager(i);return t===null?n.removeCurrentUser():n.setCurrentUser(t)}async getOrInitRedirectPersistenceManager(t){if(!this.redirectPersistenceManager){const i=t&&Ei(t)||this._popupRedirectResolver;q(i,this,"argument-error"),this.redirectPersistenceManager=await Gl.create(this,[Ei(i._redirectPersistence)],"redirectUser"),this.redirectUser=await this.redirectPersistenceManager.getCurrentUser()}return this.redirectPersistenceManager}async _redirectUserForId(t){var i,n;return this._isInitialized&&await this.queue(async()=>{}),((i=this._currentUser)===null||i===void 0?void 0:i._redirectEventId)===t?this._currentUser:((n=this.redirectUser)===null||n===void 0?void 0:n._redirectEventId)===t?this.redirectUser:null}async _persistUserIfCurrent(t){if(t===this.currentUser)return this.queue(async()=>this.directlySetCurrentUser(t))}_notifyListenersIfCurrent(t){t===this.currentUser&&this.notifyAuthListeners()}_key(){return`${this.config.authDomain}:${this.config.apiKey}:${this.name}`}_startProactiveRefresh(){this.isProactiveRefreshEnabled=!0,this.currentUser&&this._currentUser._startProactiveRefresh()}_stopProactiveRefresh(){this.isProactiveRefreshEnabled=!1,this.currentUser&&this._currentUser._stopProactiveRefresh()}get _currentUser(){return this.currentUser}notifyAuthListeners(){var t,i;if(!this._isInitialized)return;this.idTokenSubscription.next(this.currentUser);const n=(i=(t=this.currentUser)===null||t===void 0?void 0:t.uid)!==null&&i!==void 0?i:null;this.lastNotifiedUid!==n&&(this.lastNotifiedUid=n,this.authStateSubscription.next(this.currentUser))}registerStateListener(t,i,n,l){if(this._deleted)return()=>{};const s=typeof i=="function"?i:i.next.bind(i);let a=!1;const o=this._isInitialized?Promise.resolve():this._initializationPromise;if(q(o,this,"internal-error"),o.then(()=>{a||s(this.currentUser)}),typeof i=="function"){const c=t.addObserver(i,n,l);return()=>{a=!0,c()}}else{const c=t.addObserver(i);return()=>{a=!0,c()}}}async directlySetCurrentUser(t){this.currentUser&&this.currentUser!==t&&this._currentUser._stopProactiveRefresh(),t&&this.isProactiveRefreshEnabled&&t._startProactiveRefresh(),this.currentUser=t,t?await this.assertedPersistence.setCurrentUser(t):await this.assertedPersistence.removeCurrentUser()}queue(t){return this.operations=this.operations.then(t,t),this.operations}get assertedPersistence(){return q(this.persistenceManager,this,"internal-error"),this.persistenceManager}_logFramework(t){!t||this.frameworks.includes(t)||(this.frameworks.push(t),this.frameworks.sort(),this.clientVersion=C3(this.config.clientPlatform,this._getFrameworks()))}_getFrameworks(){return this.frameworks}async _getAdditionalHeaders(){var t;const i={"X-Client-Version":this.clientVersion};this.app.options.appId&&(i["X-Firebase-gmpid"]=this.app.options.appId);const n=await((t=this.heartbeatServiceProvider.getImmediate({optional:!0}))===null||t===void 0?void 0:t.getHeartbeatsHeader());n&&(i["X-Firebase-Client"]=n);const l=await this._getAppCheckToken();return l&&(i["X-Firebase-AppCheck"]=l),i}async _getAppCheckToken(){var t;if(ve(this.app)&&this.app.settings.appCheckToken)return this.app.settings.appCheckToken;const i=await((t=this.appCheckServiceProvider.getImmediate({optional:!0}))===null||t===void 0?void 0:t.getToken());return i!=null&&i.error&&Sy(`Error while retrieving App Check token: ${i.error}`),i==null?void 0:i.token}}function ps(e){return Fe(e)}class td{constructor(t){this.auth=t,this.observer=null,this.addObserver=HM(i=>this.observer=i)}get next(){return q(this.observer,this.auth,"internal-error"),this.observer.next.bind(this.observer)}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */let Y1={async loadJS(){throw new Error("Unable to load external scripts")},recaptchaV2Script:"",recaptchaEnterpriseScript:"",gapiScript:""};function Qy(e){Y1=e}function Jy(e){return Y1.loadJS(e)}function $y(){return Y1.gapiScript}function Wy(e){return`__${e}${Math.floor(Math.random()*1e6)}`}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function O3(e,t){const i=jr(e,"auth");if(i.isInitialized()){const l=i.getImmediate(),s=i.getOptions();if(Sn(s,t??{}))return l;li(l,"already-initialized")}return i.initialize({options:t})}function t6(e,t){const i=(t==null?void 0:t.persistence)||[],n=(Array.isArray(i)?i:[i]).map(Ei);t!=null&&t.errorMap&&e._updateErrorMap(t.errorMap),e._initializeWithPersistence(n,t==null?void 0:t.popupRedirectResolver)}function e6(e,t,i){const n=ps(e);q(/^https?:\/\//.test(t),n,"invalid-emulator-scheme");const l=!1,s=N3(t),{host:a,port:o}=i6(t),c=o===null?"":`:${o}`,d={url:`${s}//${a}${c}/`},v=Object.freeze({host:a,port:o,protocol:s.replace(":",""),options:Object.freeze({disableWarnings:l})});if(!n._canInitEmulator){q(n.config.emulator&&n.emulatorConfig,n,"emulator-config-failed"),q(Sn(d,n.config.emulator)&&Sn(v,n.emulatorConfig),n,"emulator-config-failed");return}n.config.emulator=d,n.emulatorConfig=v,n.settings.appVerificationDisabledForTesting=!0,dl(a)?(n2(`${s}//${a}${c}`),B1("Auth",!0)):n6()}function N3(e){const t=e.indexOf(":");return t<0?"":e.substr(0,t+1)}function i6(e){const t=N3(e),i=/(\/\/)?([^?#/]+)/.exec(e.substr(t.length));if(!i)return{host:"",port:null};const n=i[2].split("@").pop()||"",l=/^(\[[^\]]+\])(:|$)/.exec(n);if(l){const s=l[1];return{host:s,port:ed(n.substr(s.length+1))}}else{const[s,a]=n.split(":");return{host:s,port:ed(a)}}}function ed(e){if(!e)return null;const t=Number(e);return isNaN(t)?null:t}function n6(){function e(){const t=document.createElement("p"),i=t.style;t.innerText="Running in emulator mode. Do not use with production credentials.",i.position="fixed",i.width="100%",i.backgroundColor="#ffffff",i.border=".1em solid #000000",i.color="#b50000",i.bottom="0px",i.left="0px",i.margin="0px",i.zIndex="10000",i.textAlign="center",t.classList.add("firebase-emulator-warning"),document.body.appendChild(t)}typeof console<"u"&&typeof console.info=="function"&&console.info("WARNING: You are using the Auth Emulator, which is intended for local testing only.  Do not use with production credentials."),typeof window<"u"&&typeof document<"u"&&(document.readyState==="loading"?window.addEventListener("DOMContentLoaded",e):e())}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class R3{constructor(t,i){this.providerId=t,this.signInMethod=i}toJSON(){return Si("not implemented")}_getIdTokenResponse(t){return Si("not implemented")}_linkToIdToken(t,i){return Si("not implemented")}_getReauthenticationResolver(t){return Si("not implemented")}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function ql(e,t){return Ny(e,"POST","/v1/accounts:signInWithIdp",P1(e,t))}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const l6="http://localhost";class sl extends R3{constructor(){super(...arguments),this.pendingToken=null}static _fromParams(t){const i=new sl(t.providerId,t.signInMethod);return t.idToken||t.accessToken?(t.idToken&&(i.idToken=t.idToken),t.accessToken&&(i.accessToken=t.accessToken),t.nonce&&!t.pendingToken&&(i.nonce=t.nonce),t.pendingToken&&(i.pendingToken=t.pendingToken)):t.oauthToken&&t.oauthTokenSecret?(i.accessToken=t.oauthToken,i.secret=t.oauthTokenSecret):li("argument-error"),i}toJSON(){return{idToken:this.idToken,accessToken:this.accessToken,secret:this.secret,nonce:this.nonce,pendingToken:this.pendingToken,providerId:this.providerId,signInMethod:this.signInMethod}}static fromJSON(t){const i=typeof t=="string"?JSON.parse(t):t,{providerId:n,signInMethod:l}=i,s=I1(i,["providerId","signInMethod"]);if(!n||!l)return null;const a=new sl(n,l);return a.idToken=s.idToken||void 0,a.accessToken=s.accessToken||void 0,a.secret=s.secret,a.nonce=s.nonce,a.pendingToken=s.pendingToken||null,a}_getIdTokenResponse(t){const i=this.buildRequest();return ql(t,i)}_linkToIdToken(t,i){const n=this.buildRequest();return n.idToken=i,ql(t,n)}_getReauthenticationResolver(t){const i=this.buildRequest();return i.autoCreate=!1,ql(t,i)}buildRequest(){const t={requestUri:l6,returnSecureToken:!0};if(this.pendingToken)t.pendingToken=this.pendingToken;else{const i={};this.idToken&&(i.id_token=this.idToken),this.accessToken&&(i.access_token=this.accessToken),this.secret&&(i.oauth_token_secret=this.secret),i.providerId=this.providerId,this.nonce&&!this.pendingToken&&(i.nonce=this.nonce),t.postBody=Ur(i)}return t}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class l2{constructor(t){this.providerId=t,this.defaultLanguageCode=null,this.customParameters={}}setDefaultLanguage(t){this.defaultLanguageCode=t}setCustomParameters(t){return this.customParameters=t,this}getCustomParameters(){return this.customParameters}}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Gr extends l2{constructor(){super(...arguments),this.scopes=[]}addScope(t){return this.scopes.includes(t)||this.scopes.push(t),this}getScopes(){return[...this.scopes]}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class en extends Gr{constructor(){super("facebook.com")}static credential(t){return sl._fromParams({providerId:en.PROVIDER_ID,signInMethod:en.FACEBOOK_SIGN_IN_METHOD,accessToken:t})}static credentialFromResult(t){return en.credentialFromTaggedObject(t)}static credentialFromError(t){return en.credentialFromTaggedObject(t.customData||{})}static credentialFromTaggedObject({_tokenResponse:t}){if(!t||!("oauthAccessToken"in t)||!t.oauthAccessToken)return null;try{return en.credential(t.oauthAccessToken)}catch{return null}}}en.FACEBOOK_SIGN_IN_METHOD="facebook.com";en.PROVIDER_ID="facebook.com";/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class yi extends Gr{constructor(){super("google.com"),this.addScope("profile")}static credential(t,i){return sl._fromParams({providerId:yi.PROVIDER_ID,signInMethod:yi.GOOGLE_SIGN_IN_METHOD,idToken:t,accessToken:i})}static credentialFromResult(t){return yi.credentialFromTaggedObject(t)}static credentialFromError(t){return yi.credentialFromTaggedObject(t.customData||{})}static credentialFromTaggedObject({_tokenResponse:t}){if(!t)return null;const{oauthIdToken:i,oauthAccessToken:n}=t;if(!i&&!n)return null;try{return yi.credential(i,n)}catch{return null}}}yi.GOOGLE_SIGN_IN_METHOD="google.com";yi.PROVIDER_ID="google.com";/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class nn extends Gr{constructor(){super("github.com")}static credential(t){return sl._fromParams({providerId:nn.PROVIDER_ID,signInMethod:nn.GITHUB_SIGN_IN_METHOD,accessToken:t})}static credentialFromResult(t){return nn.credentialFromTaggedObject(t)}static credentialFromError(t){return nn.credentialFromTaggedObject(t.customData||{})}static credentialFromTaggedObject({_tokenResponse:t}){if(!t||!("oauthAccessToken"in t)||!t.oauthAccessToken)return null;try{return nn.credential(t.oauthAccessToken)}catch{return null}}}nn.GITHUB_SIGN_IN_METHOD="github.com";nn.PROVIDER_ID="github.com";/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class ln extends Gr{constructor(){super("twitter.com")}static credential(t,i){return sl._fromParams({providerId:ln.PROVIDER_ID,signInMethod:ln.TWITTER_SIGN_IN_METHOD,oauthToken:t,oauthTokenSecret:i})}static credentialFromResult(t){return ln.credentialFromTaggedObject(t)}static credentialFromError(t){return ln.credentialFromTaggedObject(t.customData||{})}static credentialFromTaggedObject({_tokenResponse:t}){if(!t)return null;const{oauthAccessToken:i,oauthTokenSecret:n}=t;if(!i||!n)return null;try{return ln.credential(i,n)}catch{return null}}}ln.TWITTER_SIGN_IN_METHOD="twitter.com";ln.PROVIDER_ID="twitter.com";/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class ls{constructor(t){this.user=t.user,this.providerId=t.providerId,this._tokenResponse=t._tokenResponse,this.operationType=t.operationType}static async _fromIdTokenResponse(t,i,n,l=!1){const s=await Pe._fromIdTokenResponse(t,n,l),a=id(n);return new ls({user:s,providerId:a,_tokenResponse:n,operationType:i})}static async _forOperation(t,i,n){await t._updateTokensIfNecessary(n,!0);const l=id(n);return new ls({user:t,providerId:l,_tokenResponse:n,operationType:i})}}function id(e){return e.providerId?e.providerId:"phoneNumber"in e?"phone":null}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Co extends ai{constructor(t,i,n,l){var s;super(i.code,i.message),this.operationType=n,this.user=l,Object.setPrototypeOf(this,Co.prototype),this.customData={appName:t.name,tenantId:(s=t.tenantId)!==null&&s!==void 0?s:void 0,_serverResponse:i.customData._serverResponse,operationType:n}}static _fromErrorAndOperation(t,i,n,l){return new Co(t,i,n,l)}}function B3(e,t,i,n){return(t==="reauthenticate"?i._getReauthenticationResolver(e):i._getIdTokenResponse(e)).catch(s=>{throw s.code==="auth/multi-factor-auth-required"?Co._fromErrorAndOperation(e,s,t,n):s})}async function s6(e,t,i=!1){const n=await br(e,t._linkToIdToken(e.auth,await e.getIdToken()),i);return ls._forOperation(e,"link",n)}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function r6(e,t,i=!1){const{auth:n}=e;if(ve(n.app))return Promise.reject(yn(n));const l="reauthenticate";try{const s=await br(e,B3(n,l,t,e),i);q(s.idToken,n,"internal-error");const a=G1(s.idToken);q(a,n,"internal-error");const{sub:o}=a;return q(e.uid===o,n,"user-mismatch"),ls._forOperation(e,l,s)}catch(s){throw(s==null?void 0:s.code)==="auth/user-not-found"&&li(n,"user-mismatch"),s}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function a6(e,t,i=!1){if(ve(e.app))return Promise.reject(yn(e));const n="signIn",l=await B3(e,n,t),s=await ls._fromIdTokenResponse(e,n,l);return i||await e._updateCurrentUser(s.user),s}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function o6(e,t){return Fe(e).setPersistence(t)}function u6(e,t,i,n){return Fe(e).onIdTokenChanged(t,i,n)}function c6(e,t,i){return Fe(e).beforeAuthStateChanged(t,i)}function nd(e){return Fe(e).signOut()}const Oo="__sak";/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class D3{constructor(t,i){this.storageRetriever=t,this.type=i}_isAvailable(){try{return this.storage?(this.storage.setItem(Oo,"1"),this.storage.removeItem(Oo),Promise.resolve(!0)):Promise.resolve(!1)}catch{return Promise.resolve(!1)}}_set(t,i){return this.storage.setItem(t,JSON.stringify(i)),Promise.resolve()}_get(t){const i=this.storage.getItem(t);return Promise.resolve(i?JSON.parse(i):null)}_remove(t){return this.storage.removeItem(t),Promise.resolve()}get storage(){return this.storageRetriever()}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const h6=1e3,f6=10;class L3 extends D3{constructor(){super(()=>window.localStorage,"LOCAL"),this.boundEventHandler=(t,i)=>this.onStorageEvent(t,i),this.listeners={},this.localCache={},this.pollTimer=null,this.fallbackToPolling=x3(),this._shouldAllowMigration=!0}forAllChangedKeys(t){for(const i of Object.keys(this.listeners)){const n=this.storage.getItem(i),l=this.localCache[i];n!==l&&t(i,l,n)}}onStorageEvent(t,i=!1){if(!t.key){this.forAllChangedKeys((a,o,c)=>{this.notifyListeners(a,c)});return}const n=t.key;i?this.detachListener():this.stopPolling();const l=()=>{const a=this.storage.getItem(n);!i&&this.localCache[n]===a||this.notifyListeners(n,a)},s=this.storage.getItem(n);Gy()&&s!==t.newValue&&t.newValue!==t.oldValue?setTimeout(l,f6):l()}notifyListeners(t,i){this.localCache[t]=i;const n=this.listeners[t];if(n)for(const l of Array.from(n))l(i&&JSON.parse(i))}startPolling(){this.stopPolling(),this.pollTimer=setInterval(()=>{this.forAllChangedKeys((t,i,n)=>{this.onStorageEvent(new StorageEvent("storage",{key:t,oldValue:i,newValue:n}),!0)})},h6)}stopPolling(){this.pollTimer&&(clearInterval(this.pollTimer),this.pollTimer=null)}attachListener(){window.addEventListener("storage",this.boundEventHandler)}detachListener(){window.removeEventListener("storage",this.boundEventHandler)}_addListener(t,i){Object.keys(this.listeners).length===0&&(this.fallbackToPolling?this.startPolling():this.attachListener()),this.listeners[t]||(this.listeners[t]=new Set,this.localCache[t]=this.storage.getItem(t)),this.listeners[t].add(i)}_removeListener(t,i){this.listeners[t]&&(this.listeners[t].delete(i),this.listeners[t].size===0&&delete this.listeners[t]),Object.keys(this.listeners).length===0&&(this.detachListener(),this.stopPolling())}async _set(t,i){await super._set(t,i),this.localCache[t]=JSON.stringify(i)}async _get(t){const i=await super._get(t);return this.localCache[t]=JSON.stringify(i),i}async _remove(t){await super._remove(t),delete this.localCache[t]}}L3.type="LOCAL";const k3=L3;/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class I3 extends D3{constructor(){super(()=>window.sessionStorage,"SESSION")}_addListener(t,i){}_removeListener(t,i){}}I3.type="SESSION";const X1=I3;/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function d6(e){return Promise.all(e.map(async t=>{try{return{fulfilled:!0,value:await t}}catch(i){return{fulfilled:!1,reason:i}}}))}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class s2{constructor(t){this.eventTarget=t,this.handlersMap={},this.boundEventHandler=this.handleEvent.bind(this)}static _getInstance(t){const i=this.receivers.find(l=>l.isListeningto(t));if(i)return i;const n=new s2(t);return this.receivers.push(n),n}isListeningto(t){return this.eventTarget===t}async handleEvent(t){const i=t,{eventId:n,eventType:l,data:s}=i.data,a=this.handlersMap[l];if(!(a!=null&&a.size))return;i.ports[0].postMessage({status:"ack",eventId:n,eventType:l});const o=Array.from(a).map(async d=>d(i.origin,s)),c=await d6(o);i.ports[0].postMessage({status:"done",eventId:n,eventType:l,response:c})}_subscribe(t,i){Object.keys(this.handlersMap).length===0&&this.eventTarget.addEventListener("message",this.boundEventHandler),this.handlersMap[t]||(this.handlersMap[t]=new Set),this.handlersMap[t].add(i)}_unsubscribe(t,i){this.handlersMap[t]&&i&&this.handlersMap[t].delete(i),(!i||this.handlersMap[t].size===0)&&delete this.handlersMap[t],Object.keys(this.handlersMap).length===0&&this.eventTarget.removeEventListener("message",this.boundEventHandler)}}s2.receivers=[];/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function F1(e="",t=10){let i="";for(let n=0;n<t;n++)i+=Math.floor(Math.random()*10);return e+i}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class H6{constructor(t){this.target=t,this.handlers=new Set}removeMessageHandler(t){t.messageChannel&&(t.messageChannel.port1.removeEventListener("message",t.onMessage),t.messageChannel.port1.close()),this.handlers.delete(t)}async _send(t,i,n=50){const l=typeof MessageChannel<"u"?new MessageChannel:null;if(!l)throw new Error("connection_unavailable");let s,a;return new Promise((o,c)=>{const d=F1("",20);l.port1.start();const v=setTimeout(()=>{c(new Error("unsupported_event"))},n);a={messageChannel:l,onMessage(Z){const V=Z;if(V.data.eventId===d)switch(V.data.status){case"ack":clearTimeout(v),s=setTimeout(()=>{c(new Error("timeout"))},3e3);break;case"done":clearTimeout(s),o(V.data.response);break;default:clearTimeout(v),clearTimeout(s),c(new Error("invalid_response"));break}}},this.handlers.add(a),l.port1.addEventListener("message",a.onMessage),this.target.postMessage({eventType:t,eventId:d,data:i},[l.port2])}).finally(()=>{a&&this.removeMessageHandler(a)})}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function ni(){return window}function V6(e){ni().location.href=e}/**
+ * @license
+ * Copyright 2020 Google LLC.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function z3(){return typeof ni().WorkerGlobalScope<"u"&&typeof ni().importScripts=="function"}async function g6(){if(!(navigator!=null&&navigator.serviceWorker))return null;try{return(await navigator.serviceWorker.ready).active}catch{return null}}function p6(){var e;return((e=navigator==null?void 0:navigator.serviceWorker)===null||e===void 0?void 0:e.controller)||null}function m6(){return z3()?self:null}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const U3="firebaseLocalStorageDb",v6=1,No="firebaseLocalStorage",j3="fbase_key";class qr{constructor(t){this.request=t}toPromise(){return new Promise((t,i)=>{this.request.addEventListener("success",()=>{t(this.request.result)}),this.request.addEventListener("error",()=>{i(this.request.error)})})}}function r2(e,t){return e.transaction([No],t?"readwrite":"readonly").objectStore(No)}function M6(){const e=indexedDB.deleteDatabase(U3);return new qr(e).toPromise()}function Sc(){const e=indexedDB.open(U3,v6);return new Promise((t,i)=>{e.addEventListener("error",()=>{i(e.error)}),e.addEventListener("upgradeneeded",()=>{const n=e.result;try{n.createObjectStore(No,{keyPath:j3})}catch(l){i(l)}}),e.addEventListener("success",async()=>{const n=e.result;n.objectStoreNames.contains(No)?t(n):(n.close(),await M6(),t(await Sc()))})})}async function ld(e,t,i){const n=r2(e,!0).put({[j3]:t,value:i});return new qr(n).toPromise()}async function y6(e,t){const i=r2(e,!1).get(t),n=await new qr(i).toPromise();return n===void 0?null:n.value}function sd(e,t){const i=r2(e,!0).delete(t);return new qr(i).toPromise()}const w6=800,Z6=3;class P3{constructor(){this.type="LOCAL",this._shouldAllowMigration=!0,this.listeners={},this.localCache={},this.pollTimer=null,this.pendingWrites=0,this.receiver=null,this.sender=null,this.serviceWorkerReceiverAvailable=!1,this.activeServiceWorker=null,this._workerInitializationPromise=this.initializeServiceWorkerMessaging().then(()=>{},()=>{})}async _openDb(){return this.db?this.db:(this.db=await Sc(),this.db)}async _withRetries(t){let i=0;for(;;)try{const n=await this._openDb();return await t(n)}catch(n){if(i++>Z6)throw n;this.db&&(this.db.close(),this.db=void 0)}}async initializeServiceWorkerMessaging(){return z3()?this.initializeReceiver():this.initializeSender()}async initializeReceiver(){this.receiver=s2._getInstance(m6()),this.receiver._subscribe("keyChanged",async(t,i)=>({keyProcessed:(await this._poll()).includes(i.key)})),this.receiver._subscribe("ping",async(t,i)=>["keyChanged"])}async initializeSender(){var t,i;if(this.activeServiceWorker=await g6(),!this.activeServiceWorker)return;this.sender=new H6(this.activeServiceWorker);const n=await this.sender._send("ping",{},800);n&&!((t=n[0])===null||t===void 0)&&t.fulfilled&&!((i=n[0])===null||i===void 0)&&i.value.includes("keyChanged")&&(this.serviceWorkerReceiverAvailable=!0)}async notifyServiceWorker(t){if(!(!this.sender||!this.activeServiceWorker||p6()!==this.activeServiceWorker))try{await this.sender._send("keyChanged",{key:t},this.serviceWorkerReceiverAvailable?800:50)}catch{}}async _isAvailable(){try{if(!indexedDB)return!1;const t=await Sc();return await ld(t,Oo,"1"),await sd(t,Oo),!0}catch{}return!1}async _withPendingWrite(t){this.pendingWrites++;try{await t()}finally{this.pendingWrites--}}async _set(t,i){return this._withPendingWrite(async()=>(await this._withRetries(n=>ld(n,t,i)),this.localCache[t]=i,this.notifyServiceWorker(t)))}async _get(t){const i=await this._withRetries(n=>y6(n,t));return this.localCache[t]=i,i}async _remove(t){return this._withPendingWrite(async()=>(await this._withRetries(i=>sd(i,t)),delete this.localCache[t],this.notifyServiceWorker(t)))}async _poll(){const t=await this._withRetries(l=>{const s=r2(l,!1).getAll();return new qr(s).toPromise()});if(!t)return[];if(this.pendingWrites!==0)return[];const i=[],n=new Set;if(t.length!==0)for(const{fbase_key:l,value:s}of t)n.add(l),JSON.stringify(this.localCache[l])!==JSON.stringify(s)&&(this.notifyListeners(l,s),i.push(l));for(const l of Object.keys(this.localCache))this.localCache[l]&&!n.has(l)&&(this.notifyListeners(l,null),i.push(l));return i}notifyListeners(t,i){this.localCache[t]=i;const n=this.listeners[t];if(n)for(const l of Array.from(n))l(i)}startPolling(){this.stopPolling(),this.pollTimer=setInterval(async()=>this._poll(),w6)}stopPolling(){this.pollTimer&&(clearInterval(this.pollTimer),this.pollTimer=null)}_addListener(t,i){Object.keys(this.listeners).length===0&&this.startPolling(),this.listeners[t]||(this.listeners[t]=new Set,this._get(t)),this.listeners[t].add(i)}_removeListener(t,i){this.listeners[t]&&(this.listeners[t].delete(i),this.listeners[t].size===0&&delete this.listeners[t]),Object.keys(this.listeners).length===0&&this.stopPolling()}}P3.type="LOCAL";const _6=P3;new Pr(3e4,6e4);/**
+ * @license
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function K1(e,t){return t?Ei(t):(q(e._popupRedirectResolver,e,"argument-error"),e._popupRedirectResolver)}/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Q1 extends R3{constructor(t){super("custom","custom"),this.params=t}_getIdTokenResponse(t){return ql(t,this._buildIdpRequest())}_linkToIdToken(t,i){return ql(t,this._buildIdpRequest(i))}_getReauthenticationResolver(t){return ql(t,this._buildIdpRequest())}_buildIdpRequest(t){const i={requestUri:this.params.requestUri,sessionId:this.params.sessionId,postBody:this.params.postBody,tenantId:this.params.tenantId,pendingToken:this.params.pendingToken,returnSecureToken:!0,returnIdpCredential:!0};return t&&(i.idToken=t),i}}function b6(e){return a6(e.auth,new Q1(e),e.bypassAuthState)}function S6(e){const{auth:t,user:i}=e;return q(i,t,"internal-error"),r6(i,new Q1(e),e.bypassAuthState)}async function E6(e){const{auth:t,user:i}=e;return q(i,t,"internal-error"),s6(i,new Q1(e),e.bypassAuthState)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class G3{constructor(t,i,n,l,s=!1){this.auth=t,this.resolver=n,this.user=l,this.bypassAuthState=s,this.pendingPromise=null,this.eventManager=null,this.filter=Array.isArray(i)?i:[i]}execute(){return new Promise(async(t,i)=>{this.pendingPromise={resolve:t,reject:i};try{this.eventManager=await this.resolver._initialize(this.auth),await this.onExecution(),this.eventManager.registerConsumer(this)}catch(n){this.reject(n)}})}async onAuthEvent(t){const{urlResponse:i,sessionId:n,postBody:l,tenantId:s,error:a,type:o}=t;if(a){this.reject(a);return}const c={auth:this.auth,requestUri:i,sessionId:n,tenantId:s||void 0,postBody:l||void 0,user:this.user,bypassAuthState:this.bypassAuthState};try{this.resolve(await this.getIdpTask(o)(c))}catch(d){this.reject(d)}}onError(t){this.reject(t)}getIdpTask(t){switch(t){case"signInViaPopup":case"signInViaRedirect":return b6;case"linkViaPopup":case"linkViaRedirect":return E6;case"reauthViaPopup":case"reauthViaRedirect":return S6;default:li(this.auth,"internal-error")}}resolve(t){Li(this.pendingPromise,"Pending promise was never set"),this.pendingPromise.resolve(t),this.unregisterAndCleanUp()}reject(t){Li(this.pendingPromise,"Pending promise was never set"),this.pendingPromise.reject(t),this.unregisterAndCleanUp()}unregisterAndCleanUp(){this.eventManager&&this.eventManager.unregisterConsumer(this),this.pendingPromise=null,this.cleanUp()}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const T6=new Pr(2e3,1e4);async function A6(e,t,i){if(ve(e.app))return Promise.reject(qe(e,"operation-not-supported-in-this-environment"));const n=ps(e);p3(e,t,l2);const l=K1(n,i);return new Gn(n,"signInViaPopup",t,l).executeNotNull()}class Gn extends G3{constructor(t,i,n,l,s){super(t,i,l,s),this.provider=n,this.authWindow=null,this.pollId=null,Gn.currentPopupAction&&Gn.currentPopupAction.cancel(),Gn.currentPopupAction=this}async executeNotNull(){const t=await this.execute();return q(t,this.auth,"internal-error"),t}async onExecution(){Li(this.filter.length===1,"Popup operations only handle one event");const t=F1();this.authWindow=await this.resolver._openPopup(this.auth,this.provider,this.filter[0],t),this.authWindow.associatedEvent=t,this.resolver._originValidation(this.auth).catch(i=>{this.reject(i)}),this.resolver._isIframeWebStorageSupported(this.auth,i=>{i||this.reject(qe(this.auth,"web-storage-unsupported"))}),this.pollUserCancellation()}get eventId(){var t;return((t=this.authWindow)===null||t===void 0?void 0:t.associatedEvent)||null}cancel(){this.reject(qe(this.auth,"cancelled-popup-request"))}cleanUp(){this.authWindow&&this.authWindow.close(),this.pollId&&window.clearTimeout(this.pollId),this.authWindow=null,this.pollId=null,Gn.currentPopupAction=null}pollUserCancellation(){const t=()=>{var i,n;if(!((n=(i=this.authWindow)===null||i===void 0?void 0:i.window)===null||n===void 0)&&n.closed){this.pollId=window.setTimeout(()=>{this.pollId=null,this.reject(qe(this.auth,"popup-closed-by-user"))},8e3);return}this.pollId=window.setTimeout(t,T6.get())};t()}}Gn.currentPopupAction=null;/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const x6="pendingRedirect",Xa=new Map;class C6 extends G3{constructor(t,i,n=!1){super(t,["signInViaRedirect","linkViaRedirect","reauthViaRedirect","unknown"],i,void 0,n),this.eventId=null}async execute(){let t=Xa.get(this.auth._key());if(!t){try{const n=await O6(this.resolver,this.auth)?await super.execute():null;t=()=>Promise.resolve(n)}catch(i){t=()=>Promise.reject(i)}Xa.set(this.auth._key(),t)}return this.bypassAuthState||Xa.set(this.auth._key(),()=>Promise.resolve(null)),t()}async onAuthEvent(t){if(t.type==="signInViaRedirect")return super.onAuthEvent(t);if(t.type==="unknown"){this.resolve(null);return}if(t.eventId){const i=await this.auth._redirectUserForId(t.eventId);if(i)return this.user=i,super.onAuthEvent(t);this.resolve(null)}}async onExecution(){}cleanUp(){}}async function O6(e,t){const i=Y3(t),n=q3(e);if(!await n._isAvailable())return!1;const l=await n._get(i)==="true";return await n._remove(i),l}async function N6(e,t){return q3(e)._set(Y3(t),"true")}function R6(e,t){Xa.set(e._key(),t)}function q3(e){return Ei(e._redirectPersistence)}function Y3(e){return Ya(x6,e.config.apiKey,e.name)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function rd(e,t,i){return B6(e,t,i)}async function B6(e,t,i){if(ve(e.app))return Promise.reject(yn(e));const n=ps(e);p3(e,t,l2),await n._initializationPromise;const l=K1(n,i);return await N6(l,n),l._openRedirect(n,t,"signInViaRedirect")}async function D6(e,t){return await ps(e)._initializationPromise,X3(e,t,!1)}async function X3(e,t,i=!1){if(ve(e.app))return Promise.reject(yn(e));const n=ps(e),l=K1(n,t),a=await new C6(n,l,i).execute();return a&&!i&&(delete a.user._redirectEventId,await n._persistUserIfCurrent(a.user),await n._setRedirectUser(null,t)),a}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const L6=10*60*1e3;class k6{constructor(t){this.auth=t,this.cachedEventUids=new Set,this.consumers=new Set,this.queuedRedirectEvent=null,this.hasHandledPotentialRedirect=!1,this.lastProcessedEventTime=Date.now()}registerConsumer(t){this.consumers.add(t),this.queuedRedirectEvent&&this.isEventForConsumer(this.queuedRedirectEvent,t)&&(this.sendToConsumer(this.queuedRedirectEvent,t),this.saveEventToCache(this.queuedRedirectEvent),this.queuedRedirectEvent=null)}unregisterConsumer(t){this.consumers.delete(t)}onEvent(t){if(this.hasEventBeenHandled(t))return!1;let i=!1;return this.consumers.forEach(n=>{this.isEventForConsumer(t,n)&&(i=!0,this.sendToConsumer(t,n),this.saveEventToCache(t))}),this.hasHandledPotentialRedirect||!I6(t)||(this.hasHandledPotentialRedirect=!0,i||(this.queuedRedirectEvent=t,i=!0)),i}sendToConsumer(t,i){var n;if(t.error&&!F3(t)){const l=((n=t.error.code)===null||n===void 0?void 0:n.split("auth/")[1])||"internal-error";i.onError(qe(this.auth,l))}else i.onAuthEvent(t)}isEventForConsumer(t,i){const n=i.eventId===null||!!t.eventId&&t.eventId===i.eventId;return i.filter.includes(t.type)&&n}hasEventBeenHandled(t){return Date.now()-this.lastProcessedEventTime>=L6&&this.cachedEventUids.clear(),this.cachedEventUids.has(ad(t))}saveEventToCache(t){this.cachedEventUids.add(ad(t)),this.lastProcessedEventTime=Date.now()}}function ad(e){return[e.type,e.eventId,e.sessionId,e.tenantId].filter(t=>t).join("-")}function F3({type:e,error:t}){return e==="unknown"&&(t==null?void 0:t.code)==="auth/no-auth-event"}function I6(e){switch(e.type){case"signInViaRedirect":case"linkViaRedirect":case"reauthViaRedirect":return!0;case"unknown":return F3(e);default:return!1}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */async function z6(e,t={}){return gs(e,"GET","/v1/projects",t)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const U6=/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,j6=/^https?/;async function P6(e){if(e.config.emulator)return;const{authorizedDomains:t}=await z6(e);for(const i of t)try{if(G6(i))return}catch{}li(e,"unauthorized-domain")}function G6(e){const t=_c(),{protocol:i,hostname:n}=new URL(t);if(e.startsWith("chrome-extension://")){const a=new URL(e);return a.hostname===""&&n===""?i==="chrome-extension:"&&e.replace("chrome-extension://","")===t.replace("chrome-extension://",""):i==="chrome-extension:"&&a.hostname===n}if(!j6.test(i))return!1;if(U6.test(e))return n===e;const l=e.replace(/\./g,"\\.");return new RegExp("^(.+\\."+l+"|"+l+")$","i").test(n)}/**
+ * @license
+ * Copyright 2020 Google LLC.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const q6=new Pr(3e4,6e4);function od(){const e=ni().___jsl;if(e!=null&&e.H){for(const t of Object.keys(e.H))if(e.H[t].r=e.H[t].r||[],e.H[t].L=e.H[t].L||[],e.H[t].r=[...e.H[t].L],e.CP)for(let i=0;i<e.CP.length;i++)e.CP[i]=null}}function Y6(e){return new Promise((t,i)=>{var n,l,s;function a(){od(),gapi.load("gapi.iframes",{callback:()=>{t(gapi.iframes.getContext())},ontimeout:()=>{od(),i(qe(e,"network-request-failed"))},timeout:q6.get()})}if(!((l=(n=ni().gapi)===null||n===void 0?void 0:n.iframes)===null||l===void 0)&&l.Iframe)t(gapi.iframes.getContext());else if(!((s=ni().gapi)===null||s===void 0)&&s.load)a();else{const o=Wy("iframefcb");return ni()[o]=()=>{gapi.load?a():i(qe(e,"network-request-failed"))},Jy(`${$y()}?onload=${o}`).catch(c=>i(c))}}).catch(t=>{throw Fa=null,t})}let Fa=null;function X6(e){return Fa=Fa||Y6(e),Fa}/**
+ * @license
+ * Copyright 2020 Google LLC.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const F6=new Pr(5e3,15e3),K6="__/auth/iframe",Q6="emulator/auth/iframe",J6={style:{position:"absolute",top:"-100px",width:"1px",height:"1px"},"aria-hidden":"true",tabindex:"-1"},$6=new Map([["identitytoolkit.googleapis.com","p"],["staging-identitytoolkit.sandbox.googleapis.com","s"],["test-identitytoolkit.sandbox.googleapis.com","t"]]);function W6(e){const t=e.config;q(t.authDomain,e,"auth-domain-config-required");const i=t.emulator?j1(t,Q6):`https://${e.config.authDomain}/${K6}`,n={apiKey:t.apiKey,appName:e.name,v:Vs},l=$6.get(e.config.apiHost);l&&(n.eid=l);const s=e._getFrameworks();return s.length&&(n.fw=s.join(",")),`${i}?${Ur(n).slice(1)}`}async function t4(e){const t=await X6(e),i=ni().gapi;return q(i,e,"internal-error"),t.open({where:document.body,url:W6(e),messageHandlersFilter:i.iframes.CROSS_ORIGIN_IFRAMES_FILTER,attributes:J6,dontclear:!0},n=>new Promise(async(l,s)=>{await n.restyle({setHideOnLeave:!1});const a=qe(e,"network-request-failed"),o=ni().setTimeout(()=>{s(a)},F6.get());function c(){ni().clearTimeout(o),l(n)}n.ping(c).then(c,()=>{s(a)})}))}/**
+ * @license
+ * Copyright 2020 Google LLC.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const e4={location:"yes",resizable:"yes",statusbar:"yes",toolbar:"no"},i4=500,n4=600,l4="_blank",s4="http://localhost";class ud{constructor(t){this.window=t,this.associatedEvent=null}close(){if(this.window)try{this.window.close()}catch{}}}function r4(e,t,i,n=i4,l=n4){const s=Math.max((window.screen.availHeight-l)/2,0).toString(),a=Math.max((window.screen.availWidth-n)/2,0).toString();let o="";const c=Object.assign(Object.assign({},e4),{width:n.toString(),height:l.toString(),top:s,left:a}),d=se().toLowerCase();i&&(o=b3(d)?l4:i),Z3(d)&&(t=t||s4,c.scrollbars="yes");const v=Object.entries(c).reduce((V,[b,C])=>`${V}${b}=${C},`,"");if(Py(d)&&o!=="_self")return a4(t||"",o),new ud(null);const Z=window.open(t||"",o,v);q(Z,e,"popup-blocked");try{Z.focus()}catch{}return new ud(Z)}function a4(e,t){const i=document.createElement("a");i.href=e,i.target=t;const n=document.createEvent("MouseEvent");n.initMouseEvent("click",!0,!0,window,1,0,0,0,0,!1,!1,!1,!1,1,null),i.dispatchEvent(n)}/**
+ * @license
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const o4="__/auth/handler",u4="emulator/auth/handler",c4=encodeURIComponent("fac");async function cd(e,t,i,n,l,s){q(e.config.authDomain,e,"auth-domain-config-required"),q(e.config.apiKey,e,"invalid-api-key");const a={apiKey:e.config.apiKey,appName:e.name,authType:i,redirectUrl:n,v:Vs,eventId:l};if(t instanceof l2){t.setDefaultLanguage(e.languageCode),a.providerId=t.providerId||"",dM(t.getCustomParameters())||(a.customParameters=JSON.stringify(t.getCustomParameters()));for(const[v,Z]of Object.entries({}))a[v]=Z}if(t instanceof Gr){const v=t.getScopes().filter(Z=>Z!=="");v.length>0&&(a.scopes=v.join(","))}e.tenantId&&(a.tid=e.tenantId);const o=a;for(const v of Object.keys(o))o[v]===void 0&&delete o[v];const c=await e._getAppCheckToken(),d=c?`#${c4}=${encodeURIComponent(c)}`:"";return`${h4(e)}?${Ur(o).slice(1)}${d}`}function h4({config:e}){return e.emulator?j1(e,u4):`https://${e.authDomain}/${o4}`}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const vu="webStorageSupport";class f4{constructor(){this.eventManagers={},this.iframes={},this.originValidationPromises={},this._redirectPersistence=X1,this._completeRedirectFn=X3,this._overrideRedirectResult=R6}async _openPopup(t,i,n,l){var s;Li((s=this.eventManagers[t._key()])===null||s===void 0?void 0:s.manager,"_initialize() not called before _openPopup()");const a=await cd(t,i,n,_c(),l);return r4(t,a,F1())}async _openRedirect(t,i,n,l){await this._originValidation(t);const s=await cd(t,i,n,_c(),l);return V6(s),new Promise(()=>{})}_initialize(t){const i=t._key();if(this.eventManagers[i]){const{manager:l,promise:s}=this.eventManagers[i];return l?Promise.resolve(l):(Li(s,"If manager is not set, promise should be"),s)}const n=this.initAndGetManager(t);return this.eventManagers[i]={promise:n},n.catch(()=>{delete this.eventManagers[i]}),n}async initAndGetManager(t){const i=await t4(t),n=new k6(t);return i.register("authEvent",l=>(q(l==null?void 0:l.authEvent,t,"invalid-auth-event"),{status:n.onEvent(l.authEvent)?"ACK":"ERROR"}),gapi.iframes.CROSS_ORIGIN_IFRAMES_FILTER),this.eventManagers[t._key()]={manager:n},this.iframes[t._key()]=i,n}_isIframeWebStorageSupported(t,i){this.iframes[t._key()].send(vu,{type:vu},l=>{var s;const a=(s=l==null?void 0:l[0])===null||s===void 0?void 0:s[vu];a!==void 0&&i(!!a),li(t,"internal-error")},gapi.iframes.CROSS_ORIGIN_IFRAMES_FILTER)}_originValidation(t){const i=t._key();return this.originValidationPromises[i]||(this.originValidationPromises[i]=P6(t)),this.originValidationPromises[i]}get _shouldInitProactively(){return x3()||_3()||q1()}}const K3=f4;var hd="@firebase/auth",fd="1.10.8";/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class d4{constructor(t){this.auth=t,this.internalListeners=new Map}getUid(){var t;return this.assertAuthConfigured(),((t=this.auth.currentUser)===null||t===void 0?void 0:t.uid)||null}async getToken(t){return this.assertAuthConfigured(),await this.auth._initializationPromise,this.auth.currentUser?{accessToken:await this.auth.currentUser.getIdToken(t)}:null}addAuthTokenListener(t){if(this.assertAuthConfigured(),this.internalListeners.has(t))return;const i=this.auth.onIdTokenChanged(n=>{t((n==null?void 0:n.stsTokenManager.accessToken)||null)});this.internalListeners.set(t,i),this.updateProactiveRefresh()}removeAuthTokenListener(t){this.assertAuthConfigured();const i=this.internalListeners.get(t);i&&(this.internalListeners.delete(t),i(),this.updateProactiveRefresh())}assertAuthConfigured(){q(this.auth._initializationPromise,"dependent-sdk-initialized-before-auth")}updateProactiveRefresh(){this.internalListeners.size>0?this.auth._startProactiveRefresh():this.auth._stopProactiveRefresh()}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function H4(e){switch(e){case"Node":return"node";case"ReactNative":return"rn";case"Worker":return"webworker";case"Cordova":return"cordova";case"WebExtension":return"web-extension";default:return}}function V4(e){ll(new En("auth",(t,{options:i})=>{const n=t.getProvider("app").getImmediate(),l=t.getProvider("heartbeat"),s=t.getProvider("app-check-internal"),{apiKey:a,authDomain:o}=n.options;q(a&&!a.includes(":"),"invalid-api-key",{appName:n.name});const c={apiKey:a,authDomain:o,clientPlatform:e,apiHost:"identitytoolkit.googleapis.com",tokenApiHost:"securetoken.googleapis.com",apiScheme:"https",sdkClientVersion:C3(e)},d=new Ky(n,l,s,c);return t6(d,i),d},"PUBLIC").setInstantiationMode("EXPLICIT").setInstanceCreatedCallback((t,i,n)=>{t.getProvider("auth-internal").initialize()})),ll(new En("auth-internal",t=>{const i=ps(t.getProvider("auth").getImmediate());return(n=>new d4(n))(i)},"PRIVATE").setInstantiationMode("EXPLICIT")),ii(hd,fd,H4(e)),ii(hd,fd,"esm2017")}/**
+ * @license
+ * Copyright 2021 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const g4=5*60,p4=u3("authIdTokenMaxAge")||g4;let dd=null;const m4=e=>async t=>{const i=t&&await t.getIdTokenResult(),n=i&&(new Date().getTime()-Date.parse(i.issuedAtTime))/1e3;if(n&&n>p4)return;const l=i==null?void 0:i.token;dd!==l&&(dd=l,await fetch(e,{method:l?"POST":"DELETE",headers:l?{Authorization:`Bearer ${l}`}:{}}))};function v4(e=k1()){const t=jr(e,"auth");if(t.isInitialized())return t.getImmediate();const i=O3(e,{popupRedirectResolver:K3,persistence:[_6,k3,X1]}),n=u3("authTokenSyncURL");if(n&&typeof isSecureContext=="boolean"&&isSecureContext){const s=new URL(n,location.origin);if(location.origin===s.origin){const a=m4(s.toString());c6(i,a,()=>a(i.currentUser)),u6(i,o=>a(o))}}const l=r3("auth");return l&&e6(i,`http://${l}`),i}function M4(){var e,t;return(t=(e=document.getElementsByTagName("head"))===null||e===void 0?void 0:e[0])!==null&&t!==void 0?t:document}Qy({loadJS(e){return new Promise((t,i)=>{const n=document.createElement("script");n.setAttribute("src",e),n.onload=t,n.onerror=l=>{const s=qe("internal-error");s.customData=l,i(s)},n.type="text/javascript",n.charset="UTF-8",M4().appendChild(n)})},gapiScript:"https://apis.google.com/js/api.js",recaptchaV2Script:"https://www.google.com/recaptcha/api.js",recaptchaEnterpriseScript:"https://www.google.com/recaptcha/enterprise.js?render="});V4("Browser");var y4="firebase",w4="11.10.0";/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */ii(y4,w4,"app");var Hd=typeof globalThis<"u"?globalThis:typeof window<"u"?window:typeof global<"u"?global:typeof self<"u"?self:{};/** @license
+Copyright The Closure Library Authors.
+SPDX-License-Identifier: Apache-2.0
+*/var J1;(function(){var e;/** @license
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/function t(p,f){function g(){}g.prototype=f.prototype,p.D=f.prototype,p.prototype=new g,p.prototype.constructor=p,p.C=function(M,S,E){for(var y=Array(arguments.length-2),Wt=2;Wt<arguments.length;Wt++)y[Wt-2]=arguments[Wt];return f.prototype[S].apply(M,y)}}function i(){this.blockSize=-1}function n(){this.blockSize=-1,this.blockSize=64,this.g=Array(4),this.B=Array(this.blockSize),this.o=this.h=0,this.s()}t(n,i),n.prototype.s=function(){this.g[0]=1732584193,this.g[1]=4023233417,this.g[2]=2562383102,this.g[3]=271733878,this.o=this.h=0};function l(p,f,g){g||(g=0);var M=Array(16);if(typeof f=="string")for(var S=0;16>S;++S)M[S]=f.charCodeAt(g++)|f.charCodeAt(g++)<<8|f.charCodeAt(g++)<<16|f.charCodeAt(g++)<<24;else for(S=0;16>S;++S)M[S]=f[g++]|f[g++]<<8|f[g++]<<16|f[g++]<<24;f=p.g[0],g=p.g[1],S=p.g[2];var E=p.g[3],y=f+(E^g&(S^E))+M[0]+3614090360&4294967295;f=g+(y<<7&4294967295|y>>>25),y=E+(S^f&(g^S))+M[1]+3905402710&4294967295,E=f+(y<<12&4294967295|y>>>20),y=S+(g^E&(f^g))+M[2]+606105819&4294967295,S=E+(y<<17&4294967295|y>>>15),y=g+(f^S&(E^f))+M[3]+3250441966&4294967295,g=S+(y<<22&4294967295|y>>>10),y=f+(E^g&(S^E))+M[4]+4118548399&4294967295,f=g+(y<<7&4294967295|y>>>25),y=E+(S^f&(g^S))+M[5]+1200080426&4294967295,E=f+(y<<12&4294967295|y>>>20),y=S+(g^E&(f^g))+M[6]+2821735955&4294967295,S=E+(y<<17&4294967295|y>>>15),y=g+(f^S&(E^f))+M[7]+4249261313&4294967295,g=S+(y<<22&4294967295|y>>>10),y=f+(E^g&(S^E))+M[8]+1770035416&4294967295,f=g+(y<<7&4294967295|y>>>25),y=E+(S^f&(g^S))+M[9]+2336552879&4294967295,E=f+(y<<12&4294967295|y>>>20),y=S+(g^E&(f^g))+M[10]+4294925233&4294967295,S=E+(y<<17&4294967295|y>>>15),y=g+(f^S&(E^f))+M[11]+2304563134&4294967295,g=S+(y<<22&4294967295|y>>>10),y=f+(E^g&(S^E))+M[12]+1804603682&4294967295,f=g+(y<<7&4294967295|y>>>25),y=E+(S^f&(g^S))+M[13]+4254626195&4294967295,E=f+(y<<12&4294967295|y>>>20),y=S+(g^E&(f^g))+M[14]+2792965006&4294967295,S=E+(y<<17&4294967295|y>>>15),y=g+(f^S&(E^f))+M[15]+1236535329&4294967295,g=S+(y<<22&4294967295|y>>>10),y=f+(S^E&(g^S))+M[1]+4129170786&4294967295,f=g+(y<<5&4294967295|y>>>27),y=E+(g^S&(f^g))+M[6]+3225465664&4294967295,E=f+(y<<9&4294967295|y>>>23),y=S+(f^g&(E^f))+M[11]+643717713&4294967295,S=E+(y<<14&4294967295|y>>>18),y=g+(E^f&(S^E))+M[0]+3921069994&4294967295,g=S+(y<<20&4294967295|y>>>12),y=f+(S^E&(g^S))+M[5]+3593408605&4294967295,f=g+(y<<5&4294967295|y>>>27),y=E+(g^S&(f^g))+M[10]+38016083&4294967295,E=f+(y<<9&4294967295|y>>>23),y=S+(f^g&(E^f))+M[15]+3634488961&4294967295,S=E+(y<<14&4294967295|y>>>18),y=g+(E^f&(S^E))+M[4]+3889429448&4294967295,g=S+(y<<20&4294967295|y>>>12),y=f+(S^E&(g^S))+M[9]+568446438&4294967295,f=g+(y<<5&4294967295|y>>>27),y=E+(g^S&(f^g))+M[14]+3275163606&4294967295,E=f+(y<<9&4294967295|y>>>23),y=S+(f^g&(E^f))+M[3]+4107603335&4294967295,S=E+(y<<14&4294967295|y>>>18),y=g+(E^f&(S^E))+M[8]+1163531501&4294967295,g=S+(y<<20&4294967295|y>>>12),y=f+(S^E&(g^S))+M[13]+2850285829&4294967295,f=g+(y<<5&4294967295|y>>>27),y=E+(g^S&(f^g))+M[2]+4243563512&4294967295,E=f+(y<<9&4294967295|y>>>23),y=S+(f^g&(E^f))+M[7]+1735328473&4294967295,S=E+(y<<14&4294967295|y>>>18),y=g+(E^f&(S^E))+M[12]+2368359562&4294967295,g=S+(y<<20&4294967295|y>>>12),y=f+(g^S^E)+M[5]+4294588738&4294967295,f=g+(y<<4&4294967295|y>>>28),y=E+(f^g^S)+M[8]+2272392833&4294967295,E=f+(y<<11&4294967295|y>>>21),y=S+(E^f^g)+M[11]+1839030562&4294967295,S=E+(y<<16&4294967295|y>>>16),y=g+(S^E^f)+M[14]+4259657740&4294967295,g=S+(y<<23&4294967295|y>>>9),y=f+(g^S^E)+M[1]+2763975236&4294967295,f=g+(y<<4&4294967295|y>>>28),y=E+(f^g^S)+M[4]+1272893353&4294967295,E=f+(y<<11&4294967295|y>>>21),y=S+(E^f^g)+M[7]+4139469664&4294967295,S=E+(y<<16&4294967295|y>>>16),y=g+(S^E^f)+M[10]+3200236656&4294967295,g=S+(y<<23&4294967295|y>>>9),y=f+(g^S^E)+M[13]+681279174&4294967295,f=g+(y<<4&4294967295|y>>>28),y=E+(f^g^S)+M[0]+3936430074&4294967295,E=f+(y<<11&4294967295|y>>>21),y=S+(E^f^g)+M[3]+3572445317&4294967295,S=E+(y<<16&4294967295|y>>>16),y=g+(S^E^f)+M[6]+76029189&4294967295,g=S+(y<<23&4294967295|y>>>9),y=f+(g^S^E)+M[9]+3654602809&4294967295,f=g+(y<<4&4294967295|y>>>28),y=E+(f^g^S)+M[12]+3873151461&4294967295,E=f+(y<<11&4294967295|y>>>21),y=S+(E^f^g)+M[15]+530742520&4294967295,S=E+(y<<16&4294967295|y>>>16),y=g+(S^E^f)+M[2]+3299628645&4294967295,g=S+(y<<23&4294967295|y>>>9),y=f+(S^(g|~E))+M[0]+4096336452&4294967295,f=g+(y<<6&4294967295|y>>>26),y=E+(g^(f|~S))+M[7]+1126891415&4294967295,E=f+(y<<10&4294967295|y>>>22),y=S+(f^(E|~g))+M[14]+2878612391&4294967295,S=E+(y<<15&4294967295|y>>>17),y=g+(E^(S|~f))+M[5]+4237533241&4294967295,g=S+(y<<21&4294967295|y>>>11),y=f+(S^(g|~E))+M[12]+1700485571&4294967295,f=g+(y<<6&4294967295|y>>>26),y=E+(g^(f|~S))+M[3]+2399980690&4294967295,E=f+(y<<10&4294967295|y>>>22),y=S+(f^(E|~g))+M[10]+4293915773&4294967295,S=E+(y<<15&4294967295|y>>>17),y=g+(E^(S|~f))+M[1]+2240044497&4294967295,g=S+(y<<21&4294967295|y>>>11),y=f+(S^(g|~E))+M[8]+1873313359&4294967295,f=g+(y<<6&4294967295|y>>>26),y=E+(g^(f|~S))+M[15]+4264355552&4294967295,E=f+(y<<10&4294967295|y>>>22),y=S+(f^(E|~g))+M[6]+2734768916&4294967295,S=E+(y<<15&4294967295|y>>>17),y=g+(E^(S|~f))+M[13]+1309151649&4294967295,g=S+(y<<21&4294967295|y>>>11),y=f+(S^(g|~E))+M[4]+4149444226&4294967295,f=g+(y<<6&4294967295|y>>>26),y=E+(g^(f|~S))+M[11]+3174756917&4294967295,E=f+(y<<10&4294967295|y>>>22),y=S+(f^(E|~g))+M[2]+718787259&4294967295,S=E+(y<<15&4294967295|y>>>17),y=g+(E^(S|~f))+M[9]+3951481745&4294967295,p.g[0]=p.g[0]+f&4294967295,p.g[1]=p.g[1]+(S+(y<<21&4294967295|y>>>11))&4294967295,p.g[2]=p.g[2]+S&4294967295,p.g[3]=p.g[3]+E&4294967295}n.prototype.u=function(p,f){f===void 0&&(f=p.length);for(var g=f-this.blockSize,M=this.B,S=this.h,E=0;E<f;){if(S==0)for(;E<=g;)l(this,p,E),E+=this.blockSize;if(typeof p=="string"){for(;E<f;)if(M[S++]=p.charCodeAt(E++),S==this.blockSize){l(this,M),S=0;break}}else for(;E<f;)if(M[S++]=p[E++],S==this.blockSize){l(this,M),S=0;break}}this.h=S,this.o+=f},n.prototype.v=function(){var p=Array((56>this.h?this.blockSize:2*this.blockSize)-this.h);p[0]=128;for(var f=1;f<p.length-8;++f)p[f]=0;var g=8*this.o;for(f=p.length-8;f<p.length;++f)p[f]=g&255,g/=256;for(this.u(p),p=Array(16),f=g=0;4>f;++f)for(var M=0;32>M;M+=8)p[g++]=this.g[f]>>>M&255;return p};function s(p,f){var g=o;return Object.prototype.hasOwnProperty.call(g,p)?g[p]:g[p]=f(p)}function a(p,f){this.h=f;for(var g=[],M=!0,S=p.length-1;0<=S;S--){var E=p[S]|0;M&&E==f||(g[S]=E,M=!1)}this.g=g}var o={};function c(p){return-128<=p&&128>p?s(p,function(f){return new a([f|0],0>f?-1:0)}):new a([p|0],0>p?-1:0)}function d(p){if(isNaN(p)||!isFinite(p))return Z;if(0>p)return R(d(-p));for(var f=[],g=1,M=0;p>=g;M++)f[M]=p/g|0,g*=4294967296;return new a(f,0)}function v(p,f){if(p.length==0)throw Error("number format error: empty string");if(f=f||10,2>f||36<f)throw Error("radix out of range: "+f);if(p.charAt(0)=="-")return R(v(p.substring(1),f));if(0<=p.indexOf("-"))throw Error('number format error: interior "-" character');for(var g=d(Math.pow(f,8)),M=Z,S=0;S<p.length;S+=8){var E=Math.min(8,p.length-S),y=parseInt(p.substring(S,S+E),f);8>E?(E=d(Math.pow(f,E)),M=M.j(E).add(d(y))):(M=M.j(g),M=M.add(d(y)))}return M}var Z=c(0),V=c(1),b=c(16777216);e=a.prototype,e.m=function(){if(O(this))return-R(this).m();for(var p=0,f=1,g=0;g<this.g.length;g++){var M=this.i(g);p+=(0<=M?M:4294967296+M)*f,f*=4294967296}return p},e.toString=function(p){if(p=p||10,2>p||36<p)throw Error("radix out of range: "+p);if(C(this))return"0";if(O(this))return"-"+R(this).toString(p);for(var f=d(Math.pow(p,6)),g=this,M="";;){var S=A(g,f).g;g=w(g,S.j(f));var E=((0<g.g.length?g.g[0]:g.h)>>>0).toString(p);if(g=S,C(g))return E+M;for(;6>E.length;)E="0"+E;M=E+M}},e.i=function(p){return 0>p?0:p<this.g.length?this.g[p]:this.h};function C(p){if(p.h!=0)return!1;for(var f=0;f<p.g.length;f++)if(p.g[f]!=0)return!1;return!0}function O(p){return p.h==-1}e.l=function(p){return p=w(this,p),O(p)?-1:C(p)?0:1};function R(p){for(var f=p.g.length,g=[],M=0;M<f;M++)g[M]=~p.g[M];return new a(g,~p.h).add(V)}e.abs=function(){return O(this)?R(this):this},e.add=function(p){for(var f=Math.max(this.g.length,p.g.length),g=[],M=0,S=0;S<=f;S++){var E=M+(this.i(S)&65535)+(p.i(S)&65535),y=(E>>>16)+(this.i(S)>>>16)+(p.i(S)>>>16);M=y>>>16,E&=65535,y&=65535,g[S]=y<<16|E}return new a(g,g[g.length-1]&-2147483648?-1:0)};function w(p,f){return p.add(R(f))}e.j=function(p){if(C(this)||C(p))return Z;if(O(this))return O(p)?R(this).j(R(p)):R(R(this).j(p));if(O(p))return R(this.j(R(p)));if(0>this.l(b)&&0>p.l(b))return d(this.m()*p.m());for(var f=this.g.length+p.g.length,g=[],M=0;M<2*f;M++)g[M]=0;for(M=0;M<this.g.length;M++)for(var S=0;S<p.g.length;S++){var E=this.i(M)>>>16,y=this.i(M)&65535,Wt=p.i(S)>>>16,Ft=p.i(S)&65535;g[2*M+2*S]+=y*Ft,m(g,2*M+2*S),g[2*M+2*S+1]+=E*Ft,m(g,2*M+2*S+1),g[2*M+2*S+1]+=y*Wt,m(g,2*M+2*S+1),g[2*M+2*S+2]+=E*Wt,m(g,2*M+2*S+2)}for(M=0;M<f;M++)g[M]=g[2*M+1]<<16|g[2*M];for(M=f;M<2*f;M++)g[M]=0;return new a(g,0)};function m(p,f){for(;(p[f]&65535)!=p[f];)p[f+1]+=p[f]>>>16,p[f]&=65535,f++}function _(p,f){this.g=p,this.h=f}function A(p,f){if(C(f))throw Error("division by zero");if(C(p))return new _(Z,Z);if(O(p))return f=A(R(p),f),new _(R(f.g),R(f.h));if(O(f))return f=A(p,R(f)),new _(R(f.g),f.h);if(30<p.g.length){if(O(p)||O(f))throw Error("slowDivide_ only works with positive integers.");for(var g=V,M=f;0>=M.l(p);)g=L(g),M=L(M);var S=U(g,1),E=U(M,1);for(M=U(M,2),g=U(g,2);!C(M);){var y=E.add(M);0>=y.l(p)&&(S=S.add(g),E=y),M=U(M,1),g=U(g,1)}return f=w(p,S.j(f)),new _(S,f)}for(S=Z;0<=p.l(f);){for(g=Math.max(1,Math.floor(p.m()/f.m())),M=Math.ceil(Math.log(g)/Math.LN2),M=48>=M?1:Math.pow(2,M-48),E=d(g),y=E.j(f);O(y)||0<y.l(p);)g-=M,E=d(g),y=E.j(f);C(E)&&(E=V),S=S.add(E),p=w(p,y)}return new _(S,p)}e.A=function(p){return A(this,p).h},e.and=function(p){for(var f=Math.max(this.g.length,p.g.length),g=[],M=0;M<f;M++)g[M]=this.i(M)&p.i(M);return new a(g,this.h&p.h)},e.or=function(p){for(var f=Math.max(this.g.length,p.g.length),g=[],M=0;M<f;M++)g[M]=this.i(M)|p.i(M);return new a(g,this.h|p.h)},e.xor=function(p){for(var f=Math.max(this.g.length,p.g.length),g=[],M=0;M<f;M++)g[M]=this.i(M)^p.i(M);return new a(g,this.h^p.h)};function L(p){for(var f=p.g.length+1,g=[],M=0;M<f;M++)g[M]=p.i(M)<<1|p.i(M-1)>>>31;return new a(g,p.h)}function U(p,f){var g=f>>5;f%=32;for(var M=p.g.length-g,S=[],E=0;E<M;E++)S[E]=0<f?p.i(E+g)>>>f|p.i(E+g+1)<<32-f:p.i(E+g);return new a(S,p.h)}n.prototype.digest=n.prototype.v,n.prototype.reset=n.prototype.s,n.prototype.update=n.prototype.u,a.prototype.add=a.prototype.add,a.prototype.multiply=a.prototype.j,a.prototype.modulo=a.prototype.A,a.prototype.compare=a.prototype.l,a.prototype.toNumber=a.prototype.m,a.prototype.toString=a.prototype.toString,a.prototype.getBits=a.prototype.i,a.fromNumber=d,a.fromString=v,J1=a}).apply(typeof Hd<"u"?Hd:typeof self<"u"?self:typeof window<"u"?window:{});var Ea=typeof globalThis<"u"?globalThis:typeof window<"u"?window:typeof global<"u"?global:typeof self<"u"?self:{};(function(){var e,t=typeof Object.defineProperties=="function"?Object.defineProperty:function(r,u,h){return r==Array.prototype||r==Object.prototype||(r[u]=h.value),r};function i(r){r=[typeof globalThis=="object"&&globalThis,r,typeof window=="object"&&window,typeof self=="object"&&self,typeof Ea=="object"&&Ea];for(var u=0;u<r.length;++u){var h=r[u];if(h&&h.Math==Math)return h}throw Error("Cannot find global object")}var n=i(this);function l(r,u){if(u)t:{var h=n;r=r.split(".");for(var H=0;H<r.length-1;H++){var T=r[H];if(!(T in h))break t;h=h[T]}r=r[r.length-1],H=h[r],u=u(H),u!=H&&u!=null&&t(h,r,{configurable:!0,writable:!0,value:u})}}function s(r,u){r instanceof String&&(r+="");var h=0,H=!1,T={next:function(){if(!H&&h<r.length){var x=h++;return{value:u(x,r[x]),done:!1}}return H=!0,{done:!0,value:void 0}}};return T[Symbol.iterator]=function(){return T},T}l("Array.prototype.values",function(r){return r||function(){return s(this,function(u,h){return h})}});/** @license
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/var a=a||{},o=this||self;function c(r){var u=typeof r;return u=u!="object"?u:r?Array.isArray(r)?"array":u:"null",u=="array"||u=="object"&&typeof r.length=="number"}function d(r){var u=typeof r;return u=="object"&&r!=null||u=="function"}function v(r,u,h){return r.call.apply(r.bind,arguments)}function Z(r,u,h){if(!r)throw Error();if(2<arguments.length){var H=Array.prototype.slice.call(arguments,2);return function(){var T=Array.prototype.slice.call(arguments);return Array.prototype.unshift.apply(T,H),r.apply(u,T)}}return function(){return r.apply(u,arguments)}}function V(r,u,h){return V=Function.prototype.bind&&Function.prototype.bind.toString().indexOf("native code")!=-1?v:Z,V.apply(null,arguments)}function b(r,u){var h=Array.prototype.slice.call(arguments,1);return function(){var H=h.slice();return H.push.apply(H,arguments),r.apply(this,H)}}function C(r,u){function h(){}h.prototype=u.prototype,r.aa=u.prototype,r.prototype=new h,r.prototype.constructor=r,r.Qb=function(H,T,x){for(var B=Array(arguments.length-2),ft=2;ft<arguments.length;ft++)B[ft-2]=arguments[ft];return u.prototype[T].apply(H,B)}}function O(r){const u=r.length;if(0<u){const h=Array(u);for(let H=0;H<u;H++)h[H]=r[H];return h}return[]}function R(r,u){for(let h=1;h<arguments.length;h++){const H=arguments[h];if(c(H)){const T=r.length||0,x=H.length||0;r.length=T+x;for(let B=0;B<x;B++)r[T+B]=H[B]}else r.push(H)}}class w{constructor(u,h){this.i=u,this.j=h,this.h=0,this.g=null}get(){let u;return 0<this.h?(this.h--,u=this.g,this.g=u.next,u.next=null):u=this.i(),u}}function m(r){return/^[\s\xa0]*$/.test(r)}function _(){var r=o.navigator;return r&&(r=r.userAgent)?r:""}function A(r){return A[" "](r),r}A[" "]=function(){};var L=_().indexOf("Gecko")!=-1&&!(_().toLowerCase().indexOf("webkit")!=-1&&_().indexOf("Edge")==-1)&&!(_().indexOf("Trident")!=-1||_().indexOf("MSIE")!=-1)&&_().indexOf("Edge")==-1;function U(r,u,h){for(const H in r)u.call(h,r[H],H,r)}function p(r,u){for(const h in r)u.call(void 0,r[h],h,r)}function f(r){const u={};for(const h in r)u[h]=r[h];return u}const g="constructor hasOwnProperty isPrototypeOf propertyIsEnumerable toLocaleString toString valueOf".split(" ");function M(r,u){let h,H;for(let T=1;T<arguments.length;T++){H=arguments[T];for(h in H)r[h]=H[h];for(let x=0;x<g.length;x++)h=g[x],Object.prototype.hasOwnProperty.call(H,h)&&(r[h]=H[h])}}function S(r){var u=1;r=r.split(":");const h=[];for(;0<u&&r.length;)h.push(r.shift()),u--;return r.length&&h.push(r.join(":")),h}function E(r){o.setTimeout(()=>{throw r},0)}function y(){var r=at;let u=null;return r.g&&(u=r.g,r.g=r.g.next,r.g||(r.h=null),u.next=null),u}class Wt{constructor(){this.h=this.g=null}add(u,h){const H=Ft.get();H.set(u,h),this.h?this.h.next=H:this.g=H,this.h=H}}var Ft=new w(()=>new D,r=>r.reset());class D{constructor(){this.next=this.g=this.h=null}set(u,h){this.h=u,this.g=h,this.next=null}reset(){this.next=this.g=this.h=null}}let j,P=!1,at=new Wt,k=()=>{const r=o.Promise.resolve(void 0);j=()=>{r.then(oi)}};var oi=()=>{for(var r;r=y();){try{r.h.call(r.g)}catch(h){E(h)}var u=Ft;u.j(r),100>u.h&&(u.h++,r.next=u.g,u.g=r)}P=!1};function Kt(){this.s=this.s,this.C=this.C}Kt.prototype.s=!1,Kt.prototype.ma=function(){this.s||(this.s=!0,this.N())},Kt.prototype.N=function(){if(this.C)for(;this.C.length;)this.C.shift()()};function Zt(r,u){this.type=r,this.g=this.target=u,this.defaultPrevented=!1}Zt.prototype.h=function(){this.defaultPrevented=!0};var Ve=function(){if(!o.addEventListener||!Object.defineProperty)return!1;var r=!1,u=Object.defineProperty({},"passive",{get:function(){r=!0}});try{const h=()=>{};o.addEventListener("test",h,u),o.removeEventListener("test",h,u)}catch{}return r}();function Ht(r,u){if(Zt.call(this,r?r.type:""),this.relatedTarget=this.g=this.target=null,this.button=this.screenY=this.screenX=this.clientY=this.clientX=0,this.key="",this.metaKey=this.shiftKey=this.altKey=this.ctrlKey=!1,this.state=null,this.pointerId=0,this.pointerType="",this.i=null,r){var h=this.type=r.type,H=r.changedTouches&&r.changedTouches.length?r.changedTouches[0]:null;if(this.target=r.target||r.srcElement,this.g=u,u=r.relatedTarget){if(L){t:{try{A(u.nodeName);var T=!0;break t}catch{}T=!1}T||(u=null)}}else h=="mouseover"?u=r.fromElement:h=="mouseout"&&(u=r.toElement);this.relatedTarget=u,H?(this.clientX=H.clientX!==void 0?H.clientX:H.pageX,this.clientY=H.clientY!==void 0?H.clientY:H.pageY,this.screenX=H.screenX||0,this.screenY=H.screenY||0):(this.clientX=r.clientX!==void 0?r.clientX:r.pageX,this.clientY=r.clientY!==void 0?r.clientY:r.pageY,this.screenX=r.screenX||0,this.screenY=r.screenY||0),this.button=r.button,this.key=r.key||"",this.ctrlKey=r.ctrlKey,this.altKey=r.altKey,this.shiftKey=r.shiftKey,this.metaKey=r.metaKey,this.pointerId=r.pointerId||0,this.pointerType=typeof r.pointerType=="string"?r.pointerType:Ut[r.pointerType]||"",this.state=r.state,this.i=r,r.defaultPrevented&&Ht.aa.h.call(this)}}C(Ht,Zt);var Ut={2:"touch",3:"pen",4:"mouse"};Ht.prototype.h=function(){Ht.aa.h.call(this);var r=this.i;r.preventDefault?r.preventDefault():r.returnValue=!1};var ui="closure_listenable_"+(1e6*Math.random()|0),Fr=0;function At(r,u,h,H,T){this.listener=r,this.proxy=null,this.src=u,this.type=h,this.capture=!!H,this.ha=T,this.key=++Fr,this.da=this.fa=!1}function Cn(r){r.da=!0,r.listener=null,r.proxy=null,r.src=null,r.ha=null}function ci(r){this.src=r,this.g={},this.h=0}ci.prototype.add=function(r,u,h,H,T){var x=r.toString();r=this.g[x],r||(r=this.g[x]=[],this.h++);var B=On(r,u,H,T);return-1<B?(u=r[B],h||(u.fa=!1)):(u=new At(u,this.src,x,!!H,T),u.fa=h,r.push(u)),u};function Ii(r,u){var h=u.type;if(h in r.g){var H=r.g[h],T=Array.prototype.indexOf.call(H,u,void 0),x;(x=0<=T)&&Array.prototype.splice.call(H,T,1),x&&(Cn(u),r.g[h].length==0&&(delete r.g[h],r.h--))}}function On(r,u,h,H){for(var T=0;T<r.length;++T){var x=r[T];if(!x.da&&x.listener==u&&x.capture==!!h&&x.ha==H)return T}return-1}var zi="closure_lm_"+(1e6*Math.random()|0),a2={};function nh(r,u,h,H,T){if(Array.isArray(u)){for(var x=0;x<u.length;x++)nh(r,u[x],h,H,T);return null}return h=rh(h),r&&r[ui]?r.K(u,h,d(H)?!!H.capture:!1,T):hp(r,u,h,!1,H,T)}function hp(r,u,h,H,T,x){if(!u)throw Error("Invalid event type");var B=d(T)?!!T.capture:!!T,ft=u2(r);if(ft||(r[zi]=ft=new ci(r)),h=ft.add(u,h,H,B,x),h.proxy)return h;if(H=fp(),h.proxy=H,H.src=r,H.listener=h,r.addEventListener)Ve||(T=B),T===void 0&&(T=!1),r.addEventListener(u.toString(),H,T);else if(r.attachEvent)r.attachEvent(sh(u.toString()),H);else if(r.addListener&&r.removeListener)r.addListener(H);else throw Error("addEventListener and attachEvent are unavailable.");return h}function fp(){function r(h){return u.call(r.src,r.listener,h)}const u=dp;return r}function lh(r,u,h,H,T){if(Array.isArray(u))for(var x=0;x<u.length;x++)lh(r,u[x],h,H,T);else H=d(H)?!!H.capture:!!H,h=rh(h),r&&r[ui]?(r=r.i,u=String(u).toString(),u in r.g&&(x=r.g[u],h=On(x,h,H,T),-1<h&&(Cn(x[h]),Array.prototype.splice.call(x,h,1),x.length==0&&(delete r.g[u],r.h--)))):r&&(r=u2(r))&&(u=r.g[u.toString()],r=-1,u&&(r=On(u,h,H,T)),(h=-1<r?u[r]:null)&&o2(h))}function o2(r){if(typeof r!="number"&&r&&!r.da){var u=r.src;if(u&&u[ui])Ii(u.i,r);else{var h=r.type,H=r.proxy;u.removeEventListener?u.removeEventListener(h,H,r.capture):u.detachEvent?u.detachEvent(sh(h),H):u.addListener&&u.removeListener&&u.removeListener(H),(h=u2(u))?(Ii(h,r),h.h==0&&(h.src=null,u[zi]=null)):Cn(r)}}}function sh(r){return r in a2?a2[r]:a2[r]="on"+r}function dp(r,u){if(r.da)r=!0;else{u=new Ht(u,this);var h=r.listener,H=r.ha||r.src;r.fa&&o2(r),r=h.call(H,u)}return r}function u2(r){return r=r[zi],r instanceof ci?r:null}var c2="__closure_events_fn_"+(1e9*Math.random()>>>0);function rh(r){return typeof r=="function"?r:(r[c2]||(r[c2]=function(u){return r.handleEvent(u)}),r[c2])}function Qt(){Kt.call(this),this.i=new ci(this),this.M=this,this.F=null}C(Qt,Kt),Qt.prototype[ui]=!0,Qt.prototype.removeEventListener=function(r,u,h,H){lh(this,r,u,h,H)};function te(r,u){var h,H=r.F;if(H)for(h=[];H;H=H.F)h.push(H);if(r=r.M,H=u.type||u,typeof u=="string")u=new Zt(u,r);else if(u instanceof Zt)u.target=u.target||r;else{var T=u;u=new Zt(H,r),M(u,T)}if(T=!0,h)for(var x=h.length-1;0<=x;x--){var B=u.g=h[x];T=Kr(B,H,!0,u)&&T}if(B=u.g=r,T=Kr(B,H,!0,u)&&T,T=Kr(B,H,!1,u)&&T,h)for(x=0;x<h.length;x++)B=u.g=h[x],T=Kr(B,H,!1,u)&&T}Qt.prototype.N=function(){if(Qt.aa.N.call(this),this.i){var r=this.i,u;for(u in r.g){for(var h=r.g[u],H=0;H<h.length;H++)Cn(h[H]);delete r.g[u],r.h--}}this.F=null},Qt.prototype.K=function(r,u,h,H){return this.i.add(String(r),u,!1,h,H)},Qt.prototype.L=function(r,u,h,H){return this.i.add(String(r),u,!0,h,H)};function Kr(r,u,h,H){if(u=r.i.g[String(u)],!u)return!0;u=u.concat();for(var T=!0,x=0;x<u.length;++x){var B=u[x];if(B&&!B.da&&B.capture==h){var ft=B.listener,jt=B.ha||B.src;B.fa&&Ii(r.i,B),T=ft.call(jt,H)!==!1&&T}}return T&&!H.defaultPrevented}function ah(r,u,h){if(typeof r=="function")h&&(r=V(r,h));else if(r&&typeof r.handleEvent=="function")r=V(r.handleEvent,r);else throw Error("Invalid listener argument");return 2147483647<Number(u)?-1:o.setTimeout(r,u||0)}function oh(r){r.g=ah(()=>{r.g=null,r.i&&(r.i=!1,oh(r))},r.l);const u=r.h;r.h=null,r.m.apply(null,u)}class Hp extends Kt{constructor(u,h){super(),this.m=u,this.l=h,this.h=null,this.i=!1,this.g=null}j(u){this.h=arguments,this.g?this.i=!0:oh(this)}N(){super.N(),this.g&&(o.clearTimeout(this.g),this.g=null,this.i=!1,this.h=null)}}function ms(r){Kt.call(this),this.h=r,this.g={}}C(ms,Kt);var uh=[];function ch(r){U(r.g,function(u,h){this.g.hasOwnProperty(h)&&o2(u)},r),r.g={}}ms.prototype.N=function(){ms.aa.N.call(this),ch(this)},ms.prototype.handleEvent=function(){throw Error("EventHandler.handleEvent not implemented")};var h2=o.JSON.stringify,Vp=o.JSON.parse,gp=class{stringify(r){return o.JSON.stringify(r,void 0)}parse(r){return o.JSON.parse(r,void 0)}};function f2(){}f2.prototype.h=null;function hh(r){return r.h||(r.h=r.i())}function pp(){}var vs={OPEN:"a",kb:"b",Ja:"c",wb:"d"};function d2(){Zt.call(this,"d")}C(d2,Zt);function H2(){Zt.call(this,"c")}C(H2,Zt);var Hl={},fh=null;function V2(){return fh=fh||new Qt}Hl.La="serverreachability";function dh(r){Zt.call(this,Hl.La,r)}C(dh,Zt);function Ms(r){const u=V2();te(u,new dh(u))}Hl.STAT_EVENT="statevent";function Hh(r,u){Zt.call(this,Hl.STAT_EVENT,r),this.stat=u}C(Hh,Zt);function ee(r){const u=V2();te(u,new Hh(u,r))}Hl.Ma="timingevent";function Vh(r,u){Zt.call(this,Hl.Ma,r),this.size=u}C(Vh,Zt);function ys(r,u){if(typeof r!="function")throw Error("Fn must not be null and must be a function");return o.setTimeout(function(){r()},u)}function ws(){this.g=!0}ws.prototype.xa=function(){this.g=!1};function mp(r,u,h,H,T,x){r.info(function(){if(r.g)if(x)for(var B="",ft=x.split("&"),jt=0;jt<ft.length;jt++){var nt=ft[jt].split("=");if(1<nt.length){var Jt=nt[0];nt=nt[1];var $t=Jt.split("_");B=2<=$t.length&&$t[1]=="type"?B+(Jt+"="+nt+"&"):B+(Jt+"=redacted&")}}else B=null;else B=x;return"XMLHTTP REQ ("+H+") [attempt "+T+"]: "+u+`
+`+h+`
+`+B})}function vp(r,u,h,H,T,x,B){r.info(function(){return"XMLHTTP RESP ("+H+") [ attempt "+T+"]: "+u+`
+`+h+`
+`+x+" "+B})}function Vl(r,u,h,H){r.info(function(){return"XMLHTTP TEXT ("+u+"): "+yp(r,h)+(H?" "+H:"")})}function Mp(r,u){r.info(function(){return"TIMEOUT: "+u})}ws.prototype.info=function(){};function yp(r,u){if(!r.g)return u;if(!u)return null;try{var h=JSON.parse(u);if(h){for(r=0;r<h.length;r++)if(Array.isArray(h[r])){var H=h[r];if(!(2>H.length)){var T=H[1];if(Array.isArray(T)&&!(1>T.length)){var x=T[0];if(x!="noop"&&x!="stop"&&x!="close")for(var B=1;B<T.length;B++)T[B]=""}}}}return h2(h)}catch{return u}}var g2={NO_ERROR:0,TIMEOUT:8},wp={},p2;function Qr(){}C(Qr,f2),Qr.prototype.g=function(){return new XMLHttpRequest},Qr.prototype.i=function(){return{}},p2=new Qr;function Ui(r,u,h,H){this.j=r,this.i=u,this.l=h,this.R=H||1,this.U=new ms(this),this.I=45e3,this.H=null,this.o=!1,this.m=this.A=this.v=this.L=this.F=this.S=this.B=null,this.D=[],this.g=null,this.C=0,this.s=this.u=null,this.X=-1,this.J=!1,this.O=0,this.M=null,this.W=this.K=this.T=this.P=!1,this.h=new gh}function gh(){this.i=null,this.g="",this.h=!1}var ph={},m2={};function v2(r,u,h){r.L=1,r.v=ta(hi(u)),r.m=h,r.P=!0,mh(r,null)}function mh(r,u){r.F=Date.now(),Jr(r),r.A=hi(r.v);var h=r.A,H=r.R;Array.isArray(H)||(H=[String(H)]),Oh(h.i,"t",H),r.C=0,h=r.j.J,r.h=new gh,r.g=Qh(r.j,h?u:null,!r.m),0<r.O&&(r.M=new Hp(V(r.Y,r,r.g),r.O)),u=r.U,h=r.g,H=r.ca;var T="readystatechange";Array.isArray(T)||(T&&(uh[0]=T.toString()),T=uh);for(var x=0;x<T.length;x++){var B=nh(h,T[x],H||u.handleEvent,!1,u.h||u);if(!B)break;u.g[B.key]=B}u=r.H?f(r.H):{},r.m?(r.u||(r.u="POST"),u["Content-Type"]="application/x-www-form-urlencoded",r.g.ea(r.A,r.u,r.m,u)):(r.u="GET",r.g.ea(r.A,r.u,null,u)),Ms(),mp(r.i,r.u,r.A,r.l,r.R,r.m)}Ui.prototype.ca=function(r){r=r.target;const u=this.M;u&&fi(r)==3?u.j():this.Y(r)},Ui.prototype.Y=function(r){try{if(r==this.g)t:{const $t=fi(this.g);var u=this.g.Ba();const ml=this.g.Z();if(!(3>$t)&&($t!=3||this.g&&(this.h.h||this.g.oa()||Ih(this.g)))){this.J||$t!=4||u==7||(u==8||0>=ml?Ms(3):Ms(2)),M2(this);var h=this.g.Z();this.X=h;e:if(vh(this)){var H=Ih(this.g);r="";var T=H.length,x=fi(this.g)==4;if(!this.h.i){if(typeof TextDecoder>"u"){Nn(this),Zs(this);var B="";break e}this.h.i=new o.TextDecoder}for(u=0;u<T;u++)this.h.h=!0,r+=this.h.i.decode(H[u],{stream:!(x&&u==T-1)});H.length=0,this.h.g+=r,this.C=0,B=this.h.g}else B=this.g.oa();if(this.o=h==200,vp(this.i,this.u,this.A,this.l,this.R,$t,h),this.o){if(this.T&&!this.K){e:{if(this.g){var ft,jt=this.g;if((ft=jt.g?jt.g.getResponseHeader("X-HTTP-Initial-Response"):null)&&!m(ft)){var nt=ft;break e}}nt=null}if(h=nt)Vl(this.i,this.l,h,"Initial handshake response via X-HTTP-Initial-Response"),this.K=!0,y2(this,h);else{this.o=!1,this.s=3,ee(12),Nn(this),Zs(this);break t}}if(this.P){h=!0;let Ie;for(;!this.J&&this.C<B.length;)if(Ie=Zp(this,B),Ie==m2){$t==4&&(this.s=4,ee(14),h=!1),Vl(this.i,this.l,null,"[Incomplete Response]");break}else if(Ie==ph){this.s=4,ee(15),Vl(this.i,this.l,B,"[Invalid Chunk]"),h=!1;break}else Vl(this.i,this.l,Ie,null),y2(this,Ie);if(vh(this)&&this.C!=0&&(this.h.g=this.h.g.slice(this.C),this.C=0),$t!=4||B.length!=0||this.h.h||(this.s=1,ee(16),h=!1),this.o=this.o&&h,!h)Vl(this.i,this.l,B,"[Invalid Chunked Response]"),Nn(this),Zs(this);else if(0<B.length&&!this.W){this.W=!0;var Jt=this.j;Jt.g==this&&Jt.ba&&!Jt.M&&(Jt.j.info("Great, no buffering proxy detected. Bytes received: "+B.length),E2(Jt),Jt.M=!0,ee(11))}}else Vl(this.i,this.l,B,null),y2(this,B);$t==4&&Nn(this),this.o&&!this.J&&($t==4?Yh(this.j,this):(this.o=!1,Jr(this)))}else zp(this.g),h==400&&0<B.indexOf("Unknown SID")?(this.s=3,ee(12)):(this.s=0,ee(13)),Nn(this),Zs(this)}}}catch{}finally{}};function vh(r){return r.g?r.u=="GET"&&r.L!=2&&r.j.Ca:!1}function Zp(r,u){var h=r.C,H=u.indexOf(`
+`,h);return H==-1?m2:(h=Number(u.substring(h,H)),isNaN(h)?ph:(H+=1,H+h>u.length?m2:(u=u.slice(H,H+h),r.C=H+h,u)))}Ui.prototype.cancel=function(){this.J=!0,Nn(this)};function Jr(r){r.S=Date.now()+r.I,Mh(r,r.I)}function Mh(r,u){if(r.B!=null)throw Error("WatchDog timer not null");r.B=ys(V(r.ba,r),u)}function M2(r){r.B&&(o.clearTimeout(r.B),r.B=null)}Ui.prototype.ba=function(){this.B=null;const r=Date.now();0<=r-this.S?(Mp(this.i,this.A),this.L!=2&&(Ms(),ee(17)),Nn(this),this.s=2,Zs(this)):Mh(this,this.S-r)};function Zs(r){r.j.G==0||r.J||Yh(r.j,r)}function Nn(r){M2(r);var u=r.M;u&&typeof u.ma=="function"&&u.ma(),r.M=null,ch(r.U),r.g&&(u=r.g,r.g=null,u.abort(),u.ma())}function y2(r,u){try{var h=r.j;if(h.G!=0&&(h.g==r||w2(h.h,r))){if(!r.K&&w2(h.h,r)&&h.G==3){try{var H=h.Da.g.parse(u)}catch{H=null}if(Array.isArray(H)&&H.length==3){var T=H;if(T[0]==0){t:if(!h.u){if(h.g)if(h.g.F+3e3<r.F)ra(h),la(h);else break t;S2(h),ee(18)}}else h.za=T[1],0<h.za-h.T&&37500>T[2]&&h.F&&h.v==0&&!h.C&&(h.C=ys(V(h.Za,h),6e3));if(1>=Zh(h.h)&&h.ca){try{h.ca()}catch{}h.ca=void 0}}else Bn(h,11)}else if((r.K||h.g==r)&&ra(h),!m(u))for(T=h.Da.g.parse(u),u=0;u<T.length;u++){let nt=T[u];if(h.T=nt[0],nt=nt[1],h.G==2)if(nt[0]=="c"){h.K=nt[1],h.ia=nt[2];const Jt=nt[3];Jt!=null&&(h.la=Jt,h.j.info("VER="+h.la));const $t=nt[4];$t!=null&&(h.Aa=$t,h.j.info("SVER="+h.Aa));const ml=nt[5];ml!=null&&typeof ml=="number"&&0<ml&&(H=1.5*ml,h.L=H,h.j.info("backChannelRequestTimeoutMs_="+H)),H=h;const Ie=r.g;if(Ie){const aa=Ie.g?Ie.g.getResponseHeader("X-Client-Wire-Protocol"):null;if(aa){var x=H.h;x.g||aa.indexOf("spdy")==-1&&aa.indexOf("quic")==-1&&aa.indexOf("h2")==-1||(x.j=x.l,x.g=new Set,x.h&&(Z2(x,x.h),x.h=null))}if(H.D){const T2=Ie.g?Ie.g.getResponseHeader("X-HTTP-Session-Id"):null;T2&&(H.ya=T2,gt(H.I,H.D,T2))}}h.G=3,h.l&&h.l.ua(),h.ba&&(h.R=Date.now()-r.F,h.j.info("Handshake RTT: "+h.R+"ms")),H=h;var B=r;if(H.qa=Kh(H,H.J?H.ia:null,H.W),B.K){_h(H.h,B);var ft=B,jt=H.L;jt&&(ft.I=jt),ft.B&&(M2(ft),Jr(ft)),H.g=B}else Gh(H);0<h.i.length&&sa(h)}else nt[0]!="stop"&&nt[0]!="close"||Bn(h,7);else h.G==3&&(nt[0]=="stop"||nt[0]=="close"?nt[0]=="stop"?Bn(h,7):b2(h):nt[0]!="noop"&&h.l&&h.l.ta(nt),h.v=0)}}Ms(4)}catch{}}var _p=class{constructor(r,u){this.g=r,this.map=u}};function yh(r){this.l=r||10,o.PerformanceNavigationTiming?(r=o.performance.getEntriesByType("navigation"),r=0<r.length&&(r[0].nextHopProtocol=="hq"||r[0].nextHopProtocol=="h2")):r=!!(o.chrome&&o.chrome.loadTimes&&o.chrome.loadTimes()&&o.chrome.loadTimes().wasFetchedViaSpdy),this.j=r?this.l:1,this.g=null,1<this.j&&(this.g=new Set),this.h=null,this.i=[]}function wh(r){return r.h?!0:r.g?r.g.size>=r.j:!1}function Zh(r){return r.h?1:r.g?r.g.size:0}function w2(r,u){return r.h?r.h==u:r.g?r.g.has(u):!1}function Z2(r,u){r.g?r.g.add(u):r.h=u}function _h(r,u){r.h&&r.h==u?r.h=null:r.g&&r.g.has(u)&&r.g.delete(u)}yh.prototype.cancel=function(){if(this.i=bh(this),this.h)this.h.cancel(),this.h=null;else if(this.g&&this.g.size!==0){for(const r of this.g.values())r.cancel();this.g.clear()}};function bh(r){if(r.h!=null)return r.i.concat(r.h.D);if(r.g!=null&&r.g.size!==0){let u=r.i;for(const h of r.g.values())u=u.concat(h.D);return u}return O(r.i)}function bp(r){if(r.V&&typeof r.V=="function")return r.V();if(typeof Map<"u"&&r instanceof Map||typeof Set<"u"&&r instanceof Set)return Array.from(r.values());if(typeof r=="string")return r.split("");if(c(r)){for(var u=[],h=r.length,H=0;H<h;H++)u.push(r[H]);return u}u=[],h=0;for(H in r)u[h++]=r[H];return u}function Sp(r){if(r.na&&typeof r.na=="function")return r.na();if(!r.V||typeof r.V!="function"){if(typeof Map<"u"&&r instanceof Map)return Array.from(r.keys());if(!(typeof Set<"u"&&r instanceof Set)){if(c(r)||typeof r=="string"){var u=[];r=r.length;for(var h=0;h<r;h++)u.push(h);return u}u=[],h=0;for(const H in r)u[h++]=H;return u}}}function Sh(r,u){if(r.forEach&&typeof r.forEach=="function")r.forEach(u,void 0);else if(c(r)||typeof r=="string")Array.prototype.forEach.call(r,u,void 0);else for(var h=Sp(r),H=bp(r),T=H.length,x=0;x<T;x++)u.call(void 0,H[x],h&&h[x],r)}var Eh=RegExp("^(?:([^:/?#.]+):)?(?://(?:([^\\\\/?#]*)@)?([^\\\\/?#]*?)(?::([0-9]+))?(?=[\\\\/?#]|$))?([^?#]+)?(?:\\?([^#]*))?(?:#([\\s\\S]*))?$");function Ep(r,u){if(r){r=r.split("&");for(var h=0;h<r.length;h++){var H=r[h].indexOf("="),T=null;if(0<=H){var x=r[h].substring(0,H);T=r[h].substring(H+1)}else x=r[h];u(x,T?decodeURIComponent(T.replace(/\+/g," ")):"")}}}function Rn(r){if(this.g=this.o=this.j="",this.s=null,this.m=this.l="",this.h=!1,r instanceof Rn){this.h=r.h,$r(this,r.j),this.o=r.o,this.g=r.g,Wr(this,r.s),this.l=r.l;var u=r.i,h=new Ss;h.i=u.i,u.g&&(h.g=new Map(u.g),h.h=u.h),Th(this,h),this.m=r.m}else r&&(u=String(r).match(Eh))?(this.h=!1,$r(this,u[1]||"",!0),this.o=_s(u[2]||""),this.g=_s(u[3]||"",!0),Wr(this,u[4]),this.l=_s(u[5]||"",!0),Th(this,u[6]||"",!0),this.m=_s(u[7]||"")):(this.h=!1,this.i=new Ss(null,this.h))}Rn.prototype.toString=function(){var r=[],u=this.j;u&&r.push(bs(u,Ah,!0),":");var h=this.g;return(h||u=="file")&&(r.push("//"),(u=this.o)&&r.push(bs(u,Ah,!0),"@"),r.push(encodeURIComponent(String(h)).replace(/%25([0-9a-fA-F]{2})/g,"%$1")),h=this.s,h!=null&&r.push(":",String(h))),(h=this.l)&&(this.g&&h.charAt(0)!="/"&&r.push("/"),r.push(bs(h,h.charAt(0)=="/"?xp:Ap,!0))),(h=this.i.toString())&&r.push("?",h),(h=this.m)&&r.push("#",bs(h,Op)),r.join("")};function hi(r){return new Rn(r)}function $r(r,u,h){r.j=h?_s(u,!0):u,r.j&&(r.j=r.j.replace(/:$/,""))}function Wr(r,u){if(u){if(u=Number(u),isNaN(u)||0>u)throw Error("Bad port number "+u);r.s=u}else r.s=null}function Th(r,u,h){u instanceof Ss?(r.i=u,Np(r.i,r.h)):(h||(u=bs(u,Cp)),r.i=new Ss(u,r.h))}function gt(r,u,h){r.i.set(u,h)}function ta(r){return gt(r,"zx",Math.floor(2147483648*Math.random()).toString(36)+Math.abs(Math.floor(2147483648*Math.random())^Date.now()).toString(36)),r}function _s(r,u){return r?u?decodeURI(r.replace(/%25/g,"%2525")):decodeURIComponent(r):""}function bs(r,u,h){return typeof r=="string"?(r=encodeURI(r).replace(u,Tp),h&&(r=r.replace(/%25([0-9a-fA-F]{2})/g,"%$1")),r):null}function Tp(r){return r=r.charCodeAt(0),"%"+(r>>4&15).toString(16)+(r&15).toString(16)}var Ah=/[#\/\?@]/g,Ap=/[#\?:]/g,xp=/[#\?]/g,Cp=/[#\?@]/g,Op=/#/g;function Ss(r,u){this.h=this.g=null,this.i=r||null,this.j=!!u}function ji(r){r.g||(r.g=new Map,r.h=0,r.i&&Ep(r.i,function(u,h){r.add(decodeURIComponent(u.replace(/\+/g," ")),h)}))}e=Ss.prototype,e.add=function(r,u){ji(this),this.i=null,r=gl(this,r);var h=this.g.get(r);return h||this.g.set(r,h=[]),h.push(u),this.h+=1,this};function xh(r,u){ji(r),u=gl(r,u),r.g.has(u)&&(r.i=null,r.h-=r.g.get(u).length,r.g.delete(u))}function Ch(r,u){return ji(r),u=gl(r,u),r.g.has(u)}e.forEach=function(r,u){ji(this),this.g.forEach(function(h,H){h.forEach(function(T){r.call(u,T,H,this)},this)},this)},e.na=function(){ji(this);const r=Array.from(this.g.values()),u=Array.from(this.g.keys()),h=[];for(let H=0;H<u.length;H++){const T=r[H];for(let x=0;x<T.length;x++)h.push(u[H])}return h},e.V=function(r){ji(this);let u=[];if(typeof r=="string")Ch(this,r)&&(u=u.concat(this.g.get(gl(this,r))));else{r=Array.from(this.g.values());for(let h=0;h<r.length;h++)u=u.concat(r[h])}return u},e.set=function(r,u){return ji(this),this.i=null,r=gl(this,r),Ch(this,r)&&(this.h-=this.g.get(r).length),this.g.set(r,[u]),this.h+=1,this},e.get=function(r,u){return r?(r=this.V(r),0<r.length?String(r[0]):u):u};function Oh(r,u,h){xh(r,u),0<h.length&&(r.i=null,r.g.set(gl(r,u),O(h)),r.h+=h.length)}e.toString=function(){if(this.i)return this.i;if(!this.g)return"";const r=[],u=Array.from(this.g.keys());for(var h=0;h<u.length;h++){var H=u[h];const x=encodeURIComponent(String(H)),B=this.V(H);for(H=0;H<B.length;H++){var T=x;B[H]!==""&&(T+="="+encodeURIComponent(String(B[H]))),r.push(T)}}return this.i=r.join("&")};function gl(r,u){return u=String(u),r.j&&(u=u.toLowerCase()),u}function Np(r,u){u&&!r.j&&(ji(r),r.i=null,r.g.forEach(function(h,H){var T=H.toLowerCase();H!=T&&(xh(this,H),Oh(this,T,h))},r)),r.j=u}function Rp(r,u){const h=new ws;if(o.Image){const H=new Image;H.onload=b(Pi,h,"TestLoadImage: loaded",!0,u,H),H.onerror=b(Pi,h,"TestLoadImage: error",!1,u,H),H.onabort=b(Pi,h,"TestLoadImage: abort",!1,u,H),H.ontimeout=b(Pi,h,"TestLoadImage: timeout",!1,u,H),o.setTimeout(function(){H.ontimeout&&H.ontimeout()},1e4),H.src=r}else u(!1)}function Bp(r,u){const h=new ws,H=new AbortController,T=setTimeout(()=>{H.abort(),Pi(h,"TestPingServer: timeout",!1,u)},1e4);fetch(r,{signal:H.signal}).then(x=>{clearTimeout(T),x.ok?Pi(h,"TestPingServer: ok",!0,u):Pi(h,"TestPingServer: server error",!1,u)}).catch(()=>{clearTimeout(T),Pi(h,"TestPingServer: error",!1,u)})}function Pi(r,u,h,H,T){try{T&&(T.onload=null,T.onerror=null,T.onabort=null,T.ontimeout=null),H(h)}catch{}}function Dp(){this.g=new gp}function Lp(r,u,h){const H=h||"";try{Sh(r,function(T,x){let B=T;d(T)&&(B=h2(T)),u.push(H+x+"="+encodeURIComponent(B))})}catch(T){throw u.push(H+"type="+encodeURIComponent("_badmap")),T}}function ea(r){this.l=r.Ub||null,this.j=r.eb||!1}C(ea,f2),ea.prototype.g=function(){return new ia(this.l,this.j)},ea.prototype.i=function(r){return function(){return r}}({});function ia(r,u){Qt.call(this),this.D=r,this.o=u,this.m=void 0,this.status=this.readyState=0,this.responseType=this.responseText=this.response=this.statusText="",this.onreadystatechange=null,this.u=new Headers,this.h=null,this.B="GET",this.A="",this.g=!1,this.v=this.j=this.l=null}C(ia,Qt),e=ia.prototype,e.open=function(r,u){if(this.readyState!=0)throw this.abort(),Error("Error reopening a connection");this.B=r,this.A=u,this.readyState=1,Ts(this)},e.send=function(r){if(this.readyState!=1)throw this.abort(),Error("need to call open() first. ");this.g=!0;const u={headers:this.u,method:this.B,credentials:this.m,cache:void 0};r&&(u.body=r),(this.D||o).fetch(new Request(this.A,u)).then(this.Sa.bind(this),this.ga.bind(this))},e.abort=function(){this.response=this.responseText="",this.u=new Headers,this.status=0,this.j&&this.j.cancel("Request was aborted.").catch(()=>{}),1<=this.readyState&&this.g&&this.readyState!=4&&(this.g=!1,Es(this)),this.readyState=0},e.Sa=function(r){if(this.g&&(this.l=r,this.h||(this.status=this.l.status,this.statusText=this.l.statusText,this.h=r.headers,this.readyState=2,Ts(this)),this.g&&(this.readyState=3,Ts(this),this.g)))if(this.responseType==="arraybuffer")r.arrayBuffer().then(this.Qa.bind(this),this.ga.bind(this));else if(typeof o.ReadableStream<"u"&&"body"in r){if(this.j=r.body.getReader(),this.o){if(this.responseType)throw Error('responseType must be empty for "streamBinaryChunks" mode responses.');this.response=[]}else this.response=this.responseText="",this.v=new TextDecoder;Nh(this)}else r.text().then(this.Ra.bind(this),this.ga.bind(this))};function Nh(r){r.j.read().then(r.Pa.bind(r)).catch(r.ga.bind(r))}e.Pa=function(r){if(this.g){if(this.o&&r.value)this.response.push(r.value);else if(!this.o){var u=r.value?r.value:new Uint8Array(0);(u=this.v.decode(u,{stream:!r.done}))&&(this.response=this.responseText+=u)}r.done?Es(this):Ts(this),this.readyState==3&&Nh(this)}},e.Ra=function(r){this.g&&(this.response=this.responseText=r,Es(this))},e.Qa=function(r){this.g&&(this.response=r,Es(this))},e.ga=function(){this.g&&Es(this)};function Es(r){r.readyState=4,r.l=null,r.j=null,r.v=null,Ts(r)}e.setRequestHeader=function(r,u){this.u.append(r,u)},e.getResponseHeader=function(r){return this.h&&this.h.get(r.toLowerCase())||""},e.getAllResponseHeaders=function(){if(!this.h)return"";const r=[],u=this.h.entries();for(var h=u.next();!h.done;)h=h.value,r.push(h[0]+": "+h[1]),h=u.next();return r.join(`\r
+`)};function Ts(r){r.onreadystatechange&&r.onreadystatechange.call(r)}Object.defineProperty(ia.prototype,"withCredentials",{get:function(){return this.m==="include"},set:function(r){this.m=r?"include":"same-origin"}});function Rh(r){let u="";return U(r,function(h,H){u+=H,u+=":",u+=h,u+=`\r
+`}),u}function _2(r,u,h){t:{for(H in h){var H=!1;break t}H=!0}H||(h=Rh(h),typeof r=="string"?h!=null&&encodeURIComponent(String(h)):gt(r,u,h))}function St(r){Qt.call(this),this.headers=new Map,this.o=r||null,this.h=!1,this.v=this.g=null,this.D="",this.m=0,this.l="",this.j=this.B=this.u=this.A=!1,this.I=null,this.H="",this.J=!1}C(St,Qt);var kp=/^https?$/i,Ip=["POST","PUT"];e=St.prototype,e.Ha=function(r){this.J=r},e.ea=function(r,u,h,H){if(this.g)throw Error("[goog.net.XhrIo] Object is active with another request="+this.D+"; newUri="+r);u=u?u.toUpperCase():"GET",this.D=r,this.l="",this.m=0,this.A=!1,this.h=!0,this.g=this.o?this.o.g():p2.g(),this.v=this.o?hh(this.o):hh(p2),this.g.onreadystatechange=V(this.Ea,this);try{this.B=!0,this.g.open(u,String(r),!0),this.B=!1}catch(x){Bh(this,x);return}if(r=h||"",h=new Map(this.headers),H)if(Object.getPrototypeOf(H)===Object.prototype)for(var T in H)h.set(T,H[T]);else if(typeof H.keys=="function"&&typeof H.get=="function")for(const x of H.keys())h.set(x,H.get(x));else throw Error("Unknown input type for opt_headers: "+String(H));H=Array.from(h.keys()).find(x=>x.toLowerCase()=="content-type"),T=o.FormData&&r instanceof o.FormData,!(0<=Array.prototype.indexOf.call(Ip,u,void 0))||H||T||h.set("Content-Type","application/x-www-form-urlencoded;charset=utf-8");for(const[x,B]of h)this.g.setRequestHeader(x,B);this.H&&(this.g.responseType=this.H),"withCredentials"in this.g&&this.g.withCredentials!==this.J&&(this.g.withCredentials=this.J);try{kh(this),this.u=!0,this.g.send(r),this.u=!1}catch(x){Bh(this,x)}};function Bh(r,u){r.h=!1,r.g&&(r.j=!0,r.g.abort(),r.j=!1),r.l=u,r.m=5,Dh(r),na(r)}function Dh(r){r.A||(r.A=!0,te(r,"complete"),te(r,"error"))}e.abort=function(r){this.g&&this.h&&(this.h=!1,this.j=!0,this.g.abort(),this.j=!1,this.m=r||7,te(this,"complete"),te(this,"abort"),na(this))},e.N=function(){this.g&&(this.h&&(this.h=!1,this.j=!0,this.g.abort(),this.j=!1),na(this,!0)),St.aa.N.call(this)},e.Ea=function(){this.s||(this.B||this.u||this.j?Lh(this):this.bb())},e.bb=function(){Lh(this)};function Lh(r){if(r.h&&typeof a<"u"&&(!r.v[1]||fi(r)!=4||r.Z()!=2)){if(r.u&&fi(r)==4)ah(r.Ea,0,r);else if(te(r,"readystatechange"),fi(r)==4){r.h=!1;try{const B=r.Z();t:switch(B){case 200:case 201:case 202:case 204:case 206:case 304:case 1223:var u=!0;break t;default:u=!1}var h;if(!(h=u)){var H;if(H=B===0){var T=String(r.D).match(Eh)[1]||null;!T&&o.self&&o.self.location&&(T=o.self.location.protocol.slice(0,-1)),H=!kp.test(T?T.toLowerCase():"")}h=H}if(h)te(r,"complete"),te(r,"success");else{r.m=6;try{var x=2<fi(r)?r.g.statusText:""}catch{x=""}r.l=x+" ["+r.Z()+"]",Dh(r)}}finally{na(r)}}}}function na(r,u){if(r.g){kh(r);const h=r.g,H=r.v[0]?()=>{}:null;r.g=null,r.v=null,u||te(r,"ready");try{h.onreadystatechange=H}catch{}}}function kh(r){r.I&&(o.clearTimeout(r.I),r.I=null)}e.isActive=function(){return!!this.g};function fi(r){return r.g?r.g.readyState:0}e.Z=function(){try{return 2<fi(this)?this.g.status:-1}catch{return-1}},e.oa=function(){try{return this.g?this.g.responseText:""}catch{return""}},e.Oa=function(r){if(this.g){var u=this.g.responseText;return r&&u.indexOf(r)==0&&(u=u.substring(r.length)),Vp(u)}};function Ih(r){try{if(!r.g)return null;if("response"in r.g)return r.g.response;switch(r.H){case"":case"text":return r.g.responseText;case"arraybuffer":if("mozResponseArrayBuffer"in r.g)return r.g.mozResponseArrayBuffer}return null}catch{return null}}function zp(r){const u={};r=(r.g&&2<=fi(r)&&r.g.getAllResponseHeaders()||"").split(`\r
+`);for(let H=0;H<r.length;H++){if(m(r[H]))continue;var h=S(r[H]);const T=h[0];if(h=h[1],typeof h!="string")continue;h=h.trim();const x=u[T]||[];u[T]=x,x.push(h)}p(u,function(H){return H.join(", ")})}e.Ba=function(){return this.m},e.Ka=function(){return typeof this.l=="string"?this.l:String(this.l)};function As(r,u,h){return h&&h.internalChannelParams&&h.internalChannelParams[r]||u}function zh(r){this.Aa=0,this.i=[],this.j=new ws,this.ia=this.qa=this.I=this.W=this.g=this.ya=this.D=this.H=this.m=this.S=this.o=null,this.Ya=this.U=0,this.Va=As("failFast",!1,r),this.F=this.C=this.u=this.s=this.l=null,this.X=!0,this.za=this.T=-1,this.Y=this.v=this.B=0,this.Ta=As("baseRetryDelayMs",5e3,r),this.cb=As("retryDelaySeedMs",1e4,r),this.Wa=As("forwardChannelMaxRetries",2,r),this.wa=As("forwardChannelRequestTimeoutMs",2e4,r),this.pa=r&&r.xmlHttpFactory||void 0,this.Xa=r&&r.Tb||void 0,this.Ca=r&&r.useFetchStreams||!1,this.L=void 0,this.J=r&&r.supportsCrossDomainXhr||!1,this.K="",this.h=new yh(r&&r.concurrentRequestLimit),this.Da=new Dp,this.P=r&&r.fastHandshake||!1,this.O=r&&r.encodeInitMessageHeaders||!1,this.P&&this.O&&(this.O=!1),this.Ua=r&&r.Rb||!1,r&&r.xa&&this.j.xa(),r&&r.forceLongPolling&&(this.X=!1),this.ba=!this.P&&this.X&&r&&r.detectBufferingProxy||!1,this.ja=void 0,r&&r.longPollingTimeout&&0<r.longPollingTimeout&&(this.ja=r.longPollingTimeout),this.ca=void 0,this.R=0,this.M=!1,this.ka=this.A=null}e=zh.prototype,e.la=8,e.G=1,e.connect=function(r,u,h,H){ee(0),this.W=r,this.H=u||{},h&&H!==void 0&&(this.H.OSID=h,this.H.OAID=H),this.F=this.X,this.I=Kh(this,null,this.W),sa(this)};function b2(r){if(Uh(r),r.G==3){var u=r.U++,h=hi(r.I);if(gt(h,"SID",r.K),gt(h,"RID",u),gt(h,"TYPE","terminate"),xs(r,h),u=new Ui(r,r.j,u),u.L=2,u.v=ta(hi(h)),h=!1,o.navigator&&o.navigator.sendBeacon)try{h=o.navigator.sendBeacon(u.v.toString(),"")}catch{}!h&&o.Image&&(new Image().src=u.v,h=!0),h||(u.g=Qh(u.j,null),u.g.ea(u.v)),u.F=Date.now(),Jr(u)}Fh(r)}function la(r){r.g&&(E2(r),r.g.cancel(),r.g=null)}function Uh(r){la(r),r.u&&(o.clearTimeout(r.u),r.u=null),ra(r),r.h.cancel(),r.s&&(typeof r.s=="number"&&o.clearTimeout(r.s),r.s=null)}function sa(r){if(!wh(r.h)&&!r.s){r.s=!0;var u=r.Ga;j||k(),P||(j(),P=!0),at.add(u,r),r.B=0}}function Up(r,u){return Zh(r.h)>=r.h.j-(r.s?1:0)?!1:r.s?(r.i=u.D.concat(r.i),!0):r.G==1||r.G==2||r.B>=(r.Va?0:r.Wa)?!1:(r.s=ys(V(r.Ga,r,u),Xh(r,r.B)),r.B++,!0)}e.Ga=function(r){if(this.s)if(this.s=null,this.G==1){if(!r){this.U=Math.floor(1e5*Math.random()),r=this.U++;const T=new Ui(this,this.j,r);let x=this.o;if(this.S&&(x?(x=f(x),M(x,this.S)):x=this.S),this.m!==null||this.O||(T.H=x,x=null),this.P)t:{for(var u=0,h=0;h<this.i.length;h++){e:{var H=this.i[h];if("__data__"in H.map&&(H=H.map.__data__,typeof H=="string")){H=H.length;break e}H=void 0}if(H===void 0)break;if(u+=H,4096<u){u=h;break t}if(u===4096||h===this.i.length-1){u=h+1;break t}}u=1e3}else u=1e3;u=Ph(this,T,u),h=hi(this.I),gt(h,"RID",r),gt(h,"CVER",22),this.D&&gt(h,"X-HTTP-Session-Id",this.D),xs(this,h),x&&(this.O?u="headers="+encodeURIComponent(String(Rh(x)))+"&"+u:this.m&&_2(h,this.m,x)),Z2(this.h,T),this.Ua&&gt(h,"TYPE","init"),this.P?(gt(h,"$req",u),gt(h,"SID","null"),T.T=!0,v2(T,h,null)):v2(T,h,u),this.G=2}}else this.G==3&&(r?jh(this,r):this.i.length==0||wh(this.h)||jh(this))};function jh(r,u){var h;u?h=u.l:h=r.U++;const H=hi(r.I);gt(H,"SID",r.K),gt(H,"RID",h),gt(H,"AID",r.T),xs(r,H),r.m&&r.o&&_2(H,r.m,r.o),h=new Ui(r,r.j,h,r.B+1),r.m===null&&(h.H=r.o),u&&(r.i=u.D.concat(r.i)),u=Ph(r,h,1e3),h.I=Math.round(.5*r.wa)+Math.round(.5*r.wa*Math.random()),Z2(r.h,h),v2(h,H,u)}function xs(r,u){r.H&&U(r.H,function(h,H){gt(u,H,h)}),r.l&&Sh({},function(h,H){gt(u,H,h)})}function Ph(r,u,h){h=Math.min(r.i.length,h);var H=r.l?V(r.l.Na,r.l,r):null;t:{var T=r.i;let x=-1;for(;;){const B=["count="+h];x==-1?0<h?(x=T[0].g,B.push("ofs="+x)):x=0:B.push("ofs="+x);let ft=!0;for(let jt=0;jt<h;jt++){let nt=T[jt].g;const Jt=T[jt].map;if(nt-=x,0>nt)x=Math.max(0,T[jt].g-100),ft=!1;else try{Lp(Jt,B,"req"+nt+"_")}catch{H&&H(Jt)}}if(ft){H=B.join("&");break t}}}return r=r.i.splice(0,h),u.D=r,H}function Gh(r){if(!r.g&&!r.u){r.Y=1;var u=r.Fa;j||k(),P||(j(),P=!0),at.add(u,r),r.v=0}}function S2(r){return r.g||r.u||3<=r.v?!1:(r.Y++,r.u=ys(V(r.Fa,r),Xh(r,r.v)),r.v++,!0)}e.Fa=function(){if(this.u=null,qh(this),this.ba&&!(this.M||this.g==null||0>=this.R)){var r=2*this.R;this.j.info("BP detection timer enabled: "+r),this.A=ys(V(this.ab,this),r)}},e.ab=function(){this.A&&(this.A=null,this.j.info("BP detection timeout reached."),this.j.info("Buffering proxy detected and switch to long-polling!"),this.F=!1,this.M=!0,ee(10),la(this),qh(this))};function E2(r){r.A!=null&&(o.clearTimeout(r.A),r.A=null)}function qh(r){r.g=new Ui(r,r.j,"rpc",r.Y),r.m===null&&(r.g.H=r.o),r.g.O=0;var u=hi(r.qa);gt(u,"RID","rpc"),gt(u,"SID",r.K),gt(u,"AID",r.T),gt(u,"CI",r.F?"0":"1"),!r.F&&r.ja&&gt(u,"TO",r.ja),gt(u,"TYPE","xmlhttp"),xs(r,u),r.m&&r.o&&_2(u,r.m,r.o),r.L&&(r.g.I=r.L);var h=r.g;r=r.ia,h.L=1,h.v=ta(hi(u)),h.m=null,h.P=!0,mh(h,r)}e.Za=function(){this.C!=null&&(this.C=null,la(this),S2(this),ee(19))};function ra(r){r.C!=null&&(o.clearTimeout(r.C),r.C=null)}function Yh(r,u){var h=null;if(r.g==u){ra(r),E2(r),r.g=null;var H=2}else if(w2(r.h,u))h=u.D,_h(r.h,u),H=1;else return;if(r.G!=0){if(u.o)if(H==1){h=u.m?u.m.length:0,u=Date.now()-u.F;var T=r.B;H=V2(),te(H,new Vh(H,h)),sa(r)}else Gh(r);else if(T=u.s,T==3||T==0&&0<u.X||!(H==1&&Up(r,u)||H==2&&S2(r)))switch(h&&0<h.length&&(u=r.h,u.i=u.i.concat(h)),T){case 1:Bn(r,5);break;case 4:Bn(r,10);break;case 3:Bn(r,6);break;default:Bn(r,2)}}}function Xh(r,u){let h=r.Ta+Math.floor(Math.random()*r.cb);return r.isActive()||(h*=2),h*u}function Bn(r,u){if(r.j.info("Error code "+u),u==2){var h=V(r.fb,r),H=r.Xa;const T=!H;H=new Rn(H||"//www.google.com/images/cleardot.gif"),o.location&&o.location.protocol=="http"||$r(H,"https"),ta(H),T?Rp(H.toString(),h):Bp(H.toString(),h)}else ee(2);r.G=0,r.l&&r.l.sa(u),Fh(r),Uh(r)}e.fb=function(r){r?(this.j.info("Successfully pinged google.com"),ee(2)):(this.j.info("Failed to ping google.com"),ee(1))};function Fh(r){if(r.G=0,r.ka=[],r.l){const u=bh(r.h);(u.length!=0||r.i.length!=0)&&(R(r.ka,u),R(r.ka,r.i),r.h.i.length=0,O(r.i),r.i.length=0),r.l.ra()}}function Kh(r,u,h){var H=h instanceof Rn?hi(h):new Rn(h);if(H.g!="")u&&(H.g=u+"."+H.g),Wr(H,H.s);else{var T=o.location;H=T.protocol,u=u?u+"."+T.hostname:T.hostname,T=+T.port;var x=new Rn(null);H&&$r(x,H),u&&(x.g=u),T&&Wr(x,T),h&&(x.l=h),H=x}return h=r.D,u=r.ya,h&&u&&gt(H,h,u),gt(H,"VER",r.la),xs(r,H),H}function Qh(r,u,h){if(u&&!r.J)throw Error("Can't create secondary domain capable XhrIo object.");return u=r.Ca&&!r.pa?new St(new ea({eb:h})):new St(r.pa),u.Ha(r.J),u}e.isActive=function(){return!!this.l&&this.l.isActive(this)};function Jh(){}e=Jh.prototype,e.ua=function(){},e.ta=function(){},e.sa=function(){},e.ra=function(){},e.isActive=function(){return!0},e.Na=function(){};function Te(r,u){Qt.call(this),this.g=new zh(u),this.l=r,this.h=u&&u.messageUrlParams||null,r=u&&u.messageHeaders||null,u&&u.clientProtocolHeaderRequired&&(r?r["X-Client-Protocol"]="webchannel":r={"X-Client-Protocol":"webchannel"}),this.g.o=r,r=u&&u.initMessageHeaders||null,u&&u.messageContentType&&(r?r["X-WebChannel-Content-Type"]=u.messageContentType:r={"X-WebChannel-Content-Type":u.messageContentType}),u&&u.va&&(r?r["X-WebChannel-Client-Profile"]=u.va:r={"X-WebChannel-Client-Profile":u.va}),this.g.S=r,(r=u&&u.Sb)&&!m(r)&&(this.g.m=r),this.v=u&&u.supportsCrossDomainXhr||!1,this.u=u&&u.sendRawJson||!1,(u=u&&u.httpSessionIdParam)&&!m(u)&&(this.g.D=u,r=this.h,r!==null&&u in r&&(r=this.h,u in r&&delete r[u])),this.j=new pl(this)}C(Te,Qt),Te.prototype.m=function(){this.g.l=this.j,this.v&&(this.g.J=!0),this.g.connect(this.l,this.h||void 0)},Te.prototype.close=function(){b2(this.g)},Te.prototype.o=function(r){var u=this.g;if(typeof r=="string"){var h={};h.__data__=r,r=h}else this.u&&(h={},h.__data__=h2(r),r=h);u.i.push(new _p(u.Ya++,r)),u.G==3&&sa(u)},Te.prototype.N=function(){this.g.l=null,delete this.j,b2(this.g),delete this.g,Te.aa.N.call(this)};function $h(r){d2.call(this),r.__headers__&&(this.headers=r.__headers__,this.statusCode=r.__status__,delete r.__headers__,delete r.__status__);var u=r.__sm__;if(u){t:{for(const h in u){r=h;break t}r=void 0}(this.i=r)&&(r=this.i,u=u!==null&&r in u?u[r]:void 0),this.data=u}else this.data=r}C($h,d2);function Wh(){H2.call(this),this.status=1}C(Wh,H2);function pl(r){this.g=r}C(pl,Jh),pl.prototype.ua=function(){te(this.g,"a")},pl.prototype.ta=function(r){te(this.g,new $h(r))},pl.prototype.sa=function(r){te(this.g,new Wh)},pl.prototype.ra=function(){te(this.g,"b")},Te.prototype.send=Te.prototype.o,Te.prototype.open=Te.prototype.m,Te.prototype.close=Te.prototype.close,g2.NO_ERROR=0,g2.TIMEOUT=8,g2.HTTP_ERROR=6,wp.COMPLETE="complete",pp.EventType=vs,vs.OPEN="a",vs.CLOSE="b",vs.ERROR="c",vs.MESSAGE="d",Qt.prototype.listen=Qt.prototype.K,St.prototype.listenOnce=St.prototype.L,St.prototype.getLastError=St.prototype.Ka,St.prototype.getLastErrorCode=St.prototype.Ba,St.prototype.getStatus=St.prototype.Z,St.prototype.getResponseJson=St.prototype.Oa,St.prototype.getResponseText=St.prototype.oa,St.prototype.send=St.prototype.ea,St.prototype.setWithCredentials=St.prototype.Ha}).apply(typeof Ea<"u"?Ea:typeof self<"u"?self:typeof window<"u"?window:{});const Vd="@firebase/firestore",gd="4.8.0";/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class ne{constructor(t){this.uid=t}isAuthenticated(){return this.uid!=null}toKey(){return this.isAuthenticated()?"uid:"+this.uid:"anonymous-user"}isEqual(t){return t.uid===this.uid}}ne.UNAUTHENTICATED=new ne(null),ne.GOOGLE_CREDENTIALS=new ne("google-credentials-uid"),ne.FIRST_PARTY=new ne("first-party-uid"),ne.MOCK_USER=new ne("mock-user");/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */let Yr="11.10.0";/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const ss=new D1("@firebase/firestore");function Ge(e,...t){if(ss.logLevel<=rt.DEBUG){const i=t.map($1);ss.debug(`Firestore (${Yr}): ${e}`,...i)}}function Q3(e,...t){if(ss.logLevel<=rt.ERROR){const i=t.map($1);ss.error(`Firestore (${Yr}): ${e}`,...i)}}function Z4(e,...t){if(ss.logLevel<=rt.WARN){const i=t.map($1);ss.warn(`Firestore (${Yr}): ${e}`,...i)}}function $1(e){if(typeof e=="string")return e;try{/**
+* @license
+* Copyright 2020 Google LLC
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/return function(i){return JSON.stringify(i)}(e)}catch{return e}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Sr(e,t,i){let n="Unexpected state";typeof t=="string"?n=t:i=t,J3(e,n,i)}function J3(e,t,i){let n=`FIRESTORE (${Yr}) INTERNAL ASSERTION FAILED: ${t} (ID: ${e.toString(16)})`;if(i!==void 0)try{n+=" CONTEXT: "+JSON.stringify(i)}catch{n+=" CONTEXT: "+i}throw Q3(n),new Error(n)}function rr(e,t,i,n){let l="Unexpected state";typeof i=="string"?l=i:n=i,e||J3(t,l,n)}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const $={CANCELLED:"cancelled",INVALID_ARGUMENT:"invalid-argument",FAILED_PRECONDITION:"failed-precondition"};class W extends ai{constructor(t,i){super(t,i),this.code=t,this.message=i,this.toString=()=>`${this.name}: [code=${this.code}]: ${this.message}`}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class ar{constructor(){this.promise=new Promise((t,i)=>{this.resolve=t,this.reject=i})}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class $3{constructor(t,i){this.user=i,this.type="OAuth",this.headers=new Map,this.headers.set("Authorization",`Bearer ${t}`)}}class _4{getToken(){return Promise.resolve(null)}invalidateToken(){}start(t,i){t.enqueueRetryable(()=>i(ne.UNAUTHENTICATED))}shutdown(){}}class b4{constructor(t){this.token=t,this.changeListener=null}getToken(){return Promise.resolve(this.token)}invalidateToken(){}start(t,i){this.changeListener=i,t.enqueueRetryable(()=>i(this.token.user))}shutdown(){this.changeListener=null}}class S4{constructor(t){this.t=t,this.currentUser=ne.UNAUTHENTICATED,this.i=0,this.forceRefresh=!1,this.auth=null}start(t,i){rr(this.o===void 0,42304);let n=this.i;const l=c=>this.i!==n?(n=this.i,i(c)):Promise.resolve();let s=new ar;this.o=()=>{this.i++,this.currentUser=this.u(),s.resolve(),s=new ar,t.enqueueRetryable(()=>l(this.currentUser))};const a=()=>{const c=s;t.enqueueRetryable(async()=>{await c.promise,await l(this.currentUser)})},o=c=>{Ge("FirebaseAuthCredentialsProvider","Auth detected"),this.auth=c,this.o&&(this.auth.addAuthTokenListener(this.o),a())};this.t.onInit(c=>o(c)),setTimeout(()=>{if(!this.auth){const c=this.t.getImmediate({optional:!0});c?o(c):(Ge("FirebaseAuthCredentialsProvider","Auth not yet detected"),s.resolve(),s=new ar)}},0),a()}getToken(){const t=this.i,i=this.forceRefresh;return this.forceRefresh=!1,this.auth?this.auth.getToken(i).then(n=>this.i!==t?(Ge("FirebaseAuthCredentialsProvider","getToken aborted due to token change."),this.getToken()):n?(rr(typeof n.accessToken=="string",31837,{l:n}),new $3(n.accessToken,this.currentUser)):null):Promise.resolve(null)}invalidateToken(){this.forceRefresh=!0}shutdown(){this.auth&&this.o&&this.auth.removeAuthTokenListener(this.o),this.o=void 0}u(){const t=this.auth&&this.auth.getUid();return rr(t===null||typeof t=="string",2055,{h:t}),new ne(t)}}class E4{constructor(t,i,n){this.P=t,this.T=i,this.I=n,this.type="FirstParty",this.user=ne.FIRST_PARTY,this.A=new Map}R(){return this.I?this.I():null}get headers(){this.A.set("X-Goog-AuthUser",this.P);const t=this.R();return t&&this.A.set("Authorization",t),this.T&&this.A.set("X-Goog-Iam-Authorization-Token",this.T),this.A}}class T4{constructor(t,i,n){this.P=t,this.T=i,this.I=n}getToken(){return Promise.resolve(new E4(this.P,this.T,this.I))}start(t,i){t.enqueueRetryable(()=>i(ne.FIRST_PARTY))}shutdown(){}invalidateToken(){}}class pd{constructor(t){this.value=t,this.type="AppCheck",this.headers=new Map,t&&t.length>0&&this.headers.set("x-firebase-appcheck",this.value)}}class A4{constructor(t,i){this.V=i,this.forceRefresh=!1,this.appCheck=null,this.m=null,this.p=null,ve(t)&&t.settings.appCheckToken&&(this.p=t.settings.appCheckToken)}start(t,i){rr(this.o===void 0,3512);const n=s=>{s.error!=null&&Ge("FirebaseAppCheckTokenProvider",`Error getting App Check token; using placeholder token instead. Error: ${s.error.message}`);const a=s.token!==this.m;return this.m=s.token,Ge("FirebaseAppCheckTokenProvider",`Received ${a?"new":"existing"} token.`),a?i(s.token):Promise.resolve()};this.o=s=>{t.enqueueRetryable(()=>n(s))};const l=s=>{Ge("FirebaseAppCheckTokenProvider","AppCheck detected"),this.appCheck=s,this.o&&this.appCheck.addTokenListener(this.o)};this.V.onInit(s=>l(s)),setTimeout(()=>{if(!this.appCheck){const s=this.V.getImmediate({optional:!0});s?l(s):Ge("FirebaseAppCheckTokenProvider","AppCheck not yet detected")}},0)}getToken(){if(this.p)return Promise.resolve(new pd(this.p));const t=this.forceRefresh;return this.forceRefresh=!1,this.appCheck?this.appCheck.getToken(t).then(i=>i?(rr(typeof i.token=="string",44558,{tokenResult:i}),this.m=i.token,new pd(i.token)):null):Promise.resolve(null)}invalidateToken(){this.forceRefresh=!0}shutdown(){this.appCheck&&this.o&&this.appCheck.removeTokenListener(this.o),this.o=void 0}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function x4(e){const t=typeof self<"u"&&(self.crypto||self.msCrypto),i=new Uint8Array(e);if(t&&typeof t.getRandomValues=="function")t.getRandomValues(i);else for(let n=0;n<e;n++)i[n]=Math.floor(256*Math.random());return i}/**
+ * @license
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function C4(){return new TextEncoder}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class O4{static newId(){const t="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",i=62*Math.floor(4.129032258064516);let n="";for(;n.length<20;){const l=x4(40);for(let s=0;s<l.length;++s)n.length<20&&l[s]<i&&(n+=t.charAt(l[s]%62))}return n}}function Ye(e,t){return e<t?-1:e>t?1:0}function N4(e,t){let i=0;for(;i<e.length&&i<t.length;){const n=e.codePointAt(i),l=t.codePointAt(i);if(n!==l){if(n<128&&l<128)return Ye(n,l);{const s=C4(),a=R4(s.encode(md(e,i)),s.encode(md(t,i)));return a!==0?a:Ye(n,l)}}i+=n>65535?2:1}return Ye(e.length,t.length)}function md(e,t){return e.codePointAt(t)>65535?e.substring(t,t+2):e.substring(t,t+1)}function R4(e,t){for(let i=0;i<e.length&&i<t.length;++i)if(e[i]!==t[i])return Ye(e[i],t[i]);return Ye(e.length,t.length)}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const vd="__name__";class Ke{constructor(t,i,n){i===void 0?i=0:i>t.length&&Sr(637,{offset:i,range:t.length}),n===void 0?n=t.length-i:n>t.length-i&&Sr(1746,{length:n,range:t.length-i}),this.segments=t,this.offset=i,this.len=n}get length(){return this.len}isEqual(t){return Ke.comparator(this,t)===0}child(t){const i=this.segments.slice(this.offset,this.limit());return t instanceof Ke?t.forEach(n=>{i.push(n)}):i.push(t),this.construct(i)}limit(){return this.offset+this.length}popFirst(t){return t=t===void 0?1:t,this.construct(this.segments,this.offset+t,this.length-t)}popLast(){return this.construct(this.segments,this.offset,this.length-1)}firstSegment(){return this.segments[this.offset]}lastSegment(){return this.get(this.length-1)}get(t){return this.segments[this.offset+t]}isEmpty(){return this.length===0}isPrefixOf(t){if(t.length<this.length)return!1;for(let i=0;i<this.length;i++)if(this.get(i)!==t.get(i))return!1;return!0}isImmediateParentOf(t){if(this.length+1!==t.length)return!1;for(let i=0;i<this.length;i++)if(this.get(i)!==t.get(i))return!1;return!0}forEach(t){for(let i=this.offset,n=this.limit();i<n;i++)t(this.segments[i])}toArray(){return this.segments.slice(this.offset,this.limit())}static comparator(t,i){const n=Math.min(t.length,i.length);for(let l=0;l<n;l++){const s=Ke.compareSegments(t.get(l),i.get(l));if(s!==0)return s}return Ye(t.length,i.length)}static compareSegments(t,i){const n=Ke.isNumericId(t),l=Ke.isNumericId(i);return n&&!l?-1:!n&&l?1:n&&l?Ke.extractNumericId(t).compare(Ke.extractNumericId(i)):N4(t,i)}static isNumericId(t){return t.startsWith("__id")&&t.endsWith("__")}static extractNumericId(t){return J1.fromString(t.substring(4,t.length-2))}}class je extends Ke{construct(t,i,n){return new je(t,i,n)}canonicalString(){return this.toArray().join("/")}toString(){return this.canonicalString()}toUriEncodedString(){return this.toArray().map(encodeURIComponent).join("/")}static fromString(...t){const i=[];for(const n of t){if(n.indexOf("//")>=0)throw new W($.INVALID_ARGUMENT,`Invalid segment (${n}). Paths must not contain // in them.`);i.push(...n.split("/").filter(l=>l.length>0))}return new je(i)}static emptyPath(){return new je([])}}const B4=/^[_a-zA-Z][_a-zA-Z0-9]*$/;class Pn extends Ke{construct(t,i,n){return new Pn(t,i,n)}static isValidIdentifier(t){return B4.test(t)}canonicalString(){return this.toArray().map(t=>(t=t.replace(/\\/g,"\\\\").replace(/`/g,"\\`"),Pn.isValidIdentifier(t)||(t="`"+t+"`"),t)).join(".")}toString(){return this.canonicalString()}isKeyField(){return this.length===1&&this.get(0)===vd}static keyField(){return new Pn([vd])}static fromServerFormat(t){const i=[];let n="",l=0;const s=()=>{if(n.length===0)throw new W($.INVALID_ARGUMENT,`Invalid field path (${t}). Paths must not be empty, begin with '.', end with '.', or contain '..'`);i.push(n),n=""};let a=!1;for(;l<t.length;){const o=t[l];if(o==="\\"){if(l+1===t.length)throw new W($.INVALID_ARGUMENT,"Path has trailing escape character: "+t);const c=t[l+1];if(c!=="\\"&&c!=="."&&c!=="`")throw new W($.INVALID_ARGUMENT,"Path has invalid escape sequence: "+t);n+=c,l+=2}else o==="`"?(a=!a,l++):o!=="."||a?(n+=o,l++):(s(),l++)}if(s(),a)throw new W($.INVALID_ARGUMENT,"Unterminated ` in path: "+t);return new Pn(i)}static emptyPath(){return new Pn([])}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class qn{constructor(t){this.path=t}static fromPath(t){return new qn(je.fromString(t))}static fromName(t){return new qn(je.fromString(t).popFirst(5))}static empty(){return new qn(je.emptyPath())}get collectionGroup(){return this.path.popLast().lastSegment()}hasCollectionId(t){return this.path.length>=2&&this.path.get(this.path.length-2)===t}getCollectionGroup(){return this.path.get(this.path.length-2)}getCollectionPath(){return this.path.popLast()}isEqual(t){return t!==null&&je.comparator(this.path,t.path)===0}toString(){return this.path.toString()}static comparator(t,i){return je.comparator(t.path,i.path)}static isDocumentKey(t){return t.length%2==0}static fromSegments(t){return new qn(new je(t.slice()))}}function D4(e,t,i,n){if(t===!0&&n===!0)throw new W($.INVALID_ARGUMENT,`${e} and ${i} cannot be used together.`)}function L4(e){return typeof e=="object"&&e!==null&&(Object.getPrototypeOf(e)===Object.prototype||Object.getPrototypeOf(e)===null)}function k4(e){if(e===void 0)return"undefined";if(e===null)return"null";if(typeof e=="string")return e.length>20&&(e=`${e.substring(0,20)}...`),JSON.stringify(e);if(typeof e=="number"||typeof e=="boolean")return""+e;if(typeof e=="object"){if(e instanceof Array)return"an array";{const t=function(n){return n.constructor?n.constructor.name:null}(e);return t?`a custom ${t} object`:"an object"}}return typeof e=="function"?"a function":Sr(12329,{type:typeof e})}function I4(e,t){if("_delegate"in e&&(e=e._delegate),!(e instanceof t)){if(t.name===e.constructor.name)throw new W($.INVALID_ARGUMENT,"Type does not match the expected instance. Did you pass a reference from a different Firestore SDK?");{const i=k4(e);throw new W($.INVALID_ARGUMENT,`Expected type '${t.name}', but it was: ${i}`)}}return e}/**
+ * @license
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Rt(e,t){const i={typeString:e};return t&&(i.value=t),i}function Xr(e,t){if(!L4(e))throw new W($.INVALID_ARGUMENT,"JSON must be an object");let i;for(const n in t)if(t[n]){const l=t[n].typeString,s="value"in t[n]?{value:t[n].value}:void 0;if(!(n in e)){i=`JSON missing required field: '${n}'`;break}const a=e[n];if(l&&typeof a!==l){i=`JSON field '${n}' must be a ${l}.`;break}if(s!==void 0&&a!==s.value){i=`Expected '${n}' field to equal '${s.value}'`;break}}if(i)throw new W($.INVALID_ARGUMENT,i);return!0}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Md=-62135596800,yd=1e6;class Qe{static now(){return Qe.fromMillis(Date.now())}static fromDate(t){return Qe.fromMillis(t.getTime())}static fromMillis(t){const i=Math.floor(t/1e3),n=Math.floor((t-1e3*i)*yd);return new Qe(i,n)}constructor(t,i){if(this.seconds=t,this.nanoseconds=i,i<0)throw new W($.INVALID_ARGUMENT,"Timestamp nanoseconds out of range: "+i);if(i>=1e9)throw new W($.INVALID_ARGUMENT,"Timestamp nanoseconds out of range: "+i);if(t<Md)throw new W($.INVALID_ARGUMENT,"Timestamp seconds out of range: "+t);if(t>=253402300800)throw new W($.INVALID_ARGUMENT,"Timestamp seconds out of range: "+t)}toDate(){return new Date(this.toMillis())}toMillis(){return 1e3*this.seconds+this.nanoseconds/yd}_compareTo(t){return this.seconds===t.seconds?Ye(this.nanoseconds,t.nanoseconds):Ye(this.seconds,t.seconds)}isEqual(t){return t.seconds===this.seconds&&t.nanoseconds===this.nanoseconds}toString(){return"Timestamp(seconds="+this.seconds+", nanoseconds="+this.nanoseconds+")"}toJSON(){return{type:Qe._jsonSchemaVersion,seconds:this.seconds,nanoseconds:this.nanoseconds}}static fromJSON(t){if(Xr(t,Qe._jsonSchema))return new Qe(t.seconds,t.nanoseconds)}valueOf(){const t=this.seconds-Md;return String(t).padStart(12,"0")+"."+String(this.nanoseconds).padStart(9,"0")}}Qe._jsonSchemaVersion="firestore/timestamp/1.0",Qe._jsonSchema={type:Rt("string",Qe._jsonSchemaVersion),seconds:Rt("number"),nanoseconds:Rt("number")};function z4(e){return e.name==="IndexedDbTransactionError"}/**
+ * @license
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class U4 extends Error{constructor(){super(...arguments),this.name="Base64DecodeError"}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class rl{constructor(t){this.binaryString=t}static fromBase64String(t){const i=function(l){try{return atob(l)}catch(s){throw typeof DOMException<"u"&&s instanceof DOMException?new U4("Invalid base64 string: "+s):s}}(t);return new rl(i)}static fromUint8Array(t){const i=function(l){let s="";for(let a=0;a<l.length;++a)s+=String.fromCharCode(l[a]);return s}(t);return new rl(i)}[Symbol.iterator](){let t=0;return{next:()=>t<this.binaryString.length?{value:this.binaryString.charCodeAt(t++),done:!1}:{value:void 0,done:!0}}}toBase64(){return function(i){return btoa(i)}(this.binaryString)}toUint8Array(){return function(i){const n=new Uint8Array(i.length);for(let l=0;l<i.length;l++)n[l]=i.charCodeAt(l);return n}(this.binaryString)}approximateByteSize(){return 2*this.binaryString.length}compareTo(t){return Ye(this.binaryString,t.binaryString)}isEqual(t){return this.binaryString===t.binaryString}}rl.EMPTY_BYTE_STRING=new rl("");const Ro="(default)";class Bo{constructor(t,i){this.projectId=t,this.database=i||Ro}static empty(){return new Bo("","")}get isDefaultDatabase(){return this.database===Ro}isEqual(t){return t instanceof Bo&&t.projectId===this.projectId&&t.database===this.database}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class j4{constructor(t,i=null,n=[],l=[],s=null,a="F",o=null,c=null){this.path=t,this.collectionGroup=i,this.explicitOrderBy=n,this.filters=l,this.limit=s,this.limitType=a,this.startAt=o,this.endAt=c,this.Te=null,this.Ie=null,this.de=null,this.startAt,this.endAt}}function P4(e){return new j4(e)}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */var wd,it;(it=wd||(wd={}))[it.OK=0]="OK",it[it.CANCELLED=1]="CANCELLED",it[it.UNKNOWN=2]="UNKNOWN",it[it.INVALID_ARGUMENT=3]="INVALID_ARGUMENT",it[it.DEADLINE_EXCEEDED=4]="DEADLINE_EXCEEDED",it[it.NOT_FOUND=5]="NOT_FOUND",it[it.ALREADY_EXISTS=6]="ALREADY_EXISTS",it[it.PERMISSION_DENIED=7]="PERMISSION_DENIED",it[it.UNAUTHENTICATED=16]="UNAUTHENTICATED",it[it.RESOURCE_EXHAUSTED=8]="RESOURCE_EXHAUSTED",it[it.FAILED_PRECONDITION=9]="FAILED_PRECONDITION",it[it.ABORTED=10]="ABORTED",it[it.OUT_OF_RANGE=11]="OUT_OF_RANGE",it[it.UNIMPLEMENTED=12]="UNIMPLEMENTED",it[it.INTERNAL=13]="INTERNAL",it[it.UNAVAILABLE=14]="UNAVAILABLE",it[it.DATA_LOSS=15]="DATA_LOSS";/**
+ * @license
+ * Copyright 2022 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */new J1([4294967295,4294967295],0);/**
+ * @license
+ * Copyright 2018 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const G4=41943040;/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const W3=1048576;function Mu(){return typeof document<"u"?document:null}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class q4{constructor(t,i,n=1e3,l=1.5,s=6e4){this.Fi=t,this.timerId=i,this.d_=n,this.E_=l,this.A_=s,this.R_=0,this.V_=null,this.m_=Date.now(),this.reset()}reset(){this.R_=0}f_(){this.R_=this.A_}g_(t){this.cancel();const i=Math.floor(this.R_+this.p_()),n=Math.max(0,Date.now()-this.m_),l=Math.max(0,i-n);l>0&&Ge("ExponentialBackoff",`Backing off for ${l} ms (base delay: ${this.R_} ms, delay with jitter: ${i} ms, last attempt: ${n} ms ago)`),this.V_=this.Fi.enqueueAfterDelay(this.timerId,l,()=>(this.m_=Date.now(),t())),this.R_*=this.E_,this.R_<this.d_&&(this.R_=this.d_),this.R_>this.A_&&(this.R_=this.A_)}y_(){this.V_!==null&&(this.V_.skipDelay(),this.V_=null)}cancel(){this.V_!==null&&(this.V_.cancel(),this.V_=null)}p_(){return(Math.random()-.5)*this.R_}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class W1{constructor(t,i,n,l,s){this.asyncQueue=t,this.timerId=i,this.targetTimeMs=n,this.op=l,this.removalCallback=s,this.deferred=new ar,this.then=this.deferred.promise.then.bind(this.deferred.promise),this.deferred.promise.catch(a=>{})}get promise(){return this.deferred.promise}static createAndSchedule(t,i,n,l,s){const a=Date.now()+n,o=new W1(t,i,a,l,s);return o.start(n),o}start(t){this.timerHandle=setTimeout(()=>this.handleDelayElapsed(),t)}skipDelay(){return this.handleDelayElapsed()}cancel(t){this.timerHandle!==null&&(this.clearTimeout(),this.deferred.reject(new W($.CANCELLED,"Operation cancelled"+(t?": "+t:""))))}handleDelayElapsed(){this.asyncQueue.enqueueAndForget(()=>this.timerHandle!==null?(this.clearTimeout(),this.op().then(t=>this.deferred.resolve(t))):Promise.resolve())}clearTimeout(){this.timerHandle!==null&&(this.removalCallback(this),clearTimeout(this.timerHandle),this.timerHandle=null)}}var Zd,_d;(_d=Zd||(Zd={})).Fa="default",_d.Cache="cache";/**
+ * @license
+ * Copyright 2023 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Y4(e){const t={};return e.timeoutSeconds!==void 0&&(t.timeoutSeconds=e.timeoutSeconds),t}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const bd=new Map;/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const tp="firestore.googleapis.com",Sd=!0;class Ed{constructor(t){var i,n;if(t.host===void 0){if(t.ssl!==void 0)throw new W($.INVALID_ARGUMENT,"Can't provide ssl option if host option is not set");this.host=tp,this.ssl=Sd}else this.host=t.host,this.ssl=(i=t.ssl)!==null&&i!==void 0?i:Sd;if(this.isUsingEmulator=t.emulatorOptions!==void 0,this.credentials=t.credentials,this.ignoreUndefinedProperties=!!t.ignoreUndefinedProperties,this.localCache=t.localCache,t.cacheSizeBytes===void 0)this.cacheSizeBytes=G4;else{if(t.cacheSizeBytes!==-1&&t.cacheSizeBytes<W3)throw new W($.INVALID_ARGUMENT,"cacheSizeBytes must be at least 1048576");this.cacheSizeBytes=t.cacheSizeBytes}D4("experimentalForceLongPolling",t.experimentalForceLongPolling,"experimentalAutoDetectLongPolling",t.experimentalAutoDetectLongPolling),this.experimentalForceLongPolling=!!t.experimentalForceLongPolling,this.experimentalForceLongPolling?this.experimentalAutoDetectLongPolling=!1:t.experimentalAutoDetectLongPolling===void 0?this.experimentalAutoDetectLongPolling=!0:this.experimentalAutoDetectLongPolling=!!t.experimentalAutoDetectLongPolling,this.experimentalLongPollingOptions=Y4((n=t.experimentalLongPollingOptions)!==null&&n!==void 0?n:{}),function(s){if(s.timeoutSeconds!==void 0){if(isNaN(s.timeoutSeconds))throw new W($.INVALID_ARGUMENT,`invalid long polling timeout: ${s.timeoutSeconds} (must not be NaN)`);if(s.timeoutSeconds<5)throw new W($.INVALID_ARGUMENT,`invalid long polling timeout: ${s.timeoutSeconds} (minimum allowed value is 5)`);if(s.timeoutSeconds>30)throw new W($.INVALID_ARGUMENT,`invalid long polling timeout: ${s.timeoutSeconds} (maximum allowed value is 30)`)}}(this.experimentalLongPollingOptions),this.useFetchStreams=!!t.useFetchStreams}isEqual(t){return this.host===t.host&&this.ssl===t.ssl&&this.credentials===t.credentials&&this.cacheSizeBytes===t.cacheSizeBytes&&this.experimentalForceLongPolling===t.experimentalForceLongPolling&&this.experimentalAutoDetectLongPolling===t.experimentalAutoDetectLongPolling&&function(n,l){return n.timeoutSeconds===l.timeoutSeconds}(this.experimentalLongPollingOptions,t.experimentalLongPollingOptions)&&this.ignoreUndefinedProperties===t.ignoreUndefinedProperties&&this.useFetchStreams===t.useFetchStreams}}class ep{constructor(t,i,n,l){this._authCredentials=t,this._appCheckCredentials=i,this._databaseId=n,this._app=l,this.type="firestore-lite",this._persistenceKey="(lite)",this._settings=new Ed({}),this._settingsFrozen=!1,this._emulatorOptions={},this._terminateTask="notTerminated"}get app(){if(!this._app)throw new W($.FAILED_PRECONDITION,"Firestore was not initialized using the Firebase SDK. 'app' is not available");return this._app}get _initialized(){return this._settingsFrozen}get _terminated(){return this._terminateTask!=="notTerminated"}_setSettings(t){if(this._settingsFrozen)throw new W($.FAILED_PRECONDITION,"Firestore has already been started and its settings can no longer be changed. You can only modify settings before calling any other methods on a Firestore object.");this._settings=new Ed(t),this._emulatorOptions=t.emulatorOptions||{},t.credentials!==void 0&&(this._authCredentials=function(n){if(!n)return new _4;switch(n.type){case"firstParty":return new T4(n.sessionIndex||"0",n.iamToken||null,n.authTokenFactory||null);case"provider":return n.client;default:throw new W($.INVALID_ARGUMENT,"makeAuthCredentialsProvider failed due to invalid credential type")}}(t.credentials))}_getSettings(){return this._settings}_getEmulatorOptions(){return this._emulatorOptions}_freezeSettings(){return this._settingsFrozen=!0,this._settings}_delete(){return this._terminateTask==="notTerminated"&&(this._terminateTask=this._terminate()),this._terminateTask}async _restart(){this._terminateTask==="notTerminated"?await this._terminate():this._terminateTask="notTerminated"}toJSON(){return{app:this._app,databaseId:this._databaseId,settings:this._settings}}_terminate(){return function(i){const n=bd.get(i);n&&(Ge("ComponentProvider","Removing Datastore"),bd.delete(i),n.terminate())}(this),Promise.resolve()}}function X4(e,t,i,n={}){var l;e=I4(e,ep);const s=dl(t),a=e._getSettings(),o=Object.assign(Object.assign({},a),{emulatorOptions:e._getEmulatorOptions()}),c=`${t}:${i}`;s&&(n2(`https://${c}`),B1("Firestore",!0)),a.host!==tp&&a.host!==c&&Z4("Host has been set in both settings() and connectFirestoreEmulator(), emulator host will be used.");const d=Object.assign(Object.assign({},a),{host:c,ssl:s,emulatorOptions:n});if(!Sn(d,o)&&(e._setSettings(d),n.mockUserToken)){let v,Z;if(typeof n.mockUserToken=="string")v=n.mockUserToken,Z=ne.MOCK_USER;else{v=tM(n.mockUserToken,(l=e._app)===null||l===void 0?void 0:l.options.projectId);const V=n.mockUserToken.sub||n.mockUserToken.user_id;if(!V)throw new W($.INVALID_ARGUMENT,"mockUserToken must contain 'sub' or 'user_id' field!");Z=new ne(V)}e._authCredentials=new b4(new $3(v,Z))}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class th{constructor(t,i,n){this.converter=i,this._query=n,this.type="query",this.firestore=t}withConverter(t){return new th(this.firestore,t,this._query)}}class ti{constructor(t,i,n){this.converter=i,this._key=n,this.type="document",this.firestore=t}get _path(){return this._key.path}get id(){return this._key.path.lastSegment()}get path(){return this._key.path.canonicalString()}get parent(){return new eh(this.firestore,this.converter,this._key.path.popLast())}withConverter(t){return new ti(this.firestore,t,this._key)}toJSON(){return{type:ti._jsonSchemaVersion,referencePath:this._key.toString()}}static fromJSON(t,i,n){if(Xr(i,ti._jsonSchema))return new ti(t,n||null,new qn(je.fromString(i.referencePath)))}}ti._jsonSchemaVersion="firestore/documentReference/1.0",ti._jsonSchema={type:Rt("string",ti._jsonSchemaVersion),referencePath:Rt("string")};class eh extends th{constructor(t,i,n){super(t,i,P4(n)),this._path=n,this.type="collection"}get id(){return this._query.path.lastSegment()}get path(){return this._query.path.canonicalString()}get parent(){const t=this._path.popLast();return t.isEmpty()?null:new ti(this.firestore,null,new qn(t))}withConverter(t){return new eh(this.firestore,t,this._path)}}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Td="AsyncQueue";class Ad{constructor(t=Promise.resolve()){this.Zu=[],this.Xu=!1,this.ec=[],this.tc=null,this.nc=!1,this.rc=!1,this.sc=[],this.F_=new q4(this,"async_queue_retry"),this.oc=()=>{const n=Mu();n&&Ge(Td,"Visibility state changed to "+n.visibilityState),this.F_.y_()},this._c=t;const i=Mu();i&&typeof i.addEventListener=="function"&&i.addEventListener("visibilitychange",this.oc)}get isShuttingDown(){return this.Xu}enqueueAndForget(t){this.enqueue(t)}enqueueAndForgetEvenWhileRestricted(t){this.ac(),this.uc(t)}enterRestrictedMode(t){if(!this.Xu){this.Xu=!0,this.rc=t||!1;const i=Mu();i&&typeof i.removeEventListener=="function"&&i.removeEventListener("visibilitychange",this.oc)}}enqueue(t){if(this.ac(),this.Xu)return new Promise(()=>{});const i=new ar;return this.uc(()=>this.Xu&&this.rc?Promise.resolve():(t().then(i.resolve,i.reject),i.promise)).then(()=>i.promise)}enqueueRetryable(t){this.enqueueAndForget(()=>(this.Zu.push(t),this.cc()))}async cc(){if(this.Zu.length!==0){try{await this.Zu[0](),this.Zu.shift(),this.F_.reset()}catch(t){if(!z4(t))throw t;Ge(Td,"Operation failed with retryable error: "+t)}this.Zu.length>0&&this.F_.g_(()=>this.cc())}}uc(t){const i=this._c.then(()=>(this.nc=!0,t().catch(n=>{throw this.tc=n,this.nc=!1,Q3("INTERNAL UNHANDLED ERROR: ",xd(n)),n}).then(n=>(this.nc=!1,n))));return this._c=i,i}enqueueAfterDelay(t,i,n){this.ac(),this.sc.indexOf(t)>-1&&(i=0);const l=W1.createAndSchedule(this,t,i,n,s=>this.lc(s));return this.ec.push(l),l}ac(){this.tc&&Sr(47125,{hc:xd(this.tc)})}verifyOperationInProgress(){}async Pc(){let t;do t=this._c,await t;while(t!==this._c)}Tc(t){for(const i of this.ec)if(i.timerId===t)return!0;return!1}Ic(t){return this.Pc().then(()=>{this.ec.sort((i,n)=>i.targetTimeMs-n.targetTimeMs);for(const i of this.ec)if(i.skipDelay(),t!=="all"&&i.timerId===t)break;return this.Pc()})}dc(t){this.sc.push(t)}lc(t){const i=this.ec.indexOf(t);this.ec.splice(i,1)}}function xd(e){let t=e.message||"";return e.stack&&(t=e.stack.includes(e.message)?e.stack:e.message+`
+`+e.stack),t}class F4 extends ep{constructor(t,i,n,l){super(t,i,n,l),this.type="firestore",this._queue=new Ad,this._persistenceKey=(l==null?void 0:l.name)||"[DEFAULT]"}async _terminate(){if(this._firestoreClient){const t=this._firestoreClient.terminate();this._queue=new Ad(t),this._firestoreClient=void 0,await t}}}function K4(e,t,i){i||(i=Ro);const n=jr(e,"firestore");if(n.isInitialized(i)){const l=n.getImmediate({identifier:i}),s=n.getOptions(i);if(Sn(s,t))return l;throw new W($.FAILED_PRECONDITION,"initializeFirestore() has already been called with different options. To avoid this error, call initializeFirestore() with the same options as when it was originally called, or call getFirestore() to return the already initialized instance.")}if(t.cacheSizeBytes!==void 0&&t.localCache!==void 0)throw new W($.INVALID_ARGUMENT,"cache and cacheSizeBytes cannot be specified at the same time as cacheSizeBytes willbe deprecated. Instead, specify the cache size in the cache object");if(t.cacheSizeBytes!==void 0&&t.cacheSizeBytes!==-1&&t.cacheSizeBytes<W3)throw new W($.INVALID_ARGUMENT,"cacheSizeBytes must be at least 1048576");return t.host&&dl(t.host)&&n2(t.host),n.initialize({options:t,instanceIdentifier:i})}function Q4(e,t){const i=typeof e=="object"?e:k1(),n=typeof e=="string"?e:Ro,l=jr(i,"firestore").getImmediate({identifier:n});if(!l._initialized){const s=a3("firestore");s&&X4(l,...s)}return l}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class wi{constructor(t){this._byteString=t}static fromBase64String(t){try{return new wi(rl.fromBase64String(t))}catch(i){throw new W($.INVALID_ARGUMENT,"Failed to construct data from Base64 string: "+i)}}static fromUint8Array(t){return new wi(rl.fromUint8Array(t))}toBase64(){return this._byteString.toBase64()}toUint8Array(){return this._byteString.toUint8Array()}toString(){return"Bytes(base64: "+this.toBase64()+")"}isEqual(t){return this._byteString.isEqual(t._byteString)}toJSON(){return{type:wi._jsonSchemaVersion,bytes:this.toBase64()}}static fromJSON(t){if(Xr(t,wi._jsonSchema))return wi.fromBase64String(t.bytes)}}wi._jsonSchemaVersion="firestore/bytes/1.0",wi._jsonSchema={type:Rt("string",wi._jsonSchemaVersion),bytes:Rt("string")};/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class ip{constructor(...t){for(let i=0;i<t.length;++i)if(t[i].length===0)throw new W($.INVALID_ARGUMENT,"Invalid field name at argument $(i + 1). Field names must not be empty.");this._internalPath=new Pn(t)}isEqual(t){return this._internalPath.isEqual(t._internalPath)}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class Jn{constructor(t,i){if(!isFinite(t)||t<-90||t>90)throw new W($.INVALID_ARGUMENT,"Latitude must be a number between -90 and 90, but was: "+t);if(!isFinite(i)||i<-180||i>180)throw new W($.INVALID_ARGUMENT,"Longitude must be a number between -180 and 180, but was: "+i);this._lat=t,this._long=i}get latitude(){return this._lat}get longitude(){return this._long}isEqual(t){return this._lat===t._lat&&this._long===t._long}_compareTo(t){return Ye(this._lat,t._lat)||Ye(this._long,t._long)}toJSON(){return{latitude:this._lat,longitude:this._long,type:Jn._jsonSchemaVersion}}static fromJSON(t){if(Xr(t,Jn._jsonSchema))return new Jn(t.latitude,t.longitude)}}Jn._jsonSchemaVersion="firestore/geoPoint/1.0",Jn._jsonSchema={type:Rt("string",Jn._jsonSchemaVersion),latitude:Rt("number"),longitude:Rt("number")};/**
+ * @license
+ * Copyright 2024 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class $n{constructor(t){this._values=(t||[]).map(i=>i)}toArray(){return this._values.map(t=>t)}isEqual(t){return function(n,l){if(n.length!==l.length)return!1;for(let s=0;s<n.length;++s)if(n[s]!==l[s])return!1;return!0}(this._values,t._values)}toJSON(){return{type:$n._jsonSchemaVersion,vectorValues:this._values}}static fromJSON(t){if(Xr(t,$n._jsonSchema)){if(Array.isArray(t.vectorValues)&&t.vectorValues.every(i=>typeof i=="number"))return new $n(t.vectorValues);throw new W($.INVALID_ARGUMENT,"Expected 'vectorValues' field to be a number array")}}}$n._jsonSchemaVersion="firestore/vectorValue/1.0",$n._jsonSchema={type:Rt("string",$n._jsonSchemaVersion),vectorValues:Rt("object")};const J4=new RegExp("[~\\*/\\[\\]]");function $4(e,t,i){if(t.search(J4)>=0)throw Cd(`Invalid field path (${t}). Paths must not contain '~', '*', '/', '[', or ']'`,e);try{return new ip(...t.split("."))._internalPath}catch{throw Cd(`Invalid field path (${t}). Paths must not be empty, begin with '.', end with '.', or contain '..'`,e)}}function Cd(e,t,i,n,l){let s=`Function ${t}() called with invalid data`;s+=". ";let a="";return new W($.INVALID_ARGUMENT,s+e+a)}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class np{constructor(t,i,n,l,s){this._firestore=t,this._userDataWriter=i,this._key=n,this._document=l,this._converter=s}get id(){return this._key.path.lastSegment()}get ref(){return new ti(this._firestore,this._converter,this._key)}exists(){return this._document!==null}data(){if(this._document){if(this._converter){const t=new W4(this._firestore,this._userDataWriter,this._key,this._document,null);return this._converter.fromFirestore(t)}return this._userDataWriter.convertValue(this._document.data.value)}}get(t){if(this._document){const i=this._document.data.field(lp("DocumentSnapshot.get",t));if(i!==null)return this._userDataWriter.convertValue(i)}}}class W4 extends np{data(){return super.data()}}function lp(e,t){return typeof t=="string"?$4(e,t):t instanceof ip?t._internalPath:t._delegate._internalPath}class Ta{constructor(t,i){this.hasPendingWrites=t,this.fromCache=i}isEqual(t){return this.hasPendingWrites===t.hasPendingWrites&&this.fromCache===t.fromCache}}class Yl extends np{constructor(t,i,n,l,s,a){super(t,i,n,l,a),this._firestore=t,this._firestoreImpl=t,this.metadata=s}exists(){return super.exists()}data(t={}){if(this._document){if(this._converter){const i=new Ka(this._firestore,this._userDataWriter,this._key,this._document,this.metadata,null);return this._converter.fromFirestore(i,t)}return this._userDataWriter.convertValue(this._document.data.value,t.serverTimestamps)}}get(t,i={}){if(this._document){const n=this._document.data.field(lp("DocumentSnapshot.get",t));if(n!==null)return this._userDataWriter.convertValue(n,i.serverTimestamps)}}toJSON(){if(this.metadata.hasPendingWrites)throw new W($.FAILED_PRECONDITION,"DocumentSnapshot.toJSON() attempted to serialize a document with pending writes. Await waitForPendingWrites() before invoking toJSON().");const t=this._document,i={};return i.type=Yl._jsonSchemaVersion,i.bundle="",i.bundleSource="DocumentSnapshot",i.bundleName=this._key.toString(),!t||!t.isValidDocument()||!t.isFoundDocument()?i:(this._userDataWriter.convertObjectMap(t.data.value.mapValue.fields,"previous"),i.bundle=(this._firestore,this.ref.path,"NOT SUPPORTED"),i)}}Yl._jsonSchemaVersion="firestore/documentSnapshot/1.0",Yl._jsonSchema={type:Rt("string",Yl._jsonSchemaVersion),bundleSource:Rt("string","DocumentSnapshot"),bundleName:Rt("string"),bundle:Rt("string")};class Ka extends Yl{data(t={}){return super.data(t)}}class or{constructor(t,i,n,l){this._firestore=t,this._userDataWriter=i,this._snapshot=l,this.metadata=new Ta(l.hasPendingWrites,l.fromCache),this.query=n}get docs(){const t=[];return this.forEach(i=>t.push(i)),t}get size(){return this._snapshot.docs.size}get empty(){return this.size===0}forEach(t,i){this._snapshot.docs.forEach(n=>{t.call(i,new Ka(this._firestore,this._userDataWriter,n.key,n,new Ta(this._snapshot.mutatedKeys.has(n.key),this._snapshot.fromCache),this.query.converter))})}docChanges(t={}){const i=!!t.includeMetadataChanges;if(i&&this._snapshot.excludesMetadataChanges)throw new W($.INVALID_ARGUMENT,"To include metadata changes with your document changes, you must also pass { includeMetadataChanges:true } to onSnapshot().");return this._cachedChanges&&this._cachedChangesIncludeMetadataChanges===i||(this._cachedChanges=function(l,s){if(l._snapshot.oldDocs.isEmpty()){let a=0;return l._snapshot.docChanges.map(o=>{const c=new Ka(l._firestore,l._userDataWriter,o.doc.key,o.doc,new Ta(l._snapshot.mutatedKeys.has(o.doc.key),l._snapshot.fromCache),l.query.converter);return o.doc,{type:"added",doc:c,oldIndex:-1,newIndex:a++}})}{let a=l._snapshot.oldDocs;return l._snapshot.docChanges.filter(o=>s||o.type!==3).map(o=>{const c=new Ka(l._firestore,l._userDataWriter,o.doc.key,o.doc,new Ta(l._snapshot.mutatedKeys.has(o.doc.key),l._snapshot.fromCache),l.query.converter);let d=-1,v=-1;return o.type!==0&&(d=a.indexOf(o.doc.key),a=a.delete(o.doc.key)),o.type!==1&&(a=a.add(o.doc),v=a.indexOf(o.doc.key)),{type:tw(o.type),doc:c,oldIndex:d,newIndex:v}})}}(this,i),this._cachedChangesIncludeMetadataChanges=i),this._cachedChanges}toJSON(){if(this.metadata.hasPendingWrites)throw new W($.FAILED_PRECONDITION,"QuerySnapshot.toJSON() attempted to serialize a document with pending writes. Await waitForPendingWrites() before invoking toJSON().");const t={};t.type=or._jsonSchemaVersion,t.bundleSource="QuerySnapshot",t.bundleName=O4.newId(),this._firestore._databaseId.database,this._firestore._databaseId.projectId;const i=[],n=[],l=[];return this.docs.forEach(s=>{s._document!==null&&(i.push(s._document),n.push(this._userDataWriter.convertObjectMap(s._document.data.value.mapValue.fields,"previous")),l.push(s.ref.path))}),t.bundle=(this._firestore,this.query._query,t.bundleName,"NOT SUPPORTED"),t}}function tw(e){switch(e){case 0:return"added";case 2:case 3:return"modified";case 1:return"removed";default:return Sr(61501,{type:e})}}or._jsonSchemaVersion="firestore/querySnapshot/1.0",or._jsonSchema={type:Rt("string",or._jsonSchemaVersion),bundleSource:Rt("string","QuerySnapshot"),bundleName:Rt("string"),bundle:Rt("string")};(function(t,i=!0){(function(l){Yr=l})(Vs),ll(new En("firestore",(n,{instanceIdentifier:l,options:s})=>{const a=n.getProvider("app").getImmediate(),o=new F4(new S4(n.getProvider("auth-internal")),new A4(a,n.getProvider("app-check-internal")),function(d,v){if(!Object.prototype.hasOwnProperty.apply(d.options,["projectId"]))throw new W($.INVALID_ARGUMENT,'"projectId" not provided in firebase.initializeApp.');return new Bo(d.options.projectId,v)}(a,l),a);return s=Object.assign({useFetchStreams:i},s),o._setSettings(s),o},"PUBLIC").setMultipleInstances(!0)),ii(Vd,gd,t),ii(Vd,gd,"esm2017")})();/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const ew="type.googleapis.com/google.protobuf.Int64Value",iw="type.googleapis.com/google.protobuf.UInt64Value";function sp(e,t){const i={};for(const n in e)e.hasOwnProperty(n)&&(i[n]=t(e[n]));return i}function Do(e){if(e==null)return null;if(e instanceof Number&&(e=e.valueOf()),typeof e=="number"&&isFinite(e)||e===!0||e===!1||Object.prototype.toString.call(e)==="[object String]")return e;if(e instanceof Date)return e.toISOString();if(Array.isArray(e))return e.map(t=>Do(t));if(typeof e=="function"||typeof e=="object")return sp(e,t=>Do(t));throw new Error("Data cannot be encoded in JSON: "+e)}function rs(e){if(e==null)return e;if(e["@type"])switch(e["@type"]){case ew:case iw:{const t=Number(e.value);if(isNaN(t))throw new Error("Data cannot be decoded from JSON: "+e);return t}default:throw new Error("Data cannot be decoded from JSON: "+e)}return Array.isArray(e)?e.map(t=>rs(t)):typeof e=="function"||typeof e=="object"?sp(e,t=>rs(t)):e}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const ih="functions";/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Od={OK:"ok",CANCELLED:"cancelled",UNKNOWN:"unknown",INVALID_ARGUMENT:"invalid-argument",DEADLINE_EXCEEDED:"deadline-exceeded",NOT_FOUND:"not-found",ALREADY_EXISTS:"already-exists",PERMISSION_DENIED:"permission-denied",UNAUTHENTICATED:"unauthenticated",RESOURCE_EXHAUSTED:"resource-exhausted",FAILED_PRECONDITION:"failed-precondition",ABORTED:"aborted",OUT_OF_RANGE:"out-of-range",UNIMPLEMENTED:"unimplemented",INTERNAL:"internal",UNAVAILABLE:"unavailable",DATA_LOSS:"data-loss"};class he extends ai{constructor(t,i,n){super(`${ih}/${t}`,i||""),this.details=n,Object.setPrototypeOf(this,he.prototype)}}function nw(e){if(e>=200&&e<300)return"ok";switch(e){case 0:return"internal";case 400:return"invalid-argument";case 401:return"unauthenticated";case 403:return"permission-denied";case 404:return"not-found";case 409:return"aborted";case 429:return"resource-exhausted";case 499:return"cancelled";case 500:return"internal";case 501:return"unimplemented";case 503:return"unavailable";case 504:return"deadline-exceeded"}return"unknown"}function Lo(e,t){let i=nw(e),n=i,l;try{const s=t&&t.error;if(s){const a=s.status;if(typeof a=="string"){if(!Od[a])return new he("internal","internal");i=Od[a],n=a}const o=s.message;typeof o=="string"&&(n=o),l=s.details,l!==void 0&&(l=rs(l))}}catch{}return i==="ok"?null:new he(i,n,l)}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */class lw{constructor(t,i,n,l){this.app=t,this.auth=null,this.messaging=null,this.appCheck=null,this.serverAppAppCheckToken=null,ve(t)&&t.settings.appCheckToken&&(this.serverAppAppCheckToken=t.settings.appCheckToken),this.auth=i.getImmediate({optional:!0}),this.messaging=n.getImmediate({optional:!0}),this.auth||i.get().then(s=>this.auth=s,()=>{}),this.messaging||n.get().then(s=>this.messaging=s,()=>{}),this.appCheck||l==null||l.get().then(s=>this.appCheck=s,()=>{})}async getAuthToken(){if(this.auth)try{const t=await this.auth.getToken();return t==null?void 0:t.accessToken}catch{return}}async getMessagingToken(){if(!(!this.messaging||!("Notification"in self)||Notification.permission!=="granted"))try{return await this.messaging.getToken()}catch{return}}async getAppCheckToken(t){if(this.serverAppAppCheckToken)return this.serverAppAppCheckToken;if(this.appCheck){const i=t?await this.appCheck.getLimitedUseToken():await this.appCheck.getToken();return i.error?null:i.token}return null}async getContext(t){const i=await this.getAuthToken(),n=await this.getMessagingToken(),l=await this.getAppCheckToken(t);return{authToken:i,messagingToken:n,appCheckToken:l}}}/**
+ * @license
+ * Copyright 2017 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const Ec="us-central1",sw=/^data: (.*?)(?:\n|$)/;function rw(e){let t=null;return{promise:new Promise((i,n)=>{t=setTimeout(()=>{n(new he("deadline-exceeded","deadline-exceeded"))},e)}),cancel:()=>{t&&clearTimeout(t)}}}class aw{constructor(t,i,n,l,s=Ec,a=(...o)=>fetch(...o)){this.app=t,this.fetchImpl=a,this.emulatorOrigin=null,this.contextProvider=new lw(t,i,n,l),this.cancelAllRequests=new Promise(o=>{this.deleteService=()=>Promise.resolve(o())});try{const o=new URL(s);this.customDomain=o.origin+(o.pathname==="/"?"":o.pathname),this.region=Ec}catch{this.customDomain=null,this.region=s}}_delete(){return this.deleteService()}_url(t){const i=this.app.options.projectId;return this.emulatorOrigin!==null?`${this.emulatorOrigin}/${i}/${this.region}/${t}`:this.customDomain!==null?`${this.customDomain}/${t}`:`https://${this.region}-${i}.cloudfunctions.net/${t}`}}function ow(e,t,i){const n=dl(t);e.emulatorOrigin=`http${n?"s":""}://${t}:${i}`,n&&(n2(e.emulatorOrigin),B1("Functions",!0))}function uw(e,t,i){const n=l=>hw(e,t,l,{});return n.stream=(l,s)=>dw(e,t,l,s),n}async function cw(e,t,i,n){i["Content-Type"]="application/json";let l;try{l=await n(e,{method:"POST",body:JSON.stringify(t),headers:i})}catch{return{status:0,json:null}}let s=null;try{s=await l.json()}catch{}return{status:l.status,json:s}}async function rp(e,t){const i={},n=await e.contextProvider.getContext(t.limitedUseAppCheckTokens);return n.authToken&&(i.Authorization="Bearer "+n.authToken),n.messagingToken&&(i["Firebase-Instance-ID-Token"]=n.messagingToken),n.appCheckToken!==null&&(i["X-Firebase-AppCheck"]=n.appCheckToken),i}function hw(e,t,i,n){const l=e._url(t);return fw(e,l,i,n)}async function fw(e,t,i,n){i=Do(i);const l={data:i},s=await rp(e,n),a=n.timeout||7e4,o=rw(a),c=await Promise.race([cw(t,l,s,e.fetchImpl),o.promise,e.cancelAllRequests]);if(o.cancel(),!c)throw new he("cancelled","Firebase Functions instance was deleted.");const d=Lo(c.status,c.json);if(d)throw d;if(!c.json)throw new he("internal","Response is not valid JSON object.");let v=c.json.data;if(typeof v>"u"&&(v=c.json.result),typeof v>"u")throw new he("internal","Response is missing data field.");return{data:rs(v)}}function dw(e,t,i,n){const l=e._url(t);return Hw(e,l,i,n||{})}async function Hw(e,t,i,n){var l;i=Do(i);const s={data:i},a=await rp(e,n);a["Content-Type"]="application/json",a.Accept="text/event-stream";let o;try{o=await e.fetchImpl(t,{method:"POST",body:JSON.stringify(s),headers:a,signal:n==null?void 0:n.signal})}catch(b){if(b instanceof Error&&b.name==="AbortError"){const O=new he("cancelled","Request was cancelled.");return{data:Promise.reject(O),stream:{[Symbol.asyncIterator](){return{next(){return Promise.reject(O)}}}}}}const C=Lo(0,null);return{data:Promise.reject(C),stream:{[Symbol.asyncIterator](){return{next(){return Promise.reject(C)}}}}}}let c,d;const v=new Promise((b,C)=>{c=b,d=C});(l=n==null?void 0:n.signal)===null||l===void 0||l.addEventListener("abort",()=>{const b=new he("cancelled","Request was cancelled.");d(b)});const Z=o.body.getReader(),V=Vw(Z,c,d,n==null?void 0:n.signal);return{stream:{[Symbol.asyncIterator](){const b=V.getReader();return{async next(){const{value:C,done:O}=await b.read();return{value:C,done:O}},async return(){return await b.cancel(),{done:!0,value:void 0}}}}},data:v}}function Vw(e,t,i,n){const l=(a,o)=>{const c=a.match(sw);if(!c)return;const d=c[1];try{const v=JSON.parse(d);if("result"in v){t(rs(v.result));return}if("message"in v){o.enqueue(rs(v.message));return}if("error"in v){const Z=Lo(0,v);o.error(Z),i(Z);return}}catch(v){if(v instanceof he){o.error(v),i(v);return}}},s=new TextDecoder;return new ReadableStream({start(a){let o="";return c();async function c(){if(n!=null&&n.aborted){const d=new he("cancelled","Request was cancelled");return a.error(d),i(d),Promise.resolve()}try{const{value:d,done:v}=await e.read();if(v){o.trim()&&l(o.trim(),a),a.close();return}if(n!=null&&n.aborted){const V=new he("cancelled","Request was cancelled");a.error(V),i(V),await e.cancel();return}o+=s.decode(d,{stream:!0});const Z=o.split(`
+`);o=Z.pop()||"";for(const V of Z)V.trim()&&l(V.trim(),a);return c()}catch(d){const v=d instanceof he?d:Lo(0,null);a.error(v),i(v)}}},cancel(){return e.cancel()}})}const Nd="@firebase/functions",Rd="0.12.9";/**
+ * @license
+ * Copyright 2019 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */const gw="auth-internal",pw="app-check-internal",mw="messaging-internal";function vw(e){const t=(i,{instanceIdentifier:n})=>{const l=i.getProvider("app").getImmediate(),s=i.getProvider(gw),a=i.getProvider(mw),o=i.getProvider(pw);return new aw(l,s,a,o,n)};ll(new En(ih,t,"PUBLIC").setMultipleInstances(!0)),ii(Nd,Rd,e),ii(Nd,Rd,"esm2017")}/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */function Mw(e=k1(),t=Ec){const n=jr(Fe(e),ih).getImmediate({identifier:t}),l=a3("functions");return l&&yw(n,...l),n}function yw(e,t,i){ow(Fe(e),t,i)}function ap(e,t,i){return uw(Fe(e),t)}vw();const op={firebaseConfig:{apiKey:"AIzaSyCdopZ7PgYFx82A0lC_lLeKtEXepYUd4Pw",authDomain:"smokeless-eu.firebaseapp.com",projectId:"smokeless-eu",storageBucket:"smokeless-eu.firebasestorage.app",messagingSenderId:"1096722867612",appId:"1:1096722867612:web:19176df5b5a4e443f65459"},firebaseFunctionsRegion:"europe-west1"},Er=q0().length>0?q0()[0]:f3(op.firebaseConfig);let Tc;try{Tc=O3(Er,{persistence:k3,popupRedirectResolver:K3})}catch{Tc=v4(Er)}const Fi=Tc;let Bd;try{Bd=K4(Er,{experimentalAutoDetectLongPolling:!0})}catch{Bd=Q4(Er)}const up=Mw(Er,op.firebaseFunctionsRegion);async function ww(e){return(await ap(up,"resolveGoogleLinkCode")({code:e})).data}async function Dd(e){return(await ap(up,"completeGoogleLinkSession")({sessionId:e})).data}const Ac="smokeless:link-site:session";function cp(e){return e.toUpperCase().replace(/[^A-Z2-9]/g,"").slice(0,10)}function Zw(e){const t=cp(e);return t.length<=5?t:`${t.slice(0,5)}-${t.slice(5)}`}function Ld(){if(typeof window>"u")return null;try{const e=window.sessionStorage.getItem(Ac);if(!e)return null;const t=JSON.parse(e);return typeof t.sessionId!="string"||typeof t.expiresAt!="string"?null:{sessionId:t.sessionId,expiresAt:t.expiresAt}}catch{return null}}function Aa(e){if(!(typeof window>"u")){if(!e){window.sessionStorage.removeItem(Ac);return}window.sessionStorage.setItem(Ac,JSON.stringify(e))}}function _w(){if(typeof navigator>"u")return!1;const e=navigator.userAgent,t=/iPad|iPhone|iPod/.test(e),i=/Safari/.test(e)&&!/Chrome|CriOS|Edg|FxiOS/.test(e);return t||i}function bw(e){if(!e||typeof e!="object"||!("code"in e))return!1;const t=String(e.code??"");return t==="auth/popup-blocked"||t==="auth/web-storage-unsupported"||t==="auth/operation-not-supported-in-this-environment"}function Sw(e){const t=Math.max(0,e),i=Math.floor(t/60),n=t%60;return`${i}:${String(n).padStart(2,"0")}`}function Ew(){const[e,t]=mt.useState(""),[i,n]=mt.useState("idle"),[l,s]=mt.useState(()=>Ld()),[a,o]=mt.useState("Enter the pairing code from Smokeless to continue."),[c,d]=mt.useState(""),[v,Z]=mt.useState(()=>Date.now());mt.useEffect(()=>{const O=window.setInterval(()=>Z(Date.now()),1e3);return()=>window.clearInterval(O)},[]),mt.useEffect(()=>{let O=!1;return(async()=>{await o6(Fi,X1);const w=Ld(),m=await D6(Fi);if(!O){if(m!=null&&m.user&&w){s(w),n("authorizing"),o("Finishing your Google link...");try{const _=await Dd(w.sessionId);if(O)return;d(_.targetGoogleEmail??m.user.email??""),n("success"),o("Google account linked. Return to Smokeless to finish the switch."),Aa(null),s(null),await nd(Fi)}catch(_){if(console.error("[Smokeless Link] redirect completion failed",_),O)return;n("error"),o(_ instanceof Error?_.message:"Could not finish Google linking.")}return}if(Fi.currentUser&&w){s(w),n("ready"),o("Continue with Google to finish linking.");return}w&&(s(w),n("ready"),o("Continue with Google to finish linking."))}})().catch(w=>{console.error("[Smokeless Link] initialization failed",w),!O&&(n("error"),o(w instanceof Error?w.message:"Could not start the Google link page."))}),()=>{O=!0}},[]);const V=mt.useMemo(()=>l?Math.max(0,Math.floor((new Date(l.expiresAt).getTime()-v)/1e3)):0,[v,l]),b=async()=>{const O=cp(e);if(O.length!==10){n("error"),o("Enter the full 10-character code shown in Smokeless.");return}n("authorizing"),o("Checking pairing code...");try{const R=await ww(O),w={sessionId:R.sessionId,expiresAt:R.expiresAt};Aa(w),s(w),n("ready"),o("Code verified. Continue with Google in this browser.")}catch(R){console.error("[Smokeless Link] resolve failed",R),n("error"),o(R instanceof Error?R.message:"Pairing code not recognized.")}},C=async()=>{if(!l)return;const O=new yi;O.setCustomParameters({prompt:"select_account"}),Aa(l),n("authorizing"),o("Opening Google sign-in...");try{if(_w()){await rd(Fi,O);return}const R=await A6(Fi,O),w=await Dd(l.sessionId);d(w.targetGoogleEmail??R.user.email??""),n("success"),o("Google account linked. Return to Smokeless to finish the switch."),Aa(null),s(null),await nd(Fi)}catch(R){if(bw(R)){await rd(Fi,O);return}console.error("[Smokeless Link] google auth failed",R),n("error"),o(R instanceof Error?R.message:"Could not complete Google sign-in.")}};return Y.jsxs("div",{className:"linker-shell",children:[Y.jsx("div",{className:"linker-orb linker-orb-left"}),Y.jsx("div",{className:"linker-orb linker-orb-right"}),Y.jsx("div",{className:"linker-frame",children:Y.jsxs(i3,{padding:"default",className:"linker-card",children:[Y.jsx("div",{className:"linker-eyebrow",children:"Smokeless Pairing"}),Y.jsx("h1",{className:"linker-title",children:"Link your Google account in a normal browser."}),Y.jsx("p",{className:"linker-body",children:a}),c?Y.jsxs("div",{className:"linker-chip",children:["Authorized as ",c]}):null,Y.jsxs("div",{className:"linker-section",children:[Y.jsx("label",{className:"linker-label",htmlFor:"pairing-code",children:"Pairing code"}),Y.jsx("input",{id:"pairing-code",className:"linker-input",value:Zw(e),onChange:O=>t(O.currentTarget.value),placeholder:"ABCDE-FGHIJ",autoComplete:"one-time-code",autoCapitalize:"characters",spellCheck:!1,disabled:i==="authorizing"||i==="success"}),Y.jsx(mc,{variant:"secondary",className:"linker-button",onClick:()=>void b(),disabled:i==="authorizing"||i==="success",children:"Verify code"})]}),l?Y.jsxs("div",{className:"linker-session",children:[Y.jsxs("div",{children:[Y.jsx("div",{className:"linker-label",children:"Session"}),Y.jsx("div",{className:"linker-meta",children:l.sessionId})]}),Y.jsxs("div",{children:[Y.jsx("div",{className:"linker-label",children:"Expires in"}),Y.jsx("div",{className:"linker-countdown",children:Sw(V)})]})]}):null,Y.jsx(mc,{variant:"highlight",className:"linker-button linker-button-primary",onClick:()=>void C(),disabled:!l||i==="authorizing"||i==="success"||V===0,children:"Continue with Google"}),Y.jsx("div",{className:"linker-footer",children:"After Google confirms access here, return to Smokeless on your phone to finish switching the app onto the linked account."})]})})]})}k9.createRoot(document.getElementById("root")).render(Y.jsx(Ew,{}));

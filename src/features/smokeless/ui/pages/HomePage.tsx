@@ -1,25 +1,22 @@
 import { Card } from 'even-toolkit/web';
 import { IcEditAdd } from 'even-toolkit/web/icons/svg-icons';
-import { formatCurrency } from '../../../../lib/time';
-import { glassCardClass, plusFabClass, sectionLabelClass } from '../styles';
+import { glassCardClass, plusFabClass } from '../styles';
 
 export function HomePage({
 	todayCount,
-	longestCessationLabel,
-	moneySaved,
+	todayLongestCessationLabel,
+	longestEverCessationLabel,
 	timerLabel,
 	countBump,
 	mutating,
-	country,
 	onAddSmoke,
 }: {
 	todayCount: number;
-	longestCessationLabel: string;
-	moneySaved: number;
+	todayLongestCessationLabel: string;
+	longestEverCessationLabel: string;
 	timerLabel: string;
 	countBump: boolean;
 	mutating: boolean;
-	country: string;
 	onAddSmoke: () => void;
 }) {
 	return (
@@ -36,13 +33,11 @@ export function HomePage({
 						<div>
 							<div className="text-detail uppercase tracking-[0.38em] text-text-dim">Longest cessation</div>
 							<div className="mt-3 text-[3.6rem] font-semibold leading-none tracking-[-0.04em] text-text">
-								{longestCessationLabel}
+								{todayLongestCessationLabel}
 							</div>
-						</div>
-						<div>
-							<div className={sectionLabelClass}>Money saved</div>
-							<div className="mt-3 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] text-text">
-								{formatCurrency(moneySaved, country)}
+							<div className="mt-4 text-detail uppercase tracking-[0.24em] text-text-dim">Longest ever record</div>
+							<div className="mt-2 text-[2.5rem] font-semibold leading-none tracking-[-0.03em] text-text">
+								{longestEverCessationLabel}
 							</div>
 						</div>
 					</div>

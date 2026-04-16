@@ -239,6 +239,7 @@ function buildTodayMaxCessation(
 	const dayStart = startOfDay(now);
 	const sorted = [...entries].sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime());
 	let maxSeconds = 0;
+	let hasSmokesToday = false;
 	let previousTimestamp: Date | null = null;
 
 	for (const entry of sorted) {
@@ -246,14 +247,18 @@ function buildTodayMaxCessation(
 			previousTimestamp = entry.timestamp;
 			continue;
 		}
-		const intervalStart = previousTimestamp && previousTimestamp > dayStart ? previousTimestamp : dayStart;
-		const gapSeconds = Math.max(0, Math.round((entry.timestamp.getTime() - intervalStart.getTime()) / 1000));
-		maxSeconds = Math.max(maxSeconds, gapSeconds);
+		hasSmokesToday = true;
+		// Use the actual gap between consecutive smokes (matching Flutter's intervalSincePrevious logic).
+		// No tail included — the live running time is added in the display layer only.
+		if (previousTimestamp !== null) {
+			const gapSeconds = Math.max(0, Math.round((entry.timestamp.getTime() - previousTimestamp.getTime()) / 1000));
+			maxSeconds = Math.max(maxSeconds, gapSeconds);
+		}
 		previousTimestamp = entry.timestamp;
 	}
 
-	const tailStart = previousTimestamp && previousTimestamp > dayStart ? previousTimestamp : dayStart;
-	maxSeconds = Math.max(maxSeconds, Math.max(0, Math.round((now.getTime() - tailStart.getTime()) / 1000)));
+	// Only persist if there was at least one smoke today (produces a closed gap to store).
+	if (!hasSmokesToday) return null;
 
 	return {
 		value: maxSeconds,
@@ -412,11 +417,12 @@ export async function fetchAllLogEntries(uid: string): Promise<SmokeLogEntry[]> 
 
 export async function ensureCanonicalUserData(firebaseUid: string, evenUser: EvenUserInfo): Promise<void> {
 	const defaults = buildDefaultUserDocument(evenUser);
+	// NOTE: longestEverCessation and todayMaxCessation are intentionally excluded here.
+	// They are computed values managed exclusively by updateUserMetrics (called on every
+	// addSmokeEntry / deleteLogEntry). Writing defaults here would reset them on every boot.
 	await setDoc(
 		userRef(firebaseUid),
 		{
-			longestEverCessation: defaults.longestEverCessation,
-			todayMaxCessation: defaults.todayMaxCessation,
 			preferences: defaults.preferences,
 			providers: {
 				google: defaults.providers.google,

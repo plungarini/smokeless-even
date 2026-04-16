@@ -3,7 +3,6 @@ import { Card } from 'even-toolkit/web';
 import { startTransition, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { missingClientEnv } from './config/env';
 import {
-	computeLongestCessation,
 	computeWeightedDailyAverage,
 } from './domain/calculations';
 import type {
@@ -240,9 +239,31 @@ export default function App() {
 	const selectedHistoryEntries = getHistoryEntriesForDay(historyGroups, selectedHistoryDay);
 	const historyDaysWithEntries = new Set(historyGroups.map((group) => group.dayKey));
 	const timerLabel = formatTimerClock(lastSmokeAt, now);
-	const todayLongestCessationSeconds = userDocument?.todayMaxCessation?.value ?? 0;
-	const longestEverCessationSeconds =
-		Math.max(userDocument?.longestEverCessation ?? 0, Math.round((computeLongestCessation(allSmokeEntries, now) ?? 0) / 1000));
+	// Live seconds since the last smoke (updates every second via `now`).
+	const timeSinceLastSmokeSeconds = lastSmokeAt
+		? Math.max(0, Math.floor((now.getTime() - lastSmokeAt.getTime()) / 1000))
+		: 0;
+	const lastSmokeWasToday = lastSmokeAt ? toDayKey(lastSmokeAt) === toDayKey(now) : false;
+
+	// Longest ever: stored DB field is the historical best; live timer provides the current streak.
+	// We intentionally do NOT recalculate from log history — the stored field is the source of truth.
+	const longestEverCessationSeconds = Math.max(
+		userDocument?.longestEverCessation ?? 0,
+		timeSinceLastSmokeSeconds,
+	);
+
+	// Today's longest: stored DB field (closed gaps between smokes today) + live running time.
+	// Falls back to the live timer when there's no smoke today, so the display stays active.
+	const todayLongestCessationSeconds = (() => {
+		const metric = userDocument?.todayMaxCessation;
+		const storedToday =
+			metric?.lastUpdated && toDayKey(metric.lastUpdated) === toDayKey(now) ? metric.value : 0;
+		if (!lastSmokeWasToday) {
+			// No smoke today — show the live running timer so the field stays meaningful.
+			return timeSinceLastSmokeSeconds;
+		}
+		return Math.max(storedToday, timeSinceLastSmokeSeconds);
+	})();
 	const todayLongestCessationLabel = formatDurationClock(todayLongestCessationSeconds * 1000);
 	const longestEverCessationLabel = formatDurationClock(longestEverCessationSeconds * 1000);
 	const hudPhase =

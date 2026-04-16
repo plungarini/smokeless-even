@@ -76,8 +76,6 @@ export class HudController {
 	private snapshot: HudSnapshot = defaultSnapshot;
 	private ui: HudUiState = defaultUi;
 	private route: HudRoute = 'home';
-	private menuOpenedAt = 0;
-	private readonly MENU_ENTRY_COOLDOWN_MS = 400;
 	private homeVisualState: HudHomeVisualState = { mode: 'idle', message: null, loggedAt: null, todayCount: null };
 	private homeVisualTimer: ReturnType<typeof setTimeout> | null = null;
 	private smokePending = false;
@@ -231,7 +229,6 @@ export class HudController {
 				case 'openMenu': {
 					this.menuController.setInitialIndex(getMenuIndexForView(this.ui.route));
 					this.route = 'menu';
-					this.menuOpenedAt = Date.now();
 					console.log(`[HUD-CTRL] route -> menu  initialIndex=${getMenuIndexForView(this.ui.route)}`);
 					this.onChange();
 					break;

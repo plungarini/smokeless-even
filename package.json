@@ -29,6 +29,7 @@
 		"build": "tsc && vite build",
 		"build:functions": "npm --prefix functions run build",
 		"build:link-site": "vite build --config vite.link.config.ts",
+		"deploy:firebase": "npm run deploy:functions && npm run deploy:rules",
 		"deploy:functions": "npm run build:functions && firebase deploy --only functions --project smokeless-eu",
 		"deploy:rules": "firebase deploy --only firestore:rules --project smokeless-eu",
 		"dev": "vite --host 0.0.0.0 --port 5173",

@@ -2,7 +2,16 @@ export type QuitProgram = 'linear' | 'fixed' | 'minimum';
 export type AuthProvider = 'anonymous' | 'google';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type WeekStart = 'Monday' | 'Sunday';
-export type GoogleLinkSessionStatus = 'pending' | 'authorized' | 'consumed' | 'expired' | 'cancelled' | 'failed';
+export type GoogleLinkSessionStatus =
+	| 'pending'
+	| 'authorized'
+	| 'migrating'
+	| 'ready_to_switch'
+	| 'switched'
+	| 'consumed'
+	| 'expired'
+	| 'cancelled'
+	| 'failed';
 
 export interface EvenUserInfo {
 	uid: string;
@@ -26,6 +35,7 @@ export interface GoogleLinkPairingSession {
 	linkUrl: string;
 	expiresAt: string;
 	status: GoogleLinkSessionStatus;
+	targetGoogleUid?: string;
 	targetGoogleEmail?: string;
 	targetGoogleDisplayName?: string;
 	errorCode?: string;

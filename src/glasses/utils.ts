@@ -1,7 +1,7 @@
 import { TextContainerProperty } from '@evenrealities/even_hub_sdk';
 import type { HudHistoryDaySummary } from '../domain/types';
 import { formatDayLabel, formatHudLastSmoke, formatLongDate, formatTime } from '../lib/time';
-import { HUD_CREATE_TEXT_LIMIT, HUD_WIDTH } from './constants';
+import { HUD_CREATE_TEXT_LIMIT } from './constants';
 import type { HudLayoutDescriptor, HudTextDescriptor } from './types';
 
 export function clamp(value: number, min: number, max: number): number {
@@ -43,7 +43,6 @@ export function createGhostEventDescriptor(containerID: number, containerName: s
 		isEventCapture: 1,
 	};
 }
-
 
 export function formatTargetStatus(todayCount: number, dailyTarget: number | null): string {
 	if (dailyTarget === null) return 'Tracking only';

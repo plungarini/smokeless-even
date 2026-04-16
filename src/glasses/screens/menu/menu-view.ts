@@ -65,7 +65,7 @@ function buildMenuLayout(selectedIndex: number): HudLayoutDescriptor {
 	};
 }
 
-function buildMenuContents(selectedIndex: number, activeTab: string): Record<string, string> {
+function buildMenuContents(activeTab: string): Record<string, string> {
 	const contents: Record<string, string> = {
 		header: '╭───────  Smokeless  ───────╮',
 	};
@@ -104,7 +104,7 @@ export class MenuView implements View {
 	}
 
 	contents(): Record<string, string> {
-		return buildMenuContents(this.selectedIndex, appStore.getState().tab);
+		return buildMenuContents(appStore.getState().tab);
 	}
 
 	handleEvent(event: EvenHubEvent): void {

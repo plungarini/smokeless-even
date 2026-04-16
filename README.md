@@ -59,6 +59,24 @@ npm run qr
 firebase deploy --only functions,firestore:rules --project <your-firebase-project-id>
 ```
 
+### 6a. Grant custom-token signing permission
+
+Smokeless uses Firebase custom tokens to switch the Even WebView from the anonymous Firebase UID onto the merged Google UID after background migration. The Functions runtime must be allowed to sign custom tokens.
+
+After deploying Functions, check the Functions logs for the `smokeless auth signer identity` line. It prints the service-account identity that the Admin SDK is using for token signing.
+
+Grant that identity `Service Account Token Creator` on the signing service account, or the Google-link handoff will get stuck in `ready_to_switch` with an IAM `signBlob` error.
+
+Typical gcloud command shape:
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding <SIGNING_SERVICE_ACCOUNT_EMAIL> \
+  --member="serviceAccount:<FUNCTIONS_RUNTIME_SERVICE_ACCOUNT_EMAIL>" \
+  --role="roles/iam.serviceAccountTokenCreator"
+```
+
+If you see `custom-token-mint-failed` in a `googleLinkSessions/{sessionId}` document or in Function logs, this IAM step is still missing.
+
 ### 7. GitHub Pages linker deployment
 
 The repo includes `.github/workflows/deploy-link-site.yml`, which builds and deploys the dedicated linker site from `develop`.
@@ -96,8 +114,9 @@ If Google is linked later:
 
 - the app creates a 15-minute pairing code tied to the current anonymous Firebase UID
 - the user completes Google auth on the GitHub Pages linker site
-- Firebase Functions merge the anonymous data into the Google-backed Firebase UID
-- the Even app switches onto that canonical Google UID with a Firebase custom token
+- Firebase Functions merge the anonymous data into the Google-backed Firebase UID first
+- the Even app then switches onto that canonical Google UID with a Firebase custom token
+- only after the app is actually running on the Google UID does cleanup delete the old anonymous source user
 - provider metadata is stored under `providers.google`
 
 ## Notes

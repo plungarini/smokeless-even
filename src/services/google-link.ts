@@ -3,9 +3,12 @@ import { httpsCallable } from 'firebase/functions';
 import type { AuthAccountInfo, GoogleLinkPairingSession, GoogleLinkSessionStatus } from '../domain/types';
 import { env } from '../config/env';
 import { db, functions } from '../lib/firebase';
+import { bridgeStorageGet, bridgeStorageRemove, bridgeStorageSet } from './bridge-storage';
 import { signInWithCanonicalCustomToken } from './auth';
 
 const GOOGLE_LINK_STORAGE_PREFIX = 'smokeless:google-link:';
+const GOOGLE_LINK_CLAIM_STORAGE_PREFIX = 'smokeless:google-link-claim:';
+const CLAIM_RETRY_INTERVAL_MS = 15_000;
 
 interface CreateGoogleLinkSessionResponse {
 	sessionId: string;
@@ -45,8 +48,21 @@ interface CompleteGoogleLinkCleanupResponse {
 	account: AuthAccountInfo;
 }
 
+interface GoogleLinkClaimState {
+	lastAttemptAt: number;
+	lastError?: string;
+}
+
 function storageKey(sourceUid: string): string {
 	return `${GOOGLE_LINK_STORAGE_PREFIX}${sourceUid}`;
+}
+
+function targetStorageKey(targetUid: string): string {
+	return `${GOOGLE_LINK_STORAGE_PREFIX}target:${targetUid}`;
+}
+
+function claimStorageKey(sessionId: string): string {
+	return `${GOOGLE_LINK_CLAIM_STORAGE_PREFIX}${sessionId}`;
 }
 
 function toIsoString(value: unknown): string {
@@ -70,8 +86,10 @@ function normalizeSession(
 }
 
 function writeActiveGooglePairing(session: GoogleLinkPairingSession): void {
-	if (typeof window === 'undefined') return;
-	window.localStorage.setItem(storageKey(session.sourceUid), JSON.stringify(session));
+	void bridgeStorageSet(storageKey(session.sourceUid), JSON.stringify(session));
+	if (session.targetGoogleUid) {
+		void bridgeStorageSet(targetStorageKey(session.targetGoogleUid), JSON.stringify(session));
+	}
 }
 
 function readStoredSession(raw: string | null): GoogleLinkPairingSession | null {
@@ -99,6 +117,7 @@ function readStoredSession(raw: string | null): GoogleLinkPairingSession | null 
 			targetGoogleUid: typeof parsed.targetGoogleUid === 'string' ? parsed.targetGoogleUid : undefined,
 			targetGoogleEmail: typeof parsed.targetGoogleEmail === 'string' ? parsed.targetGoogleEmail : undefined,
 			targetGoogleDisplayName: typeof parsed.targetGoogleDisplayName === 'string' ? parsed.targetGoogleDisplayName : undefined,
+			switchErrorAt: typeof parsed.switchErrorAt === 'string' ? parsed.switchErrorAt : undefined,
 			errorCode: typeof parsed.errorCode === 'string' ? parsed.errorCode : undefined,
 			errorMessage: typeof parsed.errorMessage === 'string' ? parsed.errorMessage : undefined,
 		};
@@ -108,32 +127,57 @@ function readStoredSession(raw: string | null): GoogleLinkPairingSession | null 
 }
 
 export function clearActiveGooglePairing(sourceUid: string): void {
-	if (typeof window === 'undefined') return;
-	window.localStorage.removeItem(storageKey(sourceUid));
+	void bridgeStorageRemove(storageKey(sourceUid));
 }
 
 export function clearGooglePairingSession(session: GoogleLinkPairingSession | null): void {
 	if (!session) return;
 	clearActiveGooglePairing(session.sourceUid);
+	if (session.targetGoogleUid) {
+		void bridgeStorageRemove(targetStorageKey(session.targetGoogleUid));
+	}
+	clearGoogleLinkClaimAttempt(session.sessionId);
 }
 
-export function loadActiveGooglePairing(sourceUid: string): GoogleLinkPairingSession | null {
-	if (typeof window === 'undefined') return null;
-
-	const direct = readStoredSession(window.localStorage.getItem(storageKey(sourceUid)));
-	if (direct) return direct;
-
-	for (let index = 0; index < window.localStorage.length; index += 1) {
-		const key = window.localStorage.key(index);
-		if (!key || !key.startsWith(GOOGLE_LINK_STORAGE_PREFIX)) continue;
-		const session = readStoredSession(window.localStorage.getItem(key));
-		if (!session) continue;
-		if (session.sourceUid === sourceUid || session.targetGoogleUid === sourceUid) {
-			return session;
-		}
+export async function loadGoogleLinkClaimStateAsync(sessionId: string): Promise<GoogleLinkClaimState | null> {
+	try {
+		const raw = await bridgeStorageGet(claimStorageKey(sessionId));
+		if (!raw) return null;
+		const parsed = JSON.parse(raw) as Partial<GoogleLinkClaimState>;
+		if (typeof parsed.lastAttemptAt !== 'number') return null;
+		return {
+			lastAttemptAt: parsed.lastAttemptAt,
+			lastError: typeof parsed.lastError === 'string' ? parsed.lastError : undefined,
+		};
+	} catch {
+		return null;
 	}
+}
 
-	return null;
+export function recordGoogleLinkClaimAttempt(sessionId: string, error?: string): void {
+	void bridgeStorageSet(
+		claimStorageKey(sessionId),
+		JSON.stringify({
+			lastAttemptAt: Date.now(),
+			lastError: error,
+		}),
+	);
+}
+
+export function clearGoogleLinkClaimAttempt(sessionId: string): void {
+	void bridgeStorageRemove(claimStorageKey(sessionId));
+}
+
+export async function canRetryGoogleLinkClaim(sessionId: string, now = Date.now()): Promise<boolean> {
+	const state = await loadGoogleLinkClaimStateAsync(sessionId);
+	if (!state) return true;
+	return now - state.lastAttemptAt >= CLAIM_RETRY_INTERVAL_MS;
+}
+
+export async function loadActiveGooglePairingAsync(sourceUid: string): Promise<GoogleLinkPairingSession | null> {
+	const direct = readStoredSession(await bridgeStorageGet(storageKey(sourceUid)));
+	if (direct) return direct;
+	return readStoredSession(await bridgeStorageGet(targetStorageKey(sourceUid)));
 }
 
 export async function startGooglePairing(sourceUid: string, sourceEvenUid: string): Promise<GoogleLinkPairingSession> {
@@ -168,6 +212,8 @@ function mapSessionSnapshot(
 		targetGoogleEmail: typeof value.targetGoogleEmail === 'string' ? value.targetGoogleEmail : current?.targetGoogleEmail,
 		targetGoogleDisplayName:
 			typeof value.targetGoogleDisplayName === 'string' ? value.targetGoogleDisplayName : current?.targetGoogleDisplayName,
+		switchErrorAt:
+			value.switchErrorAt !== undefined ? toIsoString(value.switchErrorAt) : current?.switchErrorAt,
 		errorCode: typeof value.errorCode === 'string' ? value.errorCode : current?.errorCode,
 		errorMessage: typeof value.errorMessage === 'string' ? value.errorMessage : current?.errorMessage,
 	});
@@ -178,7 +224,7 @@ function mapSessionSnapshot(
 export async function refreshGooglePairingStatus(current: GoogleLinkPairingSession): Promise<GoogleLinkPairingSession | null> {
 	const snapshot = await getDoc(doc(db, 'googleLinkSessions', current.sessionId));
 	if (!snapshot.exists()) {
-		clearActiveGooglePairing(current.sourceUid);
+		clearGooglePairingSession(current);
 		return null;
 	}
 
@@ -228,26 +274,37 @@ export async function claimReadyGooglePairing(
 	current: GoogleLinkPairingSession,
 ): Promise<{ targetUid: string; account: AuthAccountInfo; session: GoogleLinkPairingSession }> {
 	const callable = httpsCallable<{ sessionId: string }, ClaimGoogleLinkSessionResponse>(functions, 'claimGoogleLinkSession');
-	const result = await callable({ sessionId: current.sessionId });
-	const account = await signInWithCanonicalCustomToken(result.data.customToken);
-	const session = normalizeSession(current.sourceUid, {
-		status: result.data.status,
-		sessionId: current.sessionId,
-		code: current.code,
-		linkUrl: current.linkUrl,
-		expiresAt: current.expiresAt,
-		targetGoogleUid: result.data.targetUid,
-		targetGoogleEmail: result.data.account.googleEmail || current.targetGoogleEmail,
-		targetGoogleDisplayName: result.data.account.googleDisplayName || current.targetGoogleDisplayName,
-		errorCode: current.errorCode,
-		errorMessage: current.errorMessage,
-	});
-	writeActiveGooglePairing(session);
-	return {
-		targetUid: result.data.targetUid,
-		account,
-		session,
-	};
+	recordGoogleLinkClaimAttempt(current.sessionId);
+	try {
+		const result = await callable({ sessionId: current.sessionId });
+		const account = await signInWithCanonicalCustomToken(result.data.customToken);
+		clearGoogleLinkClaimAttempt(current.sessionId);
+		const session = normalizeSession(current.sourceUid, {
+			status: result.data.status,
+			sessionId: current.sessionId,
+			code: current.code,
+			linkUrl: current.linkUrl,
+			expiresAt: current.expiresAt,
+			targetGoogleUid: result.data.targetUid,
+			targetGoogleEmail: result.data.account.googleEmail || current.targetGoogleEmail,
+			targetGoogleDisplayName: result.data.account.googleDisplayName || current.targetGoogleDisplayName,
+			switchErrorAt: undefined,
+			errorCode: undefined,
+			errorMessage: undefined,
+		});
+		writeActiveGooglePairing(session);
+		return {
+			targetUid: result.data.targetUid,
+			account,
+			session,
+		};
+	} catch (error) {
+		recordGoogleLinkClaimAttempt(
+			current.sessionId,
+			error instanceof Error ? error.message : 'Could not claim the Google link session.',
+		);
+		throw error;
+	}
 }
 
 export async function completeGoogleLinkCleanup(
@@ -255,6 +312,7 @@ export async function completeGoogleLinkCleanup(
 ): Promise<{ targetUid: string; account: AuthAccountInfo }> {
 	const callable = httpsCallable<{ sessionId: string }, CompleteGoogleLinkCleanupResponse>(functions, 'completeGoogleLinkCleanup');
 	const result = await callable({ sessionId: current.sessionId });
+	clearGoogleLinkClaimAttempt(current.sessionId);
 	clearGooglePairingSession(current);
 	return {
 		targetUid: result.data.targetUid,

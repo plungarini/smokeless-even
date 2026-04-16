@@ -35,6 +35,7 @@ export const createGoogleLinkSession = onCall(async (request) => {
 		migrationStartedAt: null,
 		migrationCompletedAt: null,
 		switchClaimedAt: null,
+		switchErrorAt: null,
 		cleanupCompletedAt: null,
 		completedAt: null,
 		consumedAt: null,

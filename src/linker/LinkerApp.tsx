@@ -12,8 +12,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { auth } from '../lib/firebase';
 import { completeGoogleLinkSession, finalizeGoogleLinkSession, resolveGoogleLinkCode } from '../services/google-link';
 
-const SESSION_STORAGE_KEY = 'smokeless:link-site:session';
-
 type LinkerPhase = 'idle' | 'ready' | 'authorizing' | 'success' | 'error';
 
 interface ResolvedPairing {
@@ -35,15 +33,15 @@ function readStoredPairing(): ResolvedPairing | null {
 	if (typeof window === 'undefined') return null;
 
 	try {
-		const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
-		if (!raw) return null;
-		const parsed = JSON.parse(raw) as Partial<ResolvedPairing>;
-		if (typeof parsed.sessionId !== 'string' || typeof parsed.expiresAt !== 'string') {
+		const params = new URLSearchParams(window.location.search);
+		const sessionId = params.get('sessionId');
+		const expiresAt = params.get('expiresAt');
+		if (!sessionId || !expiresAt) {
 			return null;
 		}
 		return {
-			sessionId: parsed.sessionId,
-			expiresAt: parsed.expiresAt,
+			sessionId,
+			expiresAt,
 		};
 	} catch {
 		return null;
@@ -53,12 +51,17 @@ function readStoredPairing(): ResolvedPairing | null {
 function writeStoredPairing(pairing: ResolvedPairing | null): void {
 	if (typeof window === 'undefined') return;
 
+	const url = new URL(window.location.href);
 	if (!pairing) {
-		window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+		url.searchParams.delete('sessionId');
+		url.searchParams.delete('expiresAt');
+		window.history.replaceState(null, '', url.toString());
 		return;
 	}
 
-	window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(pairing));
+	url.searchParams.set('sessionId', pairing.sessionId);
+	url.searchParams.set('expiresAt', pairing.expiresAt);
+	window.history.replaceState(null, '', url.toString());
 }
 
 function shouldPreferRedirect(): boolean {

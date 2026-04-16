@@ -1,5 +1,5 @@
 import { getApps, initializeApp } from 'firebase/app';
-import { Auth, browserLocalPersistence, browserPopupRedirectResolver, getAuth, initializeAuth, onAuthStateChanged } from 'firebase/auth';
+import { Auth, browserLocalPersistence, browserPopupRedirectResolver, getAuth, initializeAuth, onAuthStateChanged, type User } from 'firebase/auth';
 import { Firestore, getFirestore, initializeFirestore } from 'firebase/firestore';
 import { Functions, getFunctions } from 'firebase/functions';
 import { env } from '../config/env';
@@ -40,4 +40,8 @@ export async function waitForInitialAuthState(): Promise<void> {
 			resolve();
 		});
 	});
+}
+
+export function subscribeToAuthState(onValue: (user: User | null) => void): () => void {
+	return onAuthStateChanged(auth, onValue);
 }

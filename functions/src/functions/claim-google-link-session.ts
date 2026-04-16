@@ -37,6 +37,37 @@ export const claimGoogleLinkSession = onCall(async (request) => {
 		throw new HttpsError('failed-precondition', 'This Google link session is missing its target account.');
 	}
 
+	let customToken = '';
+	try {
+		customToken = await adminAuth.createCustomToken(targetUid);
+	} catch (error) {
+		await sessionRef(sessionId).set(
+			{
+				status: 'ready_to_switch',
+				errorCode: 'custom-token-mint-failed',
+				errorMessage:
+					error instanceof Error
+						? error.message
+						: 'Could not mint a Firebase custom token for the linked Google account.',
+				switchErrorAt: FieldValue.serverTimestamp(),
+				updatedAt: FieldValue.serverTimestamp(),
+			},
+			{ merge: true },
+		);
+
+		logger.error('custom-token-mint-failed', {
+			sessionId,
+			sourceUid,
+			targetUid,
+			error,
+		});
+
+		throw new HttpsError(
+			'internal',
+			'Could not mint a custom token for the linked Google account. Check Firebase IAM for signBlob permission.',
+		);
+	}
+
 	if (status === 'ready_to_switch') {
 		await sessionRef(sessionId).set(
 			{
@@ -49,8 +80,6 @@ export const claimGoogleLinkSession = onCall(async (request) => {
 			{ merge: true },
 		);
 	}
-
-	const customToken = await adminAuth.createCustomToken(targetUid);
 
 	logger.info('google link claimed by source app', {
 		sessionId,

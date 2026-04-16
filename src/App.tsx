@@ -63,12 +63,15 @@ import {
 import {
 	ensureFirebaseSession,
 	getCurrentAccountInfo,
+	observeAccountInfo,
 } from './services/auth';
 import {
 	clearGooglePairingSession,
 	claimReadyGooglePairing,
+	canRetryGoogleLinkClaim,
 	completeGoogleLinkCleanup,
-	loadActiveGooglePairing,
+	loadGoogleLinkClaimStateAsync,
+	loadActiveGooglePairingAsync,
 	refreshGooglePairingStatus,
 	startGooglePairing,
 	watchGooglePairingStatus,
@@ -82,6 +85,7 @@ import {
 	ensureCanonicalUserData,
 	exportLogs,
 	fetchAllLogEntries,
+	fetchUserDocument,
 	saveOnboarding,
 	subscribeToTodayCount,
 	subscribeToUserDocument,
@@ -157,6 +161,8 @@ export default function App() {
 	const previousTodayCountRef = useRef(0);
 	const unsubscribeRef = useRef<(() => void)[]>([]);
 	const bootstrapStartedRef = useRef(false);
+	const authObserverStartedRef = useRef(false);
+	const observedAuthUidRef = useRef<string | null>(null);
 	const hudSmokeLockRef = useRef(false);
 	const googleSwitchLockRef = useRef(false);
 	const googleCleanupLockRef = useRef(false);
@@ -315,7 +321,7 @@ export default function App() {
 
 	useEffect(() => {
 		if (canonicalUid && !userDocument) {
-			saveOnboardingDraft(canonicalUid, onboardingDraft);
+			void saveOnboardingDraft(canonicalUid, onboardingDraft);
 		}
 	}, [canonicalUid, onboardingDraft, userDocument]);
 
@@ -474,7 +480,7 @@ export default function App() {
 			googleSwitchLockRef.current = true;
 			try {
 				const { targetUid, account, session: switchedSession } = await claimReadyGooglePairing(session);
-				moveOnboardingDraft(session.sourceUid, targetUid);
+				await moveOnboardingDraft(session.sourceUid, targetUid);
 				startTransition(() => {
 					setGoogleLinkSession(switchedSession);
 					setAccountInfo(account);
@@ -486,7 +492,8 @@ export default function App() {
 			} catch (error) {
 				console.error('[Smokeless] google link claim failed', error);
 				if (options.showToast !== false) {
-					pushToast('Could not finish Google linking');
+					const claimState = await loadGoogleLinkClaimStateAsync(session.sessionId);
+					pushToast(claimState?.lastError || 'Could not finish Google linking');
 				}
 				return null;
 			} finally {
@@ -550,7 +557,7 @@ export default function App() {
 
 			let firebaseUid = await ensureFirebaseSession();
 			let activeAccount = getCurrentAccountInfo();
-			let activePairing = loadActiveGooglePairing(firebaseUid);
+			let activePairing = await loadActiveGooglePairingAsync(firebaseUid);
 
 			if (activePairing) {
 				activePairing = await refreshGooglePairingStatus(activePairing);
@@ -569,20 +576,36 @@ export default function App() {
 			}
 
 			activeAccount = activeAccount ?? getCurrentAccountInfo();
+			observedAuthUidRef.current = firebaseUid;
 
 			setAccountInfo(activeAccount);
 			setCanonicalUid(firebaseUid);
-			setOnboardingDraft(loadSavedOnboarding(firebaseUid, normalized.country));
 			await ensureCanonicalUserData(firebaseUid, normalized);
 			if (activeAccount) await upsertAuthProviderFields(firebaseUid, activeAccount);
+			const hydratedDocument = await fetchUserDocument(firebaseUid);
+			startTransition(() => {
+				setUserDocument(hydratedDocument);
+			});
+			setOnboardingDraft(
+				hydratedDocument?.onboarding
+					? {
+						cigarettesPerDay: hydratedDocument.onboarding.cigarettesPerDay,
+						packPrice: hydratedDocument.onboarding.packPrice,
+						cigarettesPerPack: hydratedDocument.onboarding.cigarettesPerPack,
+						quitProgram: hydratedDocument.onboarding.quitProgram,
+						programTargetCigarettes: hydratedDocument.onboarding.programTargetCigarettes,
+						programTargetDate: hydratedDocument.onboarding.programTargetDate
+							? toDateInputValue(hydratedDocument.onboarding.programTargetDate)
+							: toDateInputValue(addDays(new Date(), 90)),
+						step: 0,
+					}
+					: await loadSavedOnboarding(firebaseUid, normalized.country),
+			);
 
 			unsubscribeRef.current = [
 				subscribeToUserDocument(firebaseUid, (nextDocument) => {
 					startTransition(() => {
 						setUserDocument(nextDocument);
-						if (!nextDocument?.onboarding) {
-							setOnboardingDraft(loadSavedOnboarding(firebaseUid, normalized.country));
-						}
 					});
 				}),
 				subscribeToTodayCount(firebaseUid, (count) => {
@@ -627,6 +650,29 @@ export default function App() {
 	}, []);
 
 	useEffect(() => {
+		if (authObserverStartedRef.current) return;
+		authObserverStartedRef.current = true;
+
+		return observeAccountInfo((nextAccount) => {
+			const nextUid = nextAccount?.uid ?? null;
+			const previousUid = observedAuthUidRef.current;
+			observedAuthUidRef.current = nextUid;
+
+			if (!nextUid || !previousUid || nextUid === previousUid) {
+				return;
+			}
+
+			console.info('[Smokeless] auth uid changed', { previousUid, nextUid });
+			startTransition(() => {
+				setAccountInfo(nextAccount);
+				setCanonicalUid(nextUid);
+				setBootState('booting');
+			});
+			void bootstrap();
+		});
+	}, [bootstrap]);
+
+	useEffect(() => {
 		if (!googleLinkSession) return;
 
 		return watchGooglePairingStatus(googleLinkSession, (nextSession) => {
@@ -640,6 +686,7 @@ export default function App() {
 				void (async () => {
 					const currentUid = await ensureFirebaseSession();
 					if (currentUid !== nextSession.sourceUid) return;
+					if (!(await canRetryGoogleLinkClaim(nextSession.sessionId))) return;
 					const finalized = await claimReadyGoogleLink(nextSession);
 					if (!finalized) return;
 					setBootState('booting');
@@ -666,7 +713,11 @@ export default function App() {
 			}
 
 			if (nextSession.status === 'failed') {
-				pushToast(nextSession.errorMessage || 'Google linking failed');
+				pushToast(
+					nextSession.errorCode === 'custom-token-mint-failed'
+						? 'Google account is ready, but Firebase custom token minting is blocked. Check Functions IAM.'
+						: nextSession.errorMessage || 'Google linking failed',
+				);
 			}
 
 			if (isTerminalGoogleLinkStatus(nextSession.status)) {
@@ -680,7 +731,12 @@ export default function App() {
 		setMutating(true);
 		try {
 			await saveOnboarding(canonicalUid, evenUser, onboardingDraft, accountInfo);
-			clearOnboardingDraft(canonicalUid);
+			const nextDocument = await fetchUserDocument(canonicalUid);
+			await clearOnboardingDraft(canonicalUid);
+			startTransition(() => {
+				setUserDocument(nextDocument);
+				setTab('home');
+			});
 			setEditingOnboarding(false);
 			await refreshDerivedData(canonicalUid, true);
 			pushToast('Onboarding saved');
@@ -861,7 +917,7 @@ export default function App() {
 		};
 		setOnboardingDraft(nextDraft);
 		setEditingOnboarding(true);
-		saveOnboardingDraft(canonicalUid, nextDraft);
+		void saveOnboardingDraft(canonicalUid, nextDraft);
 		pushToast('Onboarding reopened');
 	});
 
@@ -879,7 +935,7 @@ export default function App() {
 		setMutating(true);
 		try {
 			await deleteAllUserData(canonicalUid);
-			clearOnboardingDraft(canonicalUid);
+			await clearOnboardingDraft(canonicalUid);
 			clearGooglePairingSession(googleLinkSession);
 			setDailyStats({});
 			setMonthlyStats({});

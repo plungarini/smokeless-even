@@ -38,6 +38,7 @@ export interface GoogleLinkPairingSession {
 	targetGoogleUid?: string;
 	targetGoogleEmail?: string;
 	targetGoogleDisplayName?: string;
+	switchErrorAt?: string;
 	errorCode?: string;
 	errorMessage?: string;
 }

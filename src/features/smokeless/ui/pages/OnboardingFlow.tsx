@@ -82,15 +82,24 @@ export function OnboardingFlow({
 				) : null}
 
 				<div className="flex gap-3">
-					<Button variant="secondary" className="flex-1" disabled={draft.step === 0} onClick={() => onChange({ ...draft, step: Math.max(0, draft.step - 1) })}>
+					<Button
+						variant="secondary"
+						className="flex-1 !text-text"
+						disabled={draft.step === 0}
+						onClick={() => onChange({ ...draft, step: Math.max(0, draft.step - 1) })}
+					>
 						Back
 					</Button>
 					{draft.step < 3 ? (
-						<Button variant="highlight" className="flex-1" onClick={() => onChange({ ...draft, step: Math.min(3, draft.step + 1) })}>
+						<Button
+							variant="highlight"
+							className="flex-1 !text-black"
+							onClick={() => onChange({ ...draft, step: Math.min(3, draft.step + 1) })}
+						>
 							Next
 						</Button>
 					) : (
-						<Button variant="highlight" className="flex-1" onClick={() => void onSubmit()}>
+						<Button variant="highlight" className="flex-1 !text-black" onClick={() => void onSubmit()}>
 							Start tracking
 						</Button>
 					)}

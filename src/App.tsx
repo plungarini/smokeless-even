@@ -33,6 +33,7 @@ import { HomePage } from './features/smokeless/ui/pages/HomePage';
 import { SettingsPage } from './features/smokeless/ui/pages/SettingsPage';
 import { StatsPage } from './features/smokeless/ui/pages/StatsPage';
 import type { AppTab, StatsPeriod } from './features/smokeless/ui/types';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppGlasses } from './glasses/AppGlasses';
 import type { HudActions, HudIntent, HudUiState } from './glasses/types';
 import { normalizeEvenUserInfo } from './lib/even';
@@ -960,7 +961,9 @@ export default function App() {
 	// transitions between boot states and primary app shells.
 	return (
 		<>
-			<AppGlasses snapshot={hudSnapshot} actions={hudActions} ui={hudUi} onNavigate={handleHudNavigate} />
+			<ErrorBoundary fallback={null}>
+				<AppGlasses snapshot={hudSnapshot} actions={hudActions} ui={hudUi} onNavigate={handleHudNavigate} />
+			</ErrorBoundary>
 
 			{bootState === 'booting' ? (
 				<FullScreenState title="Smokeless" body="Connecting to Even and loading your smoking data." loading />
@@ -984,6 +987,7 @@ export default function App() {
 					</Card>
 				</div>
 			) : !evenUser || !canonicalUid || !userDocument ? null : (
+				<ErrorBoundary>
 				<>
 					<div className="smoke-app-shell h-dvh">
 						<div className="smoke-app-ornament smoke-app-ornament-top" />
@@ -1118,6 +1122,7 @@ export default function App() {
 						</div>
 					) : null}
 				</>
+				</ErrorBoundary>
 			)}
 		</>
 	);

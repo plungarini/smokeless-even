@@ -1,5 +1,5 @@
 import { Button, Card } from 'even-toolkit/web';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { clearDebugLogs, useDebugLogs, type DebugLogEntry } from '../../../../debug/logs';
 import { glassCardClass, sectionLabelClass } from '../styles';
 
@@ -60,9 +60,13 @@ function createEntryKey(entry: DebugLogEntry, index: number): string {
 	return `${entry.level}-${entry.ts}-${index}-${entry.msg}`;
 }
 
+type CopyStatus = 'idle' | 'copied' | 'failed';
+
 export function DebugLogsCard() {
-	const logs = useDebugLogs().filter((entry) => entry.level !== 'log');
+	const logs = useDebugLogs().filter((entry) => entry.level === 'warn' || entry.level === 'error');
 	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+	const [copyStatus, setCopyStatus] = useState<CopyStatus>('idle');
+	const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const orderedLogs = useMemo(() => [...logs].reverse(), [logs]);
 
 	const handleCopy = async () => {
@@ -74,24 +78,34 @@ export function DebugLogsCard() {
 			})
 			.join('\n\n');
 
-		if (!text) {
-			return;
-		}
+		if (!text) return;
 
-		if (navigator.clipboard?.writeText) {
-			await navigator.clipboard.writeText(text);
-			return;
-		}
+		const finish = (status: CopyStatus) => {
+			setCopyStatus(status);
+			if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+			copyTimerRef.current = setTimeout(() => setCopyStatus('idle'), 1500);
+		};
 
-		const textarea = document.createElement('textarea');
-		textarea.value = text;
-		textarea.style.position = 'fixed';
-		textarea.style.opacity = '0';
-		document.body.appendChild(textarea);
-		textarea.select();
-		document.execCommand('copy');
-		document.body.removeChild(textarea);
+		try {
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(text);
+			} else {
+				const textarea = document.createElement('textarea');
+				textarea.value = text;
+				textarea.style.position = 'fixed';
+				textarea.style.opacity = '0';
+				document.body.appendChild(textarea);
+				textarea.select();
+				document.execCommand('copy');
+				document.body.removeChild(textarea);
+			}
+			finish('copied');
+		} catch {
+			finish('failed');
+		}
 	};
+
+	const copyLabel = copyStatus === 'copied' ? 'Copied!' : copyStatus === 'failed' ? 'Failed' : 'Copy';
 
 	return (
 		<Card padding="default" className={`${glassCardClass} rounded-[32px]`}>
@@ -104,12 +118,18 @@ export function DebugLogsCard() {
 						</div>
 					</div>
 					<div className="flex gap-2">
-						<Button variant="secondary" className="rounded-[14px] px-3 py-2 text-[13px]" onClick={handleCopy}>
-							Copy
+						<Button
+							variant="secondary"
+							className="rounded-[14px] px-3 py-2 text-[13px]"
+							disabled={orderedLogs.length === 0}
+							onClick={() => void handleCopy()}
+						>
+							{copyLabel}
 						</Button>
 						<Button
 							variant="secondary"
 							className="rounded-[14px] px-3 py-2 text-[13px]"
+							disabled={orderedLogs.length === 0}
 							onClick={() => {
 								setExpanded({});
 								clearDebugLogs();
@@ -165,7 +185,7 @@ export function DebugLogsCard() {
 						</div>
 					) : (
 						<div className="flex min-h-[140px] items-center justify-center rounded-[16px] border border-dashed border-white/[0.08] text-center text-[14px] text-text-dim">
-							Warnings and errors will appear here once Smokeless hits something worth attention.
+							Log entries will appear here once Smokeless has something to report.
 						</div>
 					)}
 				</div>

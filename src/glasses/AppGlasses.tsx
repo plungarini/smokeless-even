@@ -125,7 +125,9 @@ export function AppGlasses({ snapshot, actions, ui, onNavigate }: Props) {
 					// Since the SDK has no unsubscribe mechanism, stale listeners remain
 					// on the bridge. This flag prevents them from doing anything.
 					if (cancelled) return;
-					void controller.handleEvent(event);
+					controller.handleEvent(event).catch((error) => {
+						console.error('[Smokeless HUD] event handler failed', error);
+					});
 				});
 				scheduleRender();
 			} catch (error) {

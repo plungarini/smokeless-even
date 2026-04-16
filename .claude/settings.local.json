@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git tag:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite:*)",
+      "Bash(grep -l \"GlassesMain\" C:/DEV/even-apps/apps/smokeless/dist/assets/*.js)",
+      "Bash(grep -c \"initRenderLoop\\\\|waitForEvenAppBridge\" C:/DEV/even-apps/apps/smokeless/dist/assets/*.js)",
+      "Bash(grep -c \"HudSession\\\\|HomeView\\\\|scheduleRender\\\\|initEventDispatcher\\\\|ViewKey\" C:/DEV/even-apps/apps/smokeless/dist/assets/*.js)",
+      "Bash(grep -c \"initRenderLoop\\\\|HudSession\\\\|waitForEvenAppBridge\" C:/DEV/even-apps/apps/smokeless/dist/assets/*.js)",
+      "Bash(grep -c \"HudSession\\\\|initRenderLoop\\\\|waitForEvenAppBridge\" C:/DEV/even-apps/apps/smokeless/dist/assets/*.js)",
+      "Bash(grep -oE \"HudSession|waitForEvenAppBridge|initRenderLoop|HomeView|RouterRender\" C:/DEV/even-apps/apps/smokeless/dist/assets/*.js)",
+      "Bash(grep -oE \"GlassesMain|HUD-SESSION|appStore|even_hub\" C:/DEV/even-apps/apps/smokeless/dist/assets/*.js)"
+    ]
+  }
+}

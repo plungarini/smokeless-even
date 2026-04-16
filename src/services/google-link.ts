@@ -26,7 +26,8 @@ interface CompleteGoogleLinkSessionResponse {
 }
 
 interface ConsumeGoogleLinkSessionResponse {
-	customToken: string;
+	status: GoogleLinkSessionStatus;
+	customToken?: string;
 	targetUid: string;
 	account: AuthAccountInfo;
 }
@@ -184,8 +185,11 @@ export async function consumeAuthorizedGooglePairing(
 ): Promise<{ targetUid: string; account: AuthAccountInfo }> {
 	const callable = httpsCallable<{ sessionId: string }, ConsumeGoogleLinkSessionResponse>(functions, 'consumeGoogleLinkSession');
 	const result = await callable({ sessionId: current.sessionId });
+	if (!result.data.customToken) {
+		throw new Error('Linked session is missing the follow-up auth token for Smokeless.');
+	}
 	const account = result.data.account ?? (await signInWithCanonicalCustomToken(result.data.customToken));
-	if (result.data.account) {
+	if (result.data.account && result.data.customToken) {
 		await signInWithCanonicalCustomToken(result.data.customToken);
 	}
 	clearActiveGooglePairing(current.sourceUid);
@@ -193,4 +197,10 @@ export async function consumeAuthorizedGooglePairing(
 		targetUid: result.data.targetUid,
 		account,
 	};
+}
+
+export async function finalizeGoogleLinkSession(sessionId: string): Promise<ConsumeGoogleLinkSessionResponse> {
+	const callable = httpsCallable<{ sessionId: string }, ConsumeGoogleLinkSessionResponse>(functions, 'consumeGoogleLinkSession');
+	const result = await callable({ sessionId });
+	return result.data;
 }

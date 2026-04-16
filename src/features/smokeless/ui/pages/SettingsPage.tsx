@@ -22,8 +22,8 @@ function describeGooglePairing(session: GoogleLinkPairingSession | null): string
 			return 'Enter this code on the link page, then continue with Google in that browser.';
 		case 'authorized':
 			return session.targetGoogleEmail
-				? `Authorized as ${session.targetGoogleEmail}. Return to Smokeless to finish the account switch.`
-				: 'Authorized in the browser. Return to Smokeless to finish the account switch.';
+				? `Authorized as ${session.targetGoogleEmail}. Smokeless is finishing the secure account handoff now.`
+				: 'Authorized in the browser. Smokeless is finishing the secure account handoff now.';
 		case 'consumed':
 			return 'Google account linked successfully.';
 		case 'expired':
@@ -115,9 +115,17 @@ export function SettingsPage({
 										<div className="text-[1.1rem] text-text">Pair in browser</div>
 										<div className="mt-1 text-[14px] text-text-dim">{describeGooglePairing(googleLinkSession)}</div>
 									</div>
-									<Badge variant={googleLinkSession?.status === 'authorized' ? 'accent' : 'neutral'}>
-										{googleLinkSession?.status === 'authorized'
-											? 'Ready'
+									<Badge
+										variant={
+											googleLinkSession?.status === 'authorized' || googleLinkSession?.status === 'consumed'
+												? 'accent'
+												: 'neutral'
+										}
+									>
+										{googleLinkSession?.status === 'consumed'
+											? 'Linked'
+											: googleLinkSession?.status === 'authorized'
+												? 'Syncing'
 											: googleLinkSession?.status === 'pending'
 												? 'Pending'
 												: googleLinkSession?.status === 'failed'
@@ -127,7 +135,7 @@ export function SettingsPage({
 														: 'New'}
 									</Badge>
 								</div>
-								{googleLinkSession ? (
+								{googleLinkSession && googleLinkSession.status !== 'consumed' ? (
 									<>
 										<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3">
 											<div className="text-detail uppercase tracking-[0.16em] text-text-dim">Pairing code</div>
@@ -149,6 +157,10 @@ export function SettingsPage({
 											</Button>
 										</div>
 									</>
+								) : googleLinkSession?.status === 'consumed' && googleLinkSession.targetGoogleEmail ? (
+									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">
+										Linked as <span className="text-text">{googleLinkSession.targetGoogleEmail}</span>
+									</div>
 								) : null}
 							</div>
 							<Button variant="secondary" className="rounded-[20px]" disabled={mutating} onClick={onGoogleLink}>

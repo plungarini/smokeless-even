@@ -82,11 +82,10 @@ export function buildSparkline(counts: number[]): string {
 }
 
 export function buildStatusBox(title: string, body: string[]): string {
-	const lines = body.flatMap((line) => wrapText(line, 42));
-	const maxContentWidth = Math.max(title.length + 4, ...lines.map((line) => line.length), 20);
-	const top = `╭${`─ ${title} `.padEnd(maxContentWidth + 1, '─')}╮`;
-	const middle = lines.map((line) => `│ ${line.padEnd(maxContentWidth, ' ')} │`);
-	const bottom = `╰${''.padEnd(maxContentWidth + 2, '─')}╯`;
+	const lines = body.flatMap((line) => wrapText(line, 50));
+	const top = `╭${`─    ${title}    `.padEnd(36, '─')}╮\n│ `;
+	const middle = lines.map((line) => `│   ${line}`);
+	const bottom = `│ \n╰${''.padEnd(15, '─')}`;
 	const content = [top, ...middle, bottom].join('\n');
 	return content.length > HUD_CREATE_TEXT_LIMIT ? content.slice(0, HUD_CREATE_TEXT_LIMIT - 1) : content;
 }

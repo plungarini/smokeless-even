@@ -465,7 +465,7 @@ export default function App() {
 		}
 	});
 
-	const finalizeAuthorizedGoogleLink = useEffectEvent(
+	const claimConsumedGoogleLink = useEffectEvent(
 		async (session: GoogleLinkPairingSession, options: { showToast?: boolean } = {}) => {
 			if (googleConsumeLockRef.current) return null;
 
@@ -528,8 +528,8 @@ export default function App() {
 				activePairing = await refreshGooglePairingStatus(activePairing);
 				startTransition(() => setGoogleLinkSession(activePairing));
 
-				if (activePairing?.status === 'authorized') {
-					const finalized = await finalizeAuthorizedGoogleLink(activePairing, { showToast: false });
+				if (activePairing?.status === 'consumed') {
+					const finalized = await claimConsumedGoogleLink(activePairing, { showToast: false });
 					if (finalized) {
 						firebaseUid = finalized.targetUid;
 						activeAccount = finalized.account;
@@ -600,9 +600,9 @@ export default function App() {
 				return;
 			}
 
-			if (nextSession.status === 'authorized') {
+			if (nextSession.status === 'consumed') {
 				void (async () => {
-					const finalized = await finalizeAuthorizedGoogleLink(nextSession);
+					const finalized = await claimConsumedGoogleLink(nextSession);
 					if (!finalized) return;
 					setBootState('booting');
 					await bootstrap();
@@ -621,9 +621,9 @@ export default function App() {
 
 			if (isTerminalGoogleLinkStatus(nextSession.status)) {
 				clearActiveGooglePairing(nextSession.sourceUid);
-			}
-		});
-	}, [bootstrap, finalizeAuthorizedGoogleLink, googleLinkSession, pushToast]);
+		}
+	});
+	}, [bootstrap, claimConsumedGoogleLink, googleLinkSession, pushToast]);
 
 	const handleOnboardingSubmit = useEffectEvent(async () => {
 		if (!evenUser || !canonicalUid) return;

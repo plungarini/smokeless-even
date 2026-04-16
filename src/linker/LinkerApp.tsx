@@ -109,7 +109,7 @@ export function LinkerApp() {
 			if (redirectResult?.user && storedPairing) {
 				setResolvedPairing(storedPairing);
 				setPhase('authorizing');
-				setMessage('Finalizing your Google link...');
+				setMessage('Preparing your Smokeless data...');
 				try {
 					const completion = await completeGoogleLinkSession(storedPairing.sessionId);
 					await finalizeGoogleLinkSession(storedPairing.sessionId);
@@ -117,7 +117,7 @@ export function LinkerApp() {
 					setLinkedEmail(completion.targetGoogleEmail ?? redirectResult.user.email ?? '');
 					setPostAuthError(false);
 					setPhase('success');
-					setMessage('Google account linked successfully. Return to Smokeless to continue.');
+					setMessage('Google account linked successfully. Return to Smokeless to finish the account switch.');
 					writeStoredPairing(null);
 					setResolvedPairing(null);
 					await signOut(auth);
@@ -212,11 +212,11 @@ export function LinkerApp() {
 
 			const result = await signInWithPopup(auth, provider);
 			const completion = await completeGoogleLinkSession(resolvedPairing.sessionId);
-			await finalizeGoogleLinkSession(resolvedPairing.sessionId);
-			setLinkedEmail(completion.targetGoogleEmail ?? result.user.email ?? '');
+			const migration = await finalizeGoogleLinkSession(resolvedPairing.sessionId);
+			setLinkedEmail(completion.targetGoogleEmail ?? migration.targetGoogleEmail ?? result.user.email ?? '');
 			setPostAuthError(false);
 			setPhase('success');
-			setMessage('Google account linked successfully. Return to Smokeless to continue.');
+			setMessage('Google account linked successfully. Return to Smokeless to finish the account switch.');
 			writeStoredPairing(null);
 			setResolvedPairing(null);
 			await signOut(auth);
@@ -311,7 +311,7 @@ export function LinkerApp() {
 					<div className="linker-footer">
 						{showFinalState
 							? 'Return to Smokeless on your phone. The app will refresh onto the linked Google account automatically.'
-							: 'After Google confirms access here, Smokeless will finish linking in this browser and then refresh on your phone.'}
+							: 'After Google confirms access here, Smokeless will prepare your data here first, then your phone app will switch onto the linked account.'}
 					</div>
 				</Card>
 			</div>

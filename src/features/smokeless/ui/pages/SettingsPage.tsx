@@ -22,8 +22,16 @@ function describeGooglePairing(session: GoogleLinkPairingSession | null): string
 			return 'Enter this code on the link page, then continue with Google in that browser.';
 		case 'authorized':
 			return session.targetGoogleEmail
-				? `Authorized as ${session.targetGoogleEmail}. Smokeless is finishing the secure account handoff now.`
-				: 'Authorized in the browser. Smokeless is finishing the secure account handoff now.';
+				? `Authorized as ${session.targetGoogleEmail}. Smokeless is now preparing your account transfer.`
+				: 'Authorized in the browser. Smokeless is now preparing your account transfer.';
+		case 'migrating':
+			return 'Smokeless is merging your account data in the background.';
+		case 'ready_to_switch':
+			return session.targetGoogleEmail
+				? `Ready to switch onto ${session.targetGoogleEmail}. Open Smokeless on your phone to complete the handoff.`
+				: 'Your Google account is ready. Open Smokeless on your phone to complete the handoff.';
+		case 'switched':
+			return 'Smokeless is finishing cleanup after switching onto the linked Google account.';
 		case 'consumed':
 			return 'Google account linked successfully.';
 		case 'expired':
@@ -117,13 +125,23 @@ export function SettingsPage({
 									</div>
 									<Badge
 										variant={
-											googleLinkSession?.status === 'authorized' || googleLinkSession?.status === 'consumed'
+											googleLinkSession?.status === 'authorized' ||
+											googleLinkSession?.status === 'migrating' ||
+											googleLinkSession?.status === 'ready_to_switch' ||
+											googleLinkSession?.status === 'switched' ||
+											googleLinkSession?.status === 'consumed'
 												? 'accent'
 												: 'neutral'
 										}
 									>
 										{googleLinkSession?.status === 'consumed'
 											? 'Linked'
+											: googleLinkSession?.status === 'switched'
+												? 'Cleaning'
+											: googleLinkSession?.status === 'ready_to_switch'
+												? 'Ready'
+											: googleLinkSession?.status === 'migrating'
+												? 'Merging'
 											: googleLinkSession?.status === 'authorized'
 												? 'Syncing'
 											: googleLinkSession?.status === 'pending'
@@ -135,7 +153,7 @@ export function SettingsPage({
 														: 'New'}
 									</Badge>
 								</div>
-								{googleLinkSession && googleLinkSession.status !== 'consumed' ? (
+								{googleLinkSession && googleLinkSession.status === 'pending' ? (
 									<>
 										<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3">
 											<div className="text-detail uppercase tracking-[0.16em] text-text-dim">Pairing code</div>
@@ -157,6 +175,14 @@ export function SettingsPage({
 											</Button>
 										</div>
 									</>
+								) : googleLinkSession?.status === 'ready_to_switch' && googleLinkSession.targetGoogleEmail ? (
+									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">
+										Ready to switch to <span className="text-text">{googleLinkSession.targetGoogleEmail}</span>
+									</div>
+								) : googleLinkSession?.status === 'migrating' || googleLinkSession?.status === 'switched' || googleLinkSession?.status === 'authorized' ? (
+									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">
+										Finishing account transfer…
+									</div>
 								) : googleLinkSession?.status === 'consumed' && googleLinkSession.targetGoogleEmail ? (
 									<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3 text-[14px] text-text-dim">
 										Linked as <span className="text-text">{googleLinkSession.targetGoogleEmail}</span>

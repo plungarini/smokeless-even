@@ -8,11 +8,25 @@ import {
 import type { HudRenderState } from './types';
 import { instantiateLayout } from './utils';
 
+// ── Module-level session state ─────────────────────────────────────
+// These survive component remounts, React StrictMode double-init, and
+// multiple `new HudSession()` calls. The Even bridge only accepts ONE
+// `createStartUpPageContainer` per app lifetime — tracking this at module
+// scope ensures we never issue a second one. Full reload via the
+// `evenHudFullReload` Vite plugin is the only thing that resets these (and
+// in that case the bridge is fresh too).
+
+let pageCreated = false;
+let activeLayoutKey: string | null = null;
+let lastContents: Record<string, string> = {};
+
+/** Exposed for testing/diagnostic purposes only. */
+export function __getSessionDebug() {
+	return { pageCreated, activeLayoutKey, lastContents };
+}
+
 export class HudSession {
 	private readonly bridge: EvenAppBridge;
-	private pageCreated = false;
-	private activeLayoutKey: string | null = null;
-	private lastContents: Record<string, string> = {};
 
 	constructor(bridge: EvenAppBridge) {
 		this.bridge = bridge;
@@ -21,29 +35,67 @@ export class HudSession {
 	async render(next: HudRenderState): Promise<void> {
 		const params = instantiateLayout(next.layout, next.textContents);
 
-		if (!this.pageCreated) {
+		// ── Initial page creation ────────────────────────────────────
+		if (!pageCreated) {
 			console.log(
-				`[HUD-SESSION] createStartUpPage  key=${next.layout.key}  containers=${params.containerTotalNum}  textKeys=${Object.keys(next.textContents).join(',')}`,
+				`[HUD-SESSION] createStartUpPage  key=${next.layout.key}  containers=${params.containerTotalNum}`,
 			);
-			const created = await this.bridge.createStartUpPageContainer(new CreateStartUpPageContainer(params));
-			console.log(`[HUD-SESSION] createStartUpPage result=${created}`);
-			if (created === StartUpPageCreateResult.success) {
-				this.pageCreated = true;
-				this.activeLayoutKey = next.layout.key;
-				this.lastContents = { ...next.textContents };
+			let created: StartUpPageCreateResult;
+			try {
+				created = await this.bridge.createStartUpPageContainer(new CreateStartUpPageContainer(params));
+			} catch (error) {
+				console.error('[HUD-SESSION] createStartUpPage threw', error);
 				return;
 			}
+			console.log(`[HUD-SESSION] createStartUpPage result=${created}`);
+
+			if (created === StartUpPageCreateResult.success) {
+				pageCreated = true;
+				activeLayoutKey = next.layout.key;
+				lastContents = { ...next.textContents };
+				return;
+			}
+
+			// Session takeover: the bridge already has a page (from a prior
+			// module-instance before a full reload, or a stale app container).
+			// Fall back to rebuild — the SDK accepts this and replaces the
+			// layout with ours.
+			console.warn('[HUD-SESSION] createStartUpPage failed, attempting rebuild fallback', created);
+			try {
+				const ok = await this.bridge.rebuildPageContainer(new RebuildPageContainer(params));
+				if (ok) {
+					pageCreated = true;
+					activeLayoutKey = next.layout.key;
+					lastContents = { ...next.textContents };
+					return;
+				}
+				console.warn('[HUD-SESSION] rebuild fallback failed, will retry on next render');
+			} catch (error) {
+				console.error('[HUD-SESSION] rebuild fallback threw', error);
+			}
+			return;
 		}
 
-		if (this.activeLayoutKey !== next.layout.key) {
+		// ── Layout swap (different container structure) ──────────────
+		if (activeLayoutKey !== next.layout.key) {
 			console.log(
-				`[HUD-SESSION] rebuildPage  oldKey=${this.activeLayoutKey}  newKey=${next.layout.key}  containers=${params.containerTotalNum}`,
+				`[HUD-SESSION] rebuildPage  old=${activeLayoutKey}  new=${next.layout.key}  containers=${params.containerTotalNum}`,
 			);
-			await this.bridge.rebuildPageContainer(new RebuildPageContainer(params));
-			this.pageCreated = true;
-			this.activeLayoutKey = next.layout.key;
-			this.lastContents = { ...next.textContents };
-			return;
+			let ok = false;
+			try {
+				ok = await this.bridge.rebuildPageContainer(new RebuildPageContainer(params));
+			} catch (error) {
+				console.error('[HUD-SESSION] rebuildPage threw', error);
+			}
+			if (!ok) {
+				console.warn('[HUD-SESSION] rebuildPage failed, will retry on next render');
+				return;
+			}
+			activeLayoutKey = next.layout.key;
+			lastContents = {};
+			// Fall through so `applyUpgrades` resynchronises content strings
+			// after the rebuild (belt-and-suspenders — `rebuild` already pushed
+			// the initial content once).
 		}
 
 		await this.applyUpgrades(next);
@@ -52,19 +104,30 @@ export class HudSession {
 	private async applyUpgrades(next: HudRenderState): Promise<void> {
 		for (const descriptor of next.layout.textDescriptors) {
 			const content = next.textContents[descriptor.containerName] ?? '';
-			if (this.lastContents[descriptor.containerName] === content) continue;
+			if (lastContents[descriptor.containerName] === content) continue;
 
-			await this.bridge.textContainerUpgrade(
-				new TextContainerUpgrade({
-					containerID: descriptor.containerID,
-					containerName: descriptor.containerName,
-					contentOffset: 0,
-					contentLength: content.length,
-					content,
-				}),
-			);
+			const previousLength = lastContents[descriptor.containerName]?.length ?? 0;
+			let ok = false;
+			try {
+				ok = await this.bridge.textContainerUpgrade(
+					new TextContainerUpgrade({
+						containerID: descriptor.containerID,
+						containerName: descriptor.containerName,
+						contentOffset: 0,
+						contentLength: Math.max(content.length, previousLength),
+						content,
+					}),
+				);
+			} catch (error) {
+				console.error('[HUD-SESSION] textContainerUpgrade threw', descriptor.containerName, error);
+				continue;
+			}
+			if (!ok) {
+				console.error('[HUD-SESSION] textContainerUpgrade failed', descriptor.containerName);
+				continue;
+			}
 
-			this.lastContents[descriptor.containerName] = content;
+			lastContents[descriptor.containerName] = content;
 		}
 	}
 }

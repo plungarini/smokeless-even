@@ -1,6 +1,6 @@
 import { OsEventTypeList, type EvenHubEvent } from '@evenrealities/even_hub_sdk';
-import { appStore } from '../../../app/store';
 import { selectLastSmokeAt } from '../../../app/selectors';
+import { appStore } from '../../../app/store';
 import { startHomeTimer, stopHomeTimer } from '../../home-timer';
 import { scheduleRender } from '../../render-loop';
 import type { Router, View, ViewKey } from '../../router';
@@ -17,7 +17,7 @@ interface VisualState {
 }
 
 const STATUS_SPACING = '\n                               ';
-const BODY_SPACING = '                               ';
+const BODY_SPACING = '                              ';
 const VALUE_PAD = 28;
 
 function padValue(value: string | number): string {

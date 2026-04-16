@@ -1,8 +1,6 @@
 import { Badge, Button, Card } from 'even-toolkit/web';
-import type { GoogleLinkPairingSession, OnboardingDraft, QuitProgram, UserDocument } from '../../../../domain/types';
-import { circleIconButtonClass, detailsCardClass, glassCardClass, sectionLabelClass, smokeInputClass } from '../styles';
-import { NumericField } from '../components/NumericField';
-import { ProgramChoice } from '../components/ProgramChoice';
+import type { GoogleLinkPairingSession, UserDocument } from '../../../../domain/types';
+import { circleIconButtonClass, glassCardClass, sectionLabelClass } from '../styles';
 
 function formatExpiry(seconds: number | null): string {
 	if (seconds === null) return '';
@@ -66,16 +64,11 @@ export function SettingsPage({
 	googleLinkExpiresInSeconds,
 	effectiveGoogleEmail,
 	effectiveGoogleDisplayName,
-	currentCurrency,
-	onboardingDraft,
 	mutating,
 	onGoogleLink,
 	onCopyGoogleCode,
 	onCopyGoogleLinkUrl,
 	onOpenGoogleLinkUrl,
-	onDraftChange,
-	onProgramSave,
-	onResetOnboarding,
 	onExport,
 	onDeleteAll,
 }: {
@@ -87,21 +80,14 @@ export function SettingsPage({
 	googleLinkExpiresInSeconds: number | null;
 	effectiveGoogleEmail?: string;
 	effectiveGoogleDisplayName?: string;
-	currentCurrency: string;
-	onboardingDraft: OnboardingDraft;
 	mutating: boolean;
 	onGoogleLink: () => void;
 	onCopyGoogleCode: () => void;
 	onCopyGoogleLinkUrl: () => void;
 	onOpenGoogleLinkUrl: () => void;
-	onDraftChange: (updater: (current: OnboardingDraft) => OnboardingDraft) => void;
-	onProgramSave: () => void;
-	onResetOnboarding: () => void;
 	onExport: () => void;
 	onDeleteAll: () => void;
 }) {
-	const setQuitProgram = (quitProgram: QuitProgram) => onDraftChange((current) => ({ ...current, quitProgram }));
-
 	return (
 		<div className="flex flex-col gap-4 pb-4">
 			<Card padding="default" className={`${glassCardClass} rounded-[32px]`}>
@@ -215,32 +201,6 @@ export function SettingsPage({
 				</div>
 			</Card>
 
-			<details className={detailsCardClass} open>
-				<summary>Program</summary>
-				<div className="mt-4 grid gap-4">
-					<div className="grid gap-3">
-						<ProgramChoice value="linear" active={onboardingDraft.quitProgram === 'linear'} description="Gradual reduction toward a date." onSelect={setQuitProgram} />
-						<ProgramChoice value="fixed" active={onboardingDraft.quitProgram === 'fixed'} description="Same cap every day." onSelect={setQuitProgram} />
-						<ProgramChoice value="minimum" active={onboardingDraft.quitProgram === 'minimum'} description="Track without a limit." onSelect={setQuitProgram} />
-					</div>
-					<NumericField label="Baseline cigarettes/day" value={onboardingDraft.cigarettesPerDay} onChange={(value) => onDraftChange((current) => ({ ...current, cigarettesPerDay: value }))} />
-					<NumericField label={`Pack price (${currentCurrency})`} value={onboardingDraft.packPrice} step="0.01" onChange={(value) => onDraftChange((current) => ({ ...current, packPrice: value }))} />
-					<NumericField label="Cigarettes per pack" value={onboardingDraft.cigarettesPerPack} onChange={(value) => onDraftChange((current) => ({ ...current, cigarettesPerPack: value }))} />
-					{onboardingDraft.quitProgram !== 'minimum' ? (
-						<>
-							<NumericField label="Target cigarettes" value={onboardingDraft.programTargetCigarettes} onChange={(value) => onDraftChange((current) => ({ ...current, programTargetCigarettes: value }))} />
-							<label className="flex flex-col gap-2">
-								<span className="text-detail uppercase tracking-[0.16em] text-text-dim">Target date</span>
-								<input className={smokeInputClass} type="date" value={onboardingDraft.programTargetDate} onChange={(event) => onDraftChange((current) => ({ ...current, programTargetDate: event.currentTarget.value }))} />
-							</label>
-						</>
-					) : null}
-					<Button variant="highlight" className="rounded-[16px] !text-black" disabled={mutating} onClick={onProgramSave}>
-						Save program
-					</Button>
-				</div>
-			</details>
-
 			<Card padding="default" className={`${glassCardClass} rounded-[32px]`}>
 				<div className="flex flex-col gap-3">
 					<div className={sectionLabelClass}>Even account</div>
@@ -252,9 +212,6 @@ export function SettingsPage({
 			<Card padding="default" className={`${glassCardClass} rounded-[32px]`}>
 				<div className="flex flex-col gap-4">
 					<div className={sectionLabelClass}>Actions</div>
-					<Button variant="secondary" className="rounded-[20px]" onClick={onResetOnboarding}>
-						Onboarding reset
-					</Button>
 					<Button variant="secondary" className="rounded-[20px]" onClick={onExport}>
 						Export JSON
 					</Button>

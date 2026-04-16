@@ -334,12 +334,6 @@ export class HudController {
 				title: 'Smokeless',
 				body: [this.snapshot.statusMessage ?? 'Please restart the app on your phone.'],
 			};
-		if (this.snapshot.phase === 'onboarding')
-			return {
-				tone: 'neutral',
-				title: 'Onboarding',
-				body: [this.snapshot.statusMessage ?? 'Continue setup on your phone to unlock the HUD.'],
-			};
 		return {
 			tone: 'neutral',
 			title: 'Smokeless',

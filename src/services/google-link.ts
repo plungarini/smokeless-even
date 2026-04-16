@@ -25,9 +25,22 @@ interface CompleteGoogleLinkSessionResponse {
 	targetGoogleDisplayName?: string;
 }
 
-interface ConsumeGoogleLinkSessionResponse {
+interface PrepareGoogleLinkMigrationResponse {
 	status: GoogleLinkSessionStatus;
-	customToken?: string;
+	targetUid: string;
+	targetGoogleEmail?: string;
+	targetGoogleDisplayName?: string;
+}
+
+interface ClaimGoogleLinkSessionResponse {
+	status: GoogleLinkSessionStatus;
+	customToken: string;
+	targetUid: string;
+	account: AuthAccountInfo;
+}
+
+interface CompleteGoogleLinkCleanupResponse {
+	status: GoogleLinkSessionStatus;
 	targetUid: string;
 	account: AuthAccountInfo;
 }
@@ -61,20 +74,14 @@ function writeActiveGooglePairing(session: GoogleLinkPairingSession): void {
 	window.localStorage.setItem(storageKey(session.sourceUid), JSON.stringify(session));
 }
 
-export function clearActiveGooglePairing(sourceUid: string): void {
-	if (typeof window === 'undefined') return;
-	window.localStorage.removeItem(storageKey(sourceUid));
-}
-
-export function loadActiveGooglePairing(sourceUid: string): GoogleLinkPairingSession | null {
-	if (typeof window === 'undefined') return null;
+function readStoredSession(raw: string | null): GoogleLinkPairingSession | null {
+	if (!raw) return null;
 
 	try {
-		const raw = window.localStorage.getItem(storageKey(sourceUid));
-		if (!raw) return null;
 		const parsed = JSON.parse(raw) as Partial<GoogleLinkPairingSession>;
 		if (
 			typeof parsed.sessionId !== 'string' ||
+			typeof parsed.sourceUid !== 'string' ||
 			typeof parsed.code !== 'string' ||
 			typeof parsed.expiresAt !== 'string' ||
 			typeof parsed.linkUrl !== 'string' ||
@@ -84,11 +91,12 @@ export function loadActiveGooglePairing(sourceUid: string): GoogleLinkPairingSes
 		}
 		return {
 			sessionId: parsed.sessionId,
-			sourceUid,
+			sourceUid: parsed.sourceUid,
 			code: parsed.code,
 			linkUrl: parsed.linkUrl,
 			expiresAt: parsed.expiresAt,
 			status: parsed.status as GoogleLinkSessionStatus,
+			targetGoogleUid: typeof parsed.targetGoogleUid === 'string' ? parsed.targetGoogleUid : undefined,
 			targetGoogleEmail: typeof parsed.targetGoogleEmail === 'string' ? parsed.targetGoogleEmail : undefined,
 			targetGoogleDisplayName: typeof parsed.targetGoogleDisplayName === 'string' ? parsed.targetGoogleDisplayName : undefined,
 			errorCode: typeof parsed.errorCode === 'string' ? parsed.errorCode : undefined,
@@ -97,6 +105,35 @@ export function loadActiveGooglePairing(sourceUid: string): GoogleLinkPairingSes
 	} catch {
 		return null;
 	}
+}
+
+export function clearActiveGooglePairing(sourceUid: string): void {
+	if (typeof window === 'undefined') return;
+	window.localStorage.removeItem(storageKey(sourceUid));
+}
+
+export function clearGooglePairingSession(session: GoogleLinkPairingSession | null): void {
+	if (!session) return;
+	clearActiveGooglePairing(session.sourceUid);
+}
+
+export function loadActiveGooglePairing(sourceUid: string): GoogleLinkPairingSession | null {
+	if (typeof window === 'undefined') return null;
+
+	const direct = readStoredSession(window.localStorage.getItem(storageKey(sourceUid)));
+	if (direct) return direct;
+
+	for (let index = 0; index < window.localStorage.length; index += 1) {
+		const key = window.localStorage.key(index);
+		if (!key || !key.startsWith(GOOGLE_LINK_STORAGE_PREFIX)) continue;
+		const session = readStoredSession(window.localStorage.getItem(key));
+		if (!session) continue;
+		if (session.sourceUid === sourceUid || session.targetGoogleUid === sourceUid) {
+			return session;
+		}
+	}
+
+	return null;
 }
 
 export async function startGooglePairing(sourceUid: string, sourceEvenUid: string): Promise<GoogleLinkPairingSession> {
@@ -127,6 +164,7 @@ function mapSessionSnapshot(
 		linkUrl: current?.linkUrl ?? '',
 		expiresAt: toIsoString(value.expiresAt ?? current?.expiresAt ?? new Date()),
 		status: String(value.status ?? current?.status ?? 'pending') as GoogleLinkSessionStatus,
+		targetGoogleUid: typeof value.targetGoogleUid === 'string' ? value.targetGoogleUid : current?.targetGoogleUid,
 		targetGoogleEmail: typeof value.targetGoogleEmail === 'string' ? value.targetGoogleEmail : current?.targetGoogleEmail,
 		targetGoogleDisplayName:
 			typeof value.targetGoogleDisplayName === 'string' ? value.targetGoogleDisplayName : current?.targetGoogleDisplayName,
@@ -180,27 +218,52 @@ export async function completeGoogleLinkSession(sessionId: string): Promise<Comp
 	return result.data;
 }
 
-export async function consumeAuthorizedGooglePairing(
+export async function prepareGoogleLinkMigration(sessionId: string): Promise<PrepareGoogleLinkMigrationResponse> {
+	const callable = httpsCallable<{ sessionId: string }, PrepareGoogleLinkMigrationResponse>(functions, 'prepareGoogleLinkMigration');
+	const result = await callable({ sessionId });
+	return result.data;
+}
+
+export async function claimReadyGooglePairing(
 	current: GoogleLinkPairingSession,
-): Promise<{ targetUid: string; account: AuthAccountInfo }> {
-	const callable = httpsCallable<{ sessionId: string }, ConsumeGoogleLinkSessionResponse>(functions, 'consumeGoogleLinkSession');
+): Promise<{ targetUid: string; account: AuthAccountInfo; session: GoogleLinkPairingSession }> {
+	const callable = httpsCallable<{ sessionId: string }, ClaimGoogleLinkSessionResponse>(functions, 'claimGoogleLinkSession');
 	const result = await callable({ sessionId: current.sessionId });
-	if (!result.data.customToken) {
-		throw new Error('Linked session is missing the follow-up auth token for Smokeless.');
-	}
-	const account = result.data.account ?? (await signInWithCanonicalCustomToken(result.data.customToken));
-	if (result.data.account && result.data.customToken) {
-		await signInWithCanonicalCustomToken(result.data.customToken);
-	}
-	clearActiveGooglePairing(current.sourceUid);
+	const account = await signInWithCanonicalCustomToken(result.data.customToken);
+	const session = normalizeSession(current.sourceUid, {
+		status: result.data.status,
+		sessionId: current.sessionId,
+		code: current.code,
+		linkUrl: current.linkUrl,
+		expiresAt: current.expiresAt,
+		targetGoogleUid: result.data.targetUid,
+		targetGoogleEmail: result.data.account.googleEmail || current.targetGoogleEmail,
+		targetGoogleDisplayName: result.data.account.googleDisplayName || current.targetGoogleDisplayName,
+		errorCode: current.errorCode,
+		errorMessage: current.errorMessage,
+	});
+	writeActiveGooglePairing(session);
 	return {
 		targetUid: result.data.targetUid,
 		account,
+		session,
 	};
 }
 
-export async function finalizeGoogleLinkSession(sessionId: string): Promise<ConsumeGoogleLinkSessionResponse> {
-	const callable = httpsCallable<{ sessionId: string }, ConsumeGoogleLinkSessionResponse>(functions, 'consumeGoogleLinkSession');
+export async function completeGoogleLinkCleanup(
+	current: GoogleLinkPairingSession,
+): Promise<{ targetUid: string; account: AuthAccountInfo }> {
+	const callable = httpsCallable<{ sessionId: string }, CompleteGoogleLinkCleanupResponse>(functions, 'completeGoogleLinkCleanup');
+	const result = await callable({ sessionId: current.sessionId });
+	clearGooglePairingSession(current);
+	return {
+		targetUid: result.data.targetUid,
+		account: result.data.account,
+	};
+}
+
+export async function finalizeGoogleLinkSession(sessionId: string): Promise<PrepareGoogleLinkMigrationResponse> {
+	const callable = httpsCallable<{ sessionId: string }, PrepareGoogleLinkMigrationResponse>(functions, 'prepareGoogleLinkMigration');
 	const result = await callable({ sessionId });
 	return result.data;
 }

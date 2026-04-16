@@ -2,6 +2,7 @@ export type QuitProgram = 'linear' | 'fixed' | 'minimum';
 export type AuthProvider = 'anonymous' | 'google';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type WeekStart = 'Monday' | 'Sunday';
+export type GoogleLinkSessionStatus = 'pending' | 'authorized' | 'consumed' | 'expired' | 'cancelled' | 'failed';
 
 export interface EvenUserInfo {
 	uid: string;
@@ -16,6 +17,19 @@ export interface AuthAccountInfo {
 	googleEmail: string;
 	googleDisplayName: string;
 	isAnonymous: boolean;
+}
+
+export interface GoogleLinkPairingSession {
+	sessionId: string;
+	sourceUid: string;
+	code: string;
+	linkUrl: string;
+	expiresAt: string;
+	status: GoogleLinkSessionStatus;
+	targetGoogleEmail?: string;
+	targetGoogleDisplayName?: string;
+	errorCode?: string;
+	errorMessage?: string;
 }
 
 export interface UserPreferences {

@@ -36,6 +36,5 @@
 		"pack": "npm run build && evenhub pack app.json dist -o smokeless.ehpk",
 		"qr": "node ../../scripts/qr.mjs"
 	},
-	"type": "module",
-	"version": "0.1.0"
+	"type": "module"
 }

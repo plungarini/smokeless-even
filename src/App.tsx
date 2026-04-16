@@ -14,10 +14,10 @@ import {
 	buildStatsSeries,
 	formatStatsIntervalLabel,
 	getAverageCigsAcrossNonEmptyBuckets,
-	getAverageIntervalAcrossNonEmptyBuckets,
 	getPeriodComparisonLabel,
 	getSelectedPeriodTotal,
 } from './features/smokeless/lib/stats-series';
+import { computeWeightedIntervalForPeriod } from './domain/calculations';
 import { AddSmokeModal } from './features/smokeless/ui/components/AddSmokeModal';
 import { BottomTabBar } from './features/smokeless/ui/components/BottomTabBar';
 import { FullScreenState } from './features/smokeless/ui/components/FullScreenState';
@@ -94,10 +94,15 @@ export default function App() {
 	);
 	const displayedStatsTotal = selectedStatsBucket?.count ?? selectedPeriodTotal;
 	const statsAverageCigs = useMemo(() => getAverageCigsAcrossNonEmptyBuckets(statsSeries), [statsSeries]);
-	const statsAverageIntervalLabel = useMemo(
-		() => formatStatsIntervalLabel(getAverageIntervalAcrossNonEmptyBuckets(allSmokeEntries, statsSeries)),
-		[allSmokeEntries, statsSeries],
-	);
+	const statsAverageIntervalLabel = useMemo(() => {
+		const periodStart = statsSeries[0]?.start;
+		const periodEnd = statsSeries[statsSeries.length - 1]?.end;
+		const periodEntries =
+			periodStart && periodEnd
+				? allSmokeEntries.filter((e) => e.timestamp >= periodStart && e.timestamp <= periodEnd)
+				: allSmokeEntries;
+		return formatStatsIntervalLabel(computeWeightedIntervalForPeriod(periodEntries, now));
+	}, [allSmokeEntries, statsSeries, now]);
 	const statsTotalLabel = selectedStatsBucket
 		? selectedStatsBucket.label
 		: statsPeriod === 'week'

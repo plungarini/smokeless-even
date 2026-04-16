@@ -1,4 +1,4 @@
-import { computeWeightedDailyAverage } from '../domain/calculations';
+import { computeWeightedDailyAverage, computeWeightedIntervalForPeriod } from '../domain/calculations';
 import type {
 	HudHistoryDaySummary,
 	HudSnapshot,
@@ -9,7 +9,6 @@ import {
 	buildStatsSeries,
 	formatStatsIntervalLabel,
 	getAverageCigsAcrossNonEmptyBuckets,
-	getAverageIntervalAcrossNonEmptyBuckets,
 	getPeriodComparisonLabel,
 	getSelectedPeriodTotal,
 } from '../features/smokeless/lib/stats-series';
@@ -53,13 +52,21 @@ const buildHudSummary = (
 ): HudStatsSummary => {
 	const series = buildStatsSeries(period, state.dailyStats, state.monthlyStats, referenceNow);
 	const totalSmoked = getSelectedPeriodTotal(period, state.dailyStats, state.monthlyStats, referenceNow);
+
+	const periodStart = series[0]?.start;
+	const periodEnd = series[series.length - 1]?.end;
+	const periodEntries =
+		periodStart && periodEnd
+			? state.allSmokeEntries.filter((e) => e.timestamp >= periodStart && e.timestamp <= periodEnd)
+			: state.allSmokeEntries;
+
 	return {
 		period,
 		totalSmoked,
 		comparisonLabel: getPeriodComparisonLabel(period, totalSmoked, weightedAverage, referenceNow),
 		weightedAverage: getAverageCigsAcrossNonEmptyBuckets(series),
 		averageIntervalLabel: formatStatsIntervalLabel(
-			getAverageIntervalAcrossNonEmptyBuckets(state.allSmokeEntries, series),
+			computeWeightedIntervalForPeriod(periodEntries, referenceNow),
 			{ padHours: true },
 		),
 		series,

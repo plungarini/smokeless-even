@@ -1,0 +1,45 @@
+@layer base {
+	html,
+	body {
+		height: 100%;
+		margin: 0;
+		background:
+			radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.055), transparent 28%),
+			radial-gradient(circle at 78% 42%, rgba(255, 255, 255, 0.045), transparent 30%),
+			linear-gradient(180deg, #121218, #0b0b10);
+		color: var(--smoke-text);
+		font-family: 'IBM Plex Sans', sans-serif;
+		overflow: hidden;
+	}
+
+	button,
+	input,
+	select {
+		font: inherit;
+	}
+
+	#root {
+		height: 100dvh;
+		overflow: hidden;
+	}
+}
+
+@keyframes ember-bump {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.05);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+.ember-bump {
+	animation: ember-bump 220ms ease-out;
+}
+
+.ghost-bar {
+	opacity: 0.18;
+}

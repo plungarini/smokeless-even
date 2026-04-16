@@ -1,0 +1,124 @@
+.smoke-app-shell {
+	position: relative;
+	background: linear-gradient(180deg, rgba(17, 17, 22, 0.98), rgba(11, 11, 16, 0.99));
+}
+
+.smoke-app-ornament {
+	position: absolute;
+	border-radius: 999px;
+	background: radial-gradient(
+		circle at 50% 50%,
+		rgba(255, 255, 255, 0.055),
+		rgba(255, 255, 255, 0.015) 52%,
+		transparent 72%
+	);
+	pointer-events: none;
+	filter: blur(2px);
+}
+
+.smoke-app-ornament-top {
+	top: -10%;
+	left: -28%;
+	width: 32rem;
+	height: 32rem;
+}
+
+.smoke-app-ornament-bottom {
+	right: -34%;
+	bottom: -18%;
+	width: 34rem;
+	height: 34rem;
+}
+
+.smoke-page-header {
+	background: transparent;
+}
+
+.smoke-page-title {
+	font-family: 'DM Serif Display', serif;
+	font-size: 2.5rem;
+	line-height: 0.95;
+	letter-spacing: 0em;
+	margin: 0;
+}
+
+.smoke-glass-card {
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)), rgba(21, 22, 28, 0.74);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 18px 40px rgba(0, 0, 0, 0.28);
+	backdrop-filter: blur(22px);
+}
+
+.smoke-nav-shell {
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: rgba(19, 20, 26, 0.82);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 18px 40px rgba(0, 0, 0, 0.34);
+	backdrop-filter: blur(20px);
+	border-radius: 999px;
+}
+
+.smoke-calendar-day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.22rem;
+	aspect-ratio: 1;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--smoke-text);
+	font-size: 0.95rem;
+}
+
+.smoke-calendar-day.is-selected {
+	background: rgba(255, 255, 255, 0.2);
+	border-color: rgba(255, 255, 255, 0.14);
+}
+
+.smoke-calendar-day.is-today:not(.is-selected) {
+	background: rgba(255, 255, 255, 0.05) !important;
+	border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.smoke-calendar-day.is-muted {
+	color: rgba(255, 255, 255, 0.24);
+}
+
+.smoke-calendar-dot {
+	width: 0.28rem;
+	height: 0.28rem;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.68);
+}
+
+.smoke-details-card {
+	border-radius: 32px;
+	padding: 1rem;
+}
+
+.smoke-details-card > summary {
+	cursor: pointer;
+	list-style: none;
+	font-size: 0.8rem;
+	text-transform: uppercase;
+	letter-spacing: 0.22em;
+	color: var(--smoke-text-muted);
+}
+
+.smoke-details-card > summary::-webkit-details-marker {
+	display: none;
+}
+
+.smoke-modal-panel {
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.018)), rgba(20, 21, 27, 0.92);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.08),
+		0 26px 60px rgba(0, 0, 0, 0.45);
+	backdrop-filter: blur(24px);
+}

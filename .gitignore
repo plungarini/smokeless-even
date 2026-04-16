@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+# Build output
+dist/
+link-dist/
+functions/lib/
+# Even Hub package files
+*.ehpk
+# Environment variables
+.env
+# IDE
+.vscode/
+# OS
+.DS_Store
+Thumbs.db
+# Logs
+*.log
+.firebase/

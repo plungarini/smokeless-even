@@ -1,21 +1,18 @@
 {
-  "package_id": "com.plungarini.smokeless",
-  "name": "Smokeless",
-  "version": "0.1.0",
-  "edition": "202601",
-  "entrypoint": "index.html",
-  "description": "Track cigarettes, follow a quit program, and log progress from Even Realities glasses.",
-  "author": "Pietro Lungarini",
-  "permissions": [
-    {
-      "desc": "Smokeless needs network access for Firebase sync and token authentication",
-      "name": "network"
-    }
-  ],
-  "supported_languages": [
-    "en"
-  ],
-  "tagline": "A quit plan, one glance away.",
-  "min_app_version": "2.1.1",
-  "min_sdk_version": "0.0.9"
+	"author": "Pietro Lungarini",
+	"description": "Track cigarettes, follow a quit program, and log progress from Even Realities glasses.",
+	"edition": "202601",
+	"entrypoint": "index.html",
+	"min_app_version": "2.1.1",
+	"min_sdk_version": "0.0.10",
+	"name": "Smokeless",
+	"package_id": "com.plungarini.smokeless",
+	"permissions": [
+		{
+			"desc": "Smokeless needs network access for Firebase sync and token authentication",
+			"name": "network"
+		}
+	],
+	"supported_languages": ["en"],
+	"version": "0.2.0"
 }

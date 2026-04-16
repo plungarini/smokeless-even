@@ -1,17 +1,35 @@
-import { HUD_BORDER_RADIUS, HUD_WIDTH } from '../constants';
+import { HUD_BORDER_RADIUS, HUD_HEIGHT, HUD_WIDTH } from '../constants';
 import type { HudLayoutDescriptor, HudRootRoute } from '../types';
 
 /**
- * Layout used by the home and stats views — three containers: header, body,
- * footer. The body is event-capturing. No shield needed because scrolling
- * isn't meaningful on these screens.
+ * Unified 4-container layout shared by home, stats, and history.
+ *
+ * Using the same key for all three means no rebuildPageContainer is ever
+ * needed when navigating between them — only upgrading text contents.
+ *
+ * Container structure:
+ *   1  header  — top bar (time + app name)
+ *   2  body    — main content, isEventCapture:0 so its internal text
+ *               scroller doesn't eat gestures
+ *   3  footer  — tab bar
+ *   4  shield  — invisible full-screen overlay, isEventCapture:1
+ *               captures all gestures and forwards them to the app
  */
 export const ROOT_LAYOUT: HudLayoutDescriptor = {
-	key: 'root-shell',
+	key: 'root',
 	textDescriptors: [
 		{
+			containerID: 0,
+			containerName: 'shield',
+			xPosition: 0,
+			yPosition: 0,
+			width: 0,
+			height: HUD_HEIGHT,
+			isEventCapture: 1,
+		},
+		{
 			containerID: 1,
-			containerName: 'chrome-header',
+			containerName: 'header',
 			xPosition: 12,
 			yPosition: 0,
 			width: 200,
@@ -20,7 +38,7 @@ export const ROOT_LAYOUT: HudLayoutDescriptor = {
 		},
 		{
 			containerID: 2,
-			containerName: 'root-body',
+			containerName: 'body',
 			xPosition: 0,
 			yPosition: 37,
 			width: HUD_WIDTH,
@@ -29,44 +47,16 @@ export const ROOT_LAYOUT: HudLayoutDescriptor = {
 			borderWidth: 1,
 			borderColor: 13,
 			borderRadius: HUD_BORDER_RADIUS,
-			isEventCapture: 1,
+			isEventCapture: 0,
 		},
 		{
 			containerID: 3,
-			containerName: 'chrome-footer',
+			containerName: 'footer',
 			xPosition: 13,
 			yPosition: 251,
 			width: 270,
 			height: 35,
 			paddingLength: 4,
-		},
-	],
-};
-
-/**
- * Layout used by the history view. Same root layout + an invisible shield
- * that captures scroll events (so the body's scroll doesn't get eaten by a
- * built-in text scroller).
- */
-export const HISTORY_LAYOUT: HudLayoutDescriptor = {
-	key: 'history-shell',
-	textDescriptors: [
-		ROOT_LAYOUT.textDescriptors[0]!,
-		{
-			...ROOT_LAYOUT.textDescriptors[1]!,
-			isEventCapture: 0,
-		},
-		ROOT_LAYOUT.textDescriptors[2]!,
-		{
-			containerID: 4,
-			containerName: 'history-event-shield',
-			xPosition: 0,
-			yPosition: 0,
-			width: HUD_WIDTH,
-			height: 288,
-			paddingLength: 0,
-			borderWidth: 0,
-			isEventCapture: 1,
 		},
 	],
 };
@@ -82,9 +72,7 @@ export function buildFooter(activeRoute: HudRootRoute): string {
 		stats: 'Stats',
 		history: 'History',
 	};
-	return routes
-		.map((route) => (route === activeRoute ? `[${labels[route]}]` : ` ${labels[route]} `))
-		.join('      ');
+	return routes.map((route) => (route === activeRoute ? `[${labels[route]}]` : ` ${labels[route]} `)).join('      ');
 }
 
 function formatHeaderTime(now: Date): string {

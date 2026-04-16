@@ -6,7 +6,7 @@ import type { HudHistoryDaySummary } from '../../../domain/types';
 import { formatDurationClock } from '../../../lib/time';
 import type { Router, View, ViewKey } from '../../router';
 import type { HudLayoutDescriptor } from '../../types';
-import { HISTORY_LAYOUT, buildFooter, buildHeader } from '../shared-shell';
+import { ROOT_LAYOUT, buildFooter, buildHeader } from '../shared-shell';
 
 export class HistoryView implements View {
 	readonly key: ViewKey = 'history';
@@ -17,7 +17,7 @@ export class HistoryView implements View {
 	}
 
 	layout(): HudLayoutDescriptor {
-		return HISTORY_LAYOUT;
+		return ROOT_LAYOUT;
 	}
 
 	contents(): Record<string, string> {
@@ -26,10 +26,10 @@ export class HistoryView implements View {
 		const now = new Date();
 
 		return {
-			'chrome-header': buildHeader(now),
-			'root-body': buildHistoryBody(state.selectedHistoryDay, selectedDay),
-			'chrome-footer': buildFooter('history'),
-			'history-event-shield': '',
+			header: buildHeader(now),
+			body: buildHistoryBody(state.selectedHistoryDay, selectedDay),
+			footer: buildFooter('history'),
+			shield: ' ',
 		};
 	}
 
@@ -79,11 +79,10 @@ function formatHistoryDay(date: Date): string {
 	normalised.setHours(0, 0, 0, 0);
 	now.setHours(0, 0, 0, 0);
 
-	const isPast = normalised.getTime() < now.getTime() && '<';
-	const isFuture = normalised.getTime() > now.getTime() && '>';
-	const isNow = normalised.getTime() === now.getTime() && '•';
+	const diff = normalised.getTime() - now.getTime();
+	const indicator = diff < 0 ? '<' : diff > 0 ? '>' : '•';
 
-	return `${isNow || isPast || isFuture}   ${str}`;
+	return `${indicator}   ${str}`;
 }
 
 function parseDayKey(dayKey: string): Date {

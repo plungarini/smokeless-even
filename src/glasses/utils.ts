@@ -1,4 +1,4 @@
-import { ListContainerProperty, ListItemContainerProperty, TextContainerProperty } from '@evenrealities/even_hub_sdk';
+import { TextContainerProperty } from '@evenrealities/even_hub_sdk';
 import type { HudHistoryDaySummary } from '../domain/types';
 import { formatDayLabel, formatHudLastSmoke, formatLongDate, formatTime } from '../lib/time';
 import { HUD_CREATE_TEXT_LIMIT, HUD_WIDTH } from './constants';
@@ -13,6 +13,8 @@ export function truncate(value: string, maxLength: number): string {
 	return `${value.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
 }
 
+const CONTAINER_CONTENT_LIMIT = 950;
+
 export function instantiateLayout(layout: HudLayoutDescriptor, textContents: Record<string, string>) {
 	return {
 		containerTotalNum: layout.textDescriptors.length + (layout.listObject?.length ?? 0),
@@ -20,7 +22,7 @@ export function instantiateLayout(layout: HudLayoutDescriptor, textContents: Rec
 			(descriptor) =>
 				new TextContainerProperty({
 					...descriptor,
-					content: textContents[descriptor.containerName] ?? '',
+					content: truncate(textContents[descriptor.containerName] ?? ' ', CONTAINER_CONTENT_LIMIT),
 				}),
 		),
 		listObject: layout.listObject,
@@ -42,25 +44,6 @@ export function createGhostEventDescriptor(containerID: number, containerName: s
 	};
 }
 
-export function createMenuList(selectedLabels: string[]): ListContainerProperty {
-	return new ListContainerProperty({
-		xPosition: 60,
-		yPosition: 48,
-		width: HUD_WIDTH - 120,
-		height: 210,
-		containerID: 2,
-		containerName: 'hud-menu-list',
-		borderWidth: 0,
-		paddingLength: 0,
-		isEventCapture: 1,
-		itemContainer: new ListItemContainerProperty({
-			itemCount: selectedLabels.length,
-			itemWidth: HUD_WIDTH - 120,
-			isItemSelectBorderEn: 1,
-			itemName: selectedLabels,
-		}),
-	});
-}
 
 export function formatTargetStatus(todayCount: number, dailyTarget: number | null): string {
 	if (dailyTarget === null) return 'Tracking only';

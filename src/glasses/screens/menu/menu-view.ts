@@ -35,7 +35,7 @@ const MENU_LAYOUT: HudLayoutDescriptor = {
 	textDescriptors: [
 		{
 			containerID: 1,
-			containerName: 'menu-header',
+			containerName: 'header',
 			xPosition: 40,
 			yPosition: HEADER_Y,
 			width: Math.ceil('╭───────  Smokeless  ───────╮'.length * 14),
@@ -53,7 +53,7 @@ const MENU_LAYOUT: HudLayoutDescriptor = {
 			borderWidth: 0,
 			paddingLength: 0,
 			containerID: 2,
-			containerName: 'menu-list',
+			containerName: 'list',
 			isEventCapture: 1,
 			itemContainer: new ListItemContainerProperty({
 				itemCount: MENU_ITEMS.length,
@@ -79,7 +79,7 @@ export class MenuView implements View {
 
 	contents(): Record<string, string> {
 		return {
-			'menu-header': '╭───────  Smokeless  ───────╮',
+			header: '╭───────  Smokeless  ───────╮',
 		};
 	}
 

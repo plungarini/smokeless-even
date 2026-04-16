@@ -51,9 +51,10 @@ export class StatsView implements View {
 		)} /day   (${stats.averageIntervalLabel})     ----\n\n${gridText}`;
 
 		return {
-			'chrome-header': buildHeader(now),
-			'root-body': body,
-			'chrome-footer': buildFooter('stats'),
+			header: buildHeader(now),
+			body,
+			footer: buildFooter('stats'),
+			shield: ' ',
 		};
 	}
 

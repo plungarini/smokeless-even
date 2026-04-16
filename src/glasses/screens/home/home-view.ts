@@ -71,9 +71,10 @@ export class HomeView implements View {
 		}
 
 		return {
-			'chrome-header': buildHeader(now),
-			'root-body': body,
-			'chrome-footer': buildFooter('home'),
+			header: buildHeader(now),
+			body,
+			footer: buildFooter('home'),
+			shield: ' ',
 		};
 	}
 

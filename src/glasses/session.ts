@@ -25,6 +25,20 @@ export function __getSessionDebug() {
 	return { pageCreated, activeLayoutKey, lastContents };
 }
 
+function layoutDiagnostic(state: HudRenderState, extra?: Record<string, unknown>) {
+	return JSON.stringify({
+		...extra,
+		key: state.layout.key,
+		containerTotalNum: state.layout.textDescriptors.length,
+		containers: state.layout.textDescriptors.map((d) => ({
+			id: d.containerID,
+			name: d.containerName,
+			contentLen: (state.textContents[d.containerName] ?? '').length,
+			content: state.textContents[d.containerName] ?? '(missing)',
+		})),
+	});
+}
+
 export class HudSession {
 	private readonly bridge: EvenAppBridge;
 
@@ -60,7 +74,10 @@ export class HudSession {
 			// module-instance before a full reload, or a stale app container).
 			// Fall back to rebuild — the SDK accepts this and replaces the
 			// layout with ours.
-			console.warn('[HUD-SESSION] createStartUpPage failed, attempting rebuild fallback', created);
+			console.error(
+				'[HUD-SESSION] createStartUpPage failed, attempting rebuild fallback',
+				layoutDiagnostic(next, { sdkResult: created }),
+			);
 			try {
 				const ok = await this.bridge.rebuildPageContainer(new RebuildPageContainer(params));
 				if (ok) {
@@ -69,7 +86,10 @@ export class HudSession {
 					lastContents = { ...next.textContents };
 					return;
 				}
-				console.warn('[HUD-SESSION] rebuild fallback failed, will retry on next render');
+				console.error(
+					'[HUD-SESSION] rebuild fallback failed, will retry on next render',
+					layoutDiagnostic(next),
+				);
 			} catch (error) {
 				console.error('[HUD-SESSION] rebuild fallback threw', error);
 			}
@@ -88,7 +108,10 @@ export class HudSession {
 				console.error('[HUD-SESSION] rebuildPage threw', error);
 			}
 			if (!ok) {
-				console.warn('[HUD-SESSION] rebuildPage failed, will retry on next render');
+				console.error(
+					'[HUD-SESSION] rebuildPage failed, will retry on next render',
+					layoutDiagnostic(next, { fromKey: activeLayoutKey }),
+				);
 				return;
 			}
 			activeLayoutKey = next.layout.key;
@@ -123,7 +146,15 @@ export class HudSession {
 				continue;
 			}
 			if (!ok) {
-				console.error('[HUD-SESSION] textContainerUpgrade failed', descriptor.containerName);
+				console.error(
+					'[HUD-SESSION] textContainerUpgrade failed',
+					JSON.stringify({
+						containerID: descriptor.containerID,
+						containerName: descriptor.containerName,
+						contentLen: content.length,
+						content,
+					}),
+				);
 				continue;
 			}
 

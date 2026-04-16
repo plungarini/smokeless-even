@@ -8,12 +8,22 @@ const STATUS_LAYOUT: HudLayoutDescriptor = {
 	textDescriptors: [
 		{
 			containerID: 1,
-			containerName: 'status-box',
+			containerName: 'status',
 			xPosition: 0,
 			yPosition: 54,
 			width: HUD_WIDTH,
 			height: HUD_HEIGHT - 108,
 			paddingLength: 8,
+			isEventCapture: 0,
+		},
+		{
+			containerID: 2,
+			containerName: 'shield',
+			xPosition: 0,
+			yPosition: 0,
+			width: HUD_WIDTH,
+			height: HUD_HEIGHT,
+			paddingLength: 4,
 			isEventCapture: 1,
 		},
 	],
@@ -31,7 +41,8 @@ export function buildStatusRenderState(phase: HudPhase, statusMessage: string | 
 	return {
 		layout: STATUS_LAYOUT,
 		textContents: {
-			'status-box': buildStatusBox('Smokeless', body),
+			status: buildStatusBox('Smokeless', body),
+			shield: ' ',
 		},
 	};
 }

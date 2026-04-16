@@ -1,5 +1,5 @@
 import { Timestamp, type DocumentData, type QueryDocumentSnapshot } from 'firebase-admin/firestore';
-import type { SmokeLogEntry, UserDocument, UserEvenProvider, UserGoogleProvider, UserOnboarding } from '../domain/types';
+import type { SmokeLogEntry, UserDocument, UserEvenProvider, UserGoogleProvider } from '../domain/types';
 
 export function toDate(value: unknown): Date | null {
 	if (!value) return null;
@@ -38,21 +38,6 @@ function mapEvenProvider(value: unknown): UserEvenProvider | null {
 	};
 }
 
-function mapOnboarding(value: unknown): UserOnboarding | null {
-	if (!value || typeof value !== 'object') return null;
-	const onboarding = value as Record<string, unknown>;
-	return {
-		cigarettesPerDay: Number(onboarding.cigarettesPerDay ?? 20),
-		packPrice: Number(onboarding.packPrice ?? 0),
-		cigarettesPerPack: Number(onboarding.cigarettesPerPack ?? 20),
-		quitProgram: (onboarding.quitProgram as UserOnboarding['quitProgram']) ?? 'minimum',
-		programStartDate: toDate(onboarding.programStartDate),
-		programTargetDate: toDate(onboarding.programTargetDate),
-		programTargetCigarettes: Number(onboarding.programTargetCigarettes ?? 0),
-		completedAt: toDate(onboarding.completedAt),
-	};
-}
-
 export function mapUserDocument(snapshot: FirebaseFirestore.DocumentSnapshot<DocumentData>): UserDocument | null {
 	if (!snapshot.exists) return null;
 	const data = snapshot.data() ?? {};
@@ -71,7 +56,6 @@ export function mapUserDocument(snapshot: FirebaseFirestore.DocumentSnapshot<Doc
 			}
 			: null,
 		preferences,
-		onboarding: mapOnboarding(data.onboarding),
 		providers: {
 			google: mapGoogleProvider(providers.google),
 			even: mapEvenProvider(providers.even),

@@ -1,4 +1,4 @@
-import type { SmokeLogEntry, UserDocument } from './types';
+import type { SmokeLogEntry } from './types';
 import { addDays, diffCalendarDays, parseDayKey, startOfDay, toDayKey } from '../lib/time';
 
 const DECAY_LAMBDA = 0.1;
@@ -141,35 +141,6 @@ export function computeLongestCessation(entries: SmokeLogEntry[], now = new Date
 	}
 
 	return longestGapMs;
-}
-
-export function computeDailyTarget(userDocument: UserDocument | null, now = new Date()): number | null {
-	const onboarding = userDocument?.onboarding;
-	if (!onboarding) return null;
-	if (onboarding.quitProgram === 'minimum') return null;
-	if (onboarding.quitProgram === 'fixed') return Math.max(0, Math.round(onboarding.programTargetCigarettes));
-
-	const startDate = onboarding.programStartDate ?? onboarding.completedAt ?? userDocument?.createdAt ?? now;
-	const targetDate = onboarding.programTargetDate;
-
-	if (!targetDate) return onboarding.cigarettesPerDay;
-
-	const totalProgramDays = Math.max(1, diffCalendarDays(targetDate, startDate));
-	const day = Math.max(0, Math.min(totalProgramDays, diffCalendarDays(now, startDate)));
-	const baseline = onboarding.cigarettesPerDay;
-	const finalTarget = onboarding.programTargetCigarettes;
-	const target = baseline - (baseline - finalTarget) * (day / totalProgramDays);
-
-	return Math.max(finalTarget, Math.round(target));
-}
-
-export function computeMoneySaved(userDocument: UserDocument | null, weightedAverage: number, now = new Date()): number {
-	const onboarding = userDocument?.onboarding;
-	if (!onboarding) return 0;
-	const pricePerCigarette = onboarding.packPrice / Math.max(onboarding.cigarettesPerPack, 1);
-	const start = onboarding.programStartDate ?? onboarding.completedAt ?? userDocument?.createdAt ?? now;
-	const daysSinceStart = Math.max(1, (now.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
-	return (onboarding.cigarettesPerDay - weightedAverage) * pricePerCigarette * daysSinceStart;
 }
 
 export function getHealthMilestone(lastSmokeAt: Date | null, now = new Date()): string {

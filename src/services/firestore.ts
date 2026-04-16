@@ -23,12 +23,10 @@ import type {
 	AuthAccountInfo,
 	EvenUserInfo,
 	HistoryDayGroup,
-	OnboardingDraft,
 	SmokeLogEntry,
 	UserDocument,
 	UserEvenProvider,
 	UserGoogleProvider,
-	UserOnboarding,
 	UserPreferences,
 } from '../domain/types';
 import { db } from '../lib/firebase';
@@ -90,21 +88,6 @@ function mapGoogleProvider(value: unknown): UserGoogleProvider | null {
 	};
 }
 
-function mapOnboarding(value: unknown): UserOnboarding | null {
-	if (!value || typeof value !== 'object') return null;
-	const onboarding = value as Record<string, unknown>;
-	return {
-		cigarettesPerDay: Number(onboarding.cigarettesPerDay ?? 20),
-		packPrice: Number(onboarding.packPrice ?? 5),
-		cigarettesPerPack: Number(onboarding.cigarettesPerPack ?? 20),
-		quitProgram: (onboarding.quitProgram as UserOnboarding['quitProgram']) ?? 'minimum',
-		programStartDate: toDate(onboarding.programStartDate),
-		programTargetDate: toDate(onboarding.programTargetDate),
-		programTargetCigarettes: Number(onboarding.programTargetCigarettes ?? 0),
-		completedAt: toDate(onboarding.completedAt),
-	};
-}
-
 function mapUserDocument(snapshot: DocumentSnapshot): UserDocument | null {
 	if (!snapshot.exists()) return null;
 
@@ -128,7 +111,6 @@ function mapUserDocument(snapshot: DocumentSnapshot): UserDocument | null {
 			themeMode: String(preferences.themeMode ?? DEFAULT_PREFERENCES.themeMode),
 			weekStart: String(preferences.weekStart ?? DEFAULT_PREFERENCES.weekStart),
 		},
-		onboarding: mapOnboarding(data.onboarding),
 		providers: {
 			google: mapGoogleProvider(providers.google),
 			even: mapEvenProvider(providers.even),
@@ -153,7 +135,6 @@ function buildDefaultUserDocument(evenUser: EvenUserInfo): Omit<UserDocument, 'c
 		longestEverCessation: 0,
 		todayMaxCessation: null,
 		preferences: DEFAULT_PREFERENCES,
-		onboarding: null,
 		providers: {
 			google: null,
 			even: {
@@ -164,22 +145,6 @@ function buildDefaultUserDocument(evenUser: EvenUserInfo): Omit<UserDocument, 'c
 				linkedAt: null,
 			},
 		},
-	};
-}
-
-function buildOnboardingFromDraft(draft: OnboardingDraft, existing: UserOnboarding | null): UserOnboarding {
-	return {
-		cigarettesPerDay: draft.cigarettesPerDay,
-		packPrice: draft.packPrice,
-		cigarettesPerPack: draft.cigarettesPerPack,
-		quitProgram: draft.quitProgram,
-		programStartDate: existing?.programStartDate ?? new Date(),
-		programTargetDate:
-			draft.quitProgram === 'minimum' || !draft.programTargetDate
-				? null
-				: new Date(`${draft.programTargetDate}T00:00:00`),
-		programTargetCigarettes: draft.quitProgram === 'minimum' ? 0 : draft.programTargetCigarettes,
-		completedAt: existing?.completedAt ?? new Date(),
 	};
 }
 
@@ -220,11 +185,6 @@ function mergeProviders(
 	};
 }
 
-function mergeOnboarding(target: UserOnboarding | null, source: UserOnboarding | null): UserOnboarding | null {
-	if (target) return target;
-	return source;
-}
-
 function mergeUserDocuments(
 	target: UserDocument | null,
 	source: UserDocument | null,
@@ -236,7 +196,6 @@ function mergeUserDocuments(
 		longestEverCessation: target?.longestEverCessation ?? source?.longestEverCessation ?? fallback.longestEverCessation,
 		todayMaxCessation: target?.todayMaxCessation ?? source?.todayMaxCessation ?? fallback.todayMaxCessation,
 		preferences: target?.preferences ?? source?.preferences ?? fallback.preferences,
-		onboarding: mergeOnboarding(target?.onboarding ?? null, source?.onboarding ?? null),
 		providers: mergeProviders(
 			target?.providers ?? fallback.providers,
 			source?.providers ?? fallback.providers,
@@ -452,11 +411,13 @@ export async function fetchAllLogEntries(uid: string): Promise<SmokeLogEntry[]> 
 }
 
 export async function ensureCanonicalUserData(firebaseUid: string, evenUser: EvenUserInfo): Promise<void> {
-	const existing = await fetchUserDocument(firebaseUid);
-	if (!existing) {
-		const defaults = buildDefaultUserDocument(evenUser);
-		await setDoc(userRef(firebaseUid), {
-			...defaults,
+	const defaults = buildDefaultUserDocument(evenUser);
+	await setDoc(
+		userRef(firebaseUid),
+		{
+			longestEverCessation: defaults.longestEverCessation,
+			todayMaxCessation: defaults.todayMaxCessation,
+			preferences: defaults.preferences,
 			providers: {
 				google: defaults.providers.google,
 				even: {
@@ -465,21 +426,6 @@ export async function ensureCanonicalUserData(firebaseUid: string, evenUser: Eve
 				},
 			},
 			createdAt: serverTimestamp(),
-			updatedAt: serverTimestamp(),
-		});
-		return;
-	}
-
-	await setDoc(
-		userRef(firebaseUid),
-		{
-			providers: {
-				...existing.providers,
-				even: {
-					...buildEvenProvider(evenUser),
-					linkedAt: serverTimestamp(),
-				},
-			},
 			updatedAt: serverTimestamp(),
 		},
 		{ merge: true },
@@ -521,46 +467,6 @@ export async function upsertAuthProviderFields(uid: string, account: AuthAccount
 	);
 }
 
-export async function saveOnboarding(
-	uid: string,
-	evenUser: EvenUserInfo,
-	draft: OnboardingDraft,
-	account: AuthAccountInfo | null = null,
-): Promise<void> {
-	const existing = await fetchUserDocument(uid);
-	const onboarding = buildOnboardingFromDraft(draft, existing?.onboarding ?? null);
-
-	await setDoc(
-		userRef(uid),
-		{
-			preferences: existing?.preferences ?? DEFAULT_PREFERENCES,
-			onboarding: {
-				...onboarding,
-				programStartDate: onboarding.programStartDate ?? serverTimestamp(),
-				completedAt: onboarding.completedAt ?? serverTimestamp(),
-			},
-			providers: {
-				even: {
-					...buildEvenProvider(evenUser),
-					linkedAt: serverTimestamp(),
-				},
-				google:
-					account?.authProvider === 'google'
-						? {
-								uid: account.uid,
-								email: account.googleEmail,
-								displayName: account.googleDisplayName,
-								linkedAt: serverTimestamp(),
-							}
-						: (existing?.providers.google ?? null),
-			},
-			createdAt: existing?.createdAt ?? serverTimestamp(),
-			updatedAt: serverTimestamp(),
-		},
-		{ merge: true },
-	);
-}
-
 export async function mergeUserData(
 	sourceUid: string,
 	targetUid: string,
@@ -591,7 +497,6 @@ export async function mergeUserData(
 			longestEverCessation: mergedDocument.longestEverCessation,
 			todayMaxCessation: mergedDocument.todayMaxCessation,
 			preferences: mergedDocument.preferences,
-			onboarding: mergedDocument.onboarding,
 			providers: mergedDocument.providers,
 			createdAt: targetDocument?.createdAt ?? sourceDocument?.createdAt ?? serverTimestamp(),
 			updatedAt: serverTimestamp(),
@@ -600,33 +505,6 @@ export async function mergeUserData(
 	);
 	await updateUserMetrics(targetUid, mergedLogs);
 	await deleteAllUserData(sourceUid);
-}
-
-export async function updateProgram(uid: string, updates: Partial<UserOnboarding>): Promise<void> {
-	const existing = await fetchUserDocument(uid);
-	const onboarding = existing?.onboarding ?? null;
-	const nextOnboarding: UserOnboarding = {
-		cigarettesPerDay:
-			typeof updates.cigarettesPerDay === 'number' ? updates.cigarettesPerDay : (onboarding?.cigarettesPerDay ?? 20),
-		packPrice: typeof updates.packPrice === 'number' ? updates.packPrice : (onboarding?.packPrice ?? 10),
-		cigarettesPerPack:
-			typeof updates.cigarettesPerPack === 'number' ? updates.cigarettesPerPack : (onboarding?.cigarettesPerPack ?? 20),
-		quitProgram: updates.quitProgram ?? onboarding?.quitProgram ?? 'minimum',
-		programStartDate:
-			updates.programStartDate !== undefined ? updates.programStartDate : (onboarding?.programStartDate ?? new Date()),
-		programTargetDate:
-			updates.programTargetDate !== undefined ? updates.programTargetDate : (onboarding?.programTargetDate ?? null),
-		programTargetCigarettes:
-			typeof updates.programTargetCigarettes === 'number'
-				? updates.programTargetCigarettes
-				: (onboarding?.programTargetCigarettes ?? 0),
-		completedAt: onboarding?.completedAt ?? new Date(),
-	};
-
-	await updateDoc(userRef(uid), {
-		onboarding: nextOnboarding,
-		updatedAt: serverTimestamp(),
-	});
 }
 
 export async function addSmokeEntry(uid: string, timestamp = new Date()): Promise<string> {

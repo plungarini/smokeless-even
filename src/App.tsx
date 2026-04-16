@@ -1,5 +1,5 @@
 import { EvenAppMethod, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { Card, Toast } from 'even-toolkit/web';
+import { Card } from 'even-toolkit/web';
 import { startTransition, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { missingClientEnv } from './config/env';
 import {
@@ -60,24 +60,7 @@ import {
 	toDayKey,
 	toTimeInputValue,
 } from './lib/time';
-import {
-	ensureFirebaseSession,
-	getCurrentAccountInfo,
-	observeAccountInfo,
-} from './services/auth';
-import {
-	clearGooglePairingSession,
-	claimReadyGooglePairing,
-	canRetryGoogleLinkClaim,
-	completeGoogleLinkCleanup,
-	isSameGoogleLinkSession,
-	isGoogleLinkNotFoundError,
-	loadGoogleLinkClaimStateAsync,
-	loadActiveGooglePairingAsync,
-	refreshGooglePairingStatus,
-	startGooglePairing,
-	watchGooglePairingStatus,
-} from './services/google-link';
+import { ensureFirebaseSession, getCurrentAccountInfo, observeAccountInfo } from './services/auth';
 import {
 	addSmokeEntry,
 	deleteAllUserData,
@@ -94,6 +77,19 @@ import {
 	updateProgram,
 	upsertAuthProviderFields,
 } from './services/firestore';
+import {
+	canRetryGoogleLinkClaim,
+	claimReadyGooglePairing,
+	clearGooglePairingSession,
+	completeGoogleLinkCleanup,
+	isGoogleLinkNotFoundError,
+	isSameGoogleLinkSession,
+	loadActiveGooglePairingAsync,
+	loadGoogleLinkClaimStateAsync,
+	refreshGooglePairingStatus,
+	startGooglePairing,
+	watchGooglePairingStatus,
+} from './services/google-link';
 
 type BootState = 'booting' | 'blocked' | 'ready';
 
@@ -171,6 +167,7 @@ export default function App() {
 	const googleLinkStatusKeyRef = useRef<string | null>(null);
 	const googleLinkErrorKeyRef = useRef<string | null>(null);
 	const googleLinkTerminalKeyRef = useRef<string | null>(null);
+	const toastTimerRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		const timer = setInterval(() => setClock(Date.now()), 1_000);
@@ -351,6 +348,9 @@ export default function App() {
 			for (const unsubscribe of unsubscribeRef.current) {
 				unsubscribe();
 			}
+			if (toastTimerRef.current !== null) {
+				window.clearTimeout(toastTimerRef.current);
+			}
 		};
 	}, []);
 
@@ -453,10 +453,22 @@ export default function App() {
 	});
 
 	const pushToast = useEffectEvent((message: string) => {
+		if (toastTimerRef.current !== null) {
+			window.clearTimeout(toastTimerRef.current);
+		}
 		setToast(message);
-		window.setTimeout(() => {
+		toastTimerRef.current = window.setTimeout(() => {
 			setToast((current) => (current === message ? '' : current));
-		}, 2400);
+			toastTimerRef.current = null;
+		}, 3600);
+	});
+
+	const dismissToast = useEffectEvent(() => {
+		if (toastTimerRef.current !== null) {
+			window.clearTimeout(toastTimerRef.current);
+			toastTimerRef.current = null;
+		}
+		setToast('');
 	});
 
 	const refreshDerivedData = useEffectEvent(async (uid: string, includeHistory = false) => {
@@ -593,16 +605,16 @@ export default function App() {
 			setOnboardingDraft(
 				hydratedDocument?.onboarding
 					? {
-						cigarettesPerDay: hydratedDocument.onboarding.cigarettesPerDay,
-						packPrice: hydratedDocument.onboarding.packPrice,
-						cigarettesPerPack: hydratedDocument.onboarding.cigarettesPerPack,
-						quitProgram: hydratedDocument.onboarding.quitProgram,
-						programTargetCigarettes: hydratedDocument.onboarding.programTargetCigarettes,
-						programTargetDate: hydratedDocument.onboarding.programTargetDate
-							? toDateInputValue(hydratedDocument.onboarding.programTargetDate)
-							: toDateInputValue(addDays(new Date(), 90)),
-						step: 0,
-					}
+							cigarettesPerDay: hydratedDocument.onboarding.cigarettesPerDay,
+							packPrice: hydratedDocument.onboarding.packPrice,
+							cigarettesPerPack: hydratedDocument.onboarding.cigarettesPerPack,
+							quitProgram: hydratedDocument.onboarding.quitProgram,
+							programTargetCigarettes: hydratedDocument.onboarding.programTargetCigarettes,
+							programTargetDate: hydratedDocument.onboarding.programTargetDate
+								? toDateInputValue(hydratedDocument.onboarding.programTargetDate)
+								: toDateInputValue(addDays(new Date(), 90)),
+							step: 0,
+						}
 					: await loadSavedOnboarding(firebaseUid, normalized.country),
 			);
 
@@ -726,12 +738,12 @@ export default function App() {
 		const nextErrorKey =
 			googleLinkSession.errorCode || googleLinkSession.errorMessage
 				? [
-					googleLinkSession.sessionId,
-					googleLinkSession.status,
-					googleLinkSession.errorCode ?? '',
-					googleLinkSession.switchErrorAt ?? '',
-					googleLinkSession.errorMessage ?? '',
-				].join(':')
+						googleLinkSession.sessionId,
+						googleLinkSession.status,
+						googleLinkSession.errorCode ?? '',
+						googleLinkSession.switchErrorAt ?? '',
+						googleLinkSession.errorMessage ?? '',
+					].join(':')
 				: null;
 		if (nextErrorKey && nextErrorKey !== googleLinkErrorKeyRef.current) {
 			googleLinkErrorKeyRef.current = nextErrorKey;
@@ -1192,8 +1204,15 @@ export default function App() {
 					/>
 
 					{toast ? (
-						<div className="fixed bottom-28 left-4 right-4 z-[60]">
-							<Toast message={toast} />
+						<div className="pointer-events-none fixed bottom-28 left-4 right-4 z-[9999] flex justify-center">
+							<button
+								type="button"
+								className="smokeless-toast pointer-events-auto w-full max-w-md text-left"
+								onClick={dismissToast}
+								aria-label="Dismiss notification"
+							>
+								<div className="smokeless-toast__message">{toast}</div>
+							</button>
 						</div>
 					) : null}
 				</>

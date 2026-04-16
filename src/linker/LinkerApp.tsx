@@ -20,7 +20,10 @@ interface ResolvedPairing {
 }
 
 function normalizeCode(value: string): string {
-	return value.toUpperCase().replace(/[^A-Z2-9]/g, '').slice(0, 10);
+	return value
+		.toUpperCase()
+		.replace(/[^A-Z2-9]/g, '')
+		.slice(0, 10);
 }
 
 function formatCodeInput(value: string): string {
@@ -75,7 +78,11 @@ function shouldPreferRedirect(): boolean {
 function shouldFallbackToRedirect(error: unknown): boolean {
 	if (!error || typeof error !== 'object' || !('code' in error)) return false;
 	const code = String((error as { code?: string }).code ?? '');
-	return code === 'auth/popup-blocked' || code === 'auth/web-storage-unsupported' || code === 'auth/operation-not-supported-in-this-environment';
+	return (
+		code === 'auth/popup-blocked' ||
+		code === 'auth/web-storage-unsupported' ||
+		code === 'auth/operation-not-supported-in-this-environment'
+	);
 }
 
 function formatExpiry(seconds: number): string {
@@ -130,7 +137,11 @@ export function LinkerApp() {
 					setLinkedEmail(redirectResult.user.email ?? '');
 					setPostAuthError(true);
 					setPhase('error');
-					setMessage(error instanceof Error ? error.message : 'Google access was approved, but Smokeless could not finish linking.');
+					setMessage(
+						error instanceof Error
+							? error.message
+							: 'Google access was approved, but Smokeless could not finish linking.',
+					);
 				}
 				return;
 			}
@@ -255,10 +266,15 @@ export function LinkerApp() {
 			<div className="linker-frame">
 				<Card padding="default" className="linker-card">
 					<div className="linker-eyebrow">Smokeless Pairing</div>
-					<h1 className="linker-title">Link your Google account in a normal browser.</h1>
+					<h1 className="linker-title">{phase === 'success' ? 'Google Account Linked!' : 'Link Google Account'}</h1>
 					<p className="linker-body">{message}</p>
 
-					{linkedEmail ? <div className="linker-chip">{phase === 'success' ? 'Linked as ' : 'Authorized as '}{linkedEmail}</div> : null}
+					{linkedEmail ? (
+						<div className="linker-chip">
+							{phase === 'success' ? 'Linked as ' : 'Authorized as '}
+							{linkedEmail}
+						</div>
+					) : null}
 
 					{showFinalState ? null : (
 						<>
@@ -310,12 +326,6 @@ export function LinkerApp() {
 							</Button>
 						</>
 					)}
-
-					<div className="linker-footer">
-						{showFinalState
-							? 'Return to Smokeless on your phone. The app will refresh onto the linked Google account automatically.'
-							: 'After Google confirms access here, Smokeless will prepare your data here first, then your phone app will switch onto the linked account.'}
-					</div>
 				</Card>
 			</div>
 		</div>

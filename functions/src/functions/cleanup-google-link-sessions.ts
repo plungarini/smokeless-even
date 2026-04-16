@@ -17,7 +17,7 @@ export const cleanupGoogleLinkSessions = onSchedule('every 60 minutes', async ()
 		let batchTouched = false;
 		for (const docSnapshot of expiredSnapshot.docs.slice(index, index + 200)) {
 			const status = String(docSnapshot.get('status') ?? 'pending') as GoogleLinkSessionStatus;
-			if (status === 'pending' || status === 'authorized') {
+			if (status === 'pending' || status === 'authorized' || status === 'migrating' || status === 'ready_to_switch') {
 				batch.set(
 					docSnapshot.ref,
 					{

@@ -6,7 +6,7 @@ export async function invalidateOpenSessions(sourceUid: string): Promise<void> {
 	const snapshot = await db.collection('googleLinkSessions').where('sourceUid', '==', sourceUid).get();
 	const openSessions = snapshot.docs.filter((docSnapshot) => {
 		const status = String(docSnapshot.get('status') ?? '') as GoogleLinkSessionStatus;
-		return status === 'pending' || status === 'authorized';
+		return status === 'pending' || status === 'authorized' || status === 'migrating' || status === 'ready_to_switch' || status === 'switched';
 	});
 
 	if (openSessions.length === 0) return;

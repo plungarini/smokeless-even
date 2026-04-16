@@ -1,4 +1,13 @@
-export type GoogleLinkSessionStatus = 'pending' | 'authorized' | 'consumed' | 'expired' | 'cancelled' | 'failed';
+export type GoogleLinkSessionStatus =
+	| 'pending'
+	| 'authorized'
+	| 'migrating'
+	| 'ready_to_switch'
+	| 'switched'
+	| 'consumed'
+	| 'expired'
+	| 'cancelled'
+	| 'failed';
 
 export interface UserGoogleProvider {
 	uid: string;

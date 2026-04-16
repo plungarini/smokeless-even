@@ -11,6 +11,7 @@ import {
 import type {
 	AuthAccountInfo,
 	EvenUserInfo,
+	GoogleLinkPairingSession,
 	HistoryDayGroup,
 	HudPendingAction,
 	HudSnapshot,
@@ -62,9 +63,15 @@ import {
 import {
 	ensureFirebaseSession,
 	getCurrentAccountInfo,
-	resolveGoogleLinkRedirect,
-	startGoogleLinkRedirect,
 } from './services/auth';
+import {
+	clearActiveGooglePairing,
+	consumeAuthorizedGooglePairing,
+	loadActiveGooglePairing,
+	refreshGooglePairingStatus,
+	startGooglePairing,
+	watchGooglePairingStatus,
+} from './services/google-link';
 import {
 	addSmokeEntry,
 	deleteAllUserData,
@@ -74,7 +81,6 @@ import {
 	ensureCanonicalUserData,
 	exportLogs,
 	fetchAllLogEntries,
-	mergeUserData,
 	saveOnboarding,
 	subscribeToTodayCount,
 	subscribeToUserDocument,
@@ -94,6 +100,10 @@ function tabToHudRoute(tab: AppTab): HudUiState['route'] | null {
 function stepHistoryDayKey(currentDayKey: string | null, deltaDays: number): string {
 	const baseDate = currentDayKey ? parseDayKey(currentDayKey) : new Date();
 	return toDayKey(addDays(baseDate, deltaDays));
+}
+
+function isTerminalGoogleLinkStatus(status: GoogleLinkPairingSession['status']): boolean {
+	return status === 'consumed' || status === 'expired' || status === 'cancelled' || status === 'failed';
 }
 
 function downloadJson(filename: string, payload: unknown): void {
@@ -117,6 +127,7 @@ export default function App() {
 	const [toast, setToast] = useState('');
 	const [evenUser, setEvenUser] = useState<EvenUserInfo | null>(null);
 	const [accountInfo, setAccountInfo] = useState<AuthAccountInfo | null>(null);
+	const [googleLinkSession, setGoogleLinkSession] = useState<GoogleLinkPairingSession | null>(null);
 	const [userDocument, setUserDocument] = useState<UserDocument | null>(null);
 	const [onboardingDraft, setOnboardingDraft] = useState<OnboardingDraft>(createDefaultOnboardingDraft('US'));
 	const [todayCount, setTodayCount] = useState(0);
@@ -146,6 +157,7 @@ export default function App() {
 	const unsubscribeRef = useRef<(() => void)[]>([]);
 	const bootstrapStartedRef = useRef(false);
 	const hudSmokeLockRef = useRef(false);
+	const googleConsumeLockRef = useRef(false);
 
 	useEffect(() => {
 		const timer = setInterval(() => setClock(Date.now()), 1_000);
@@ -453,6 +465,34 @@ export default function App() {
 		}
 	});
 
+	const finalizeAuthorizedGoogleLink = useEffectEvent(
+		async (session: GoogleLinkPairingSession, options: { showToast?: boolean } = {}) => {
+			if (googleConsumeLockRef.current) return null;
+
+			googleConsumeLockRef.current = true;
+			try {
+				const { targetUid, account } = await consumeAuthorizedGooglePairing(session);
+				moveOnboardingDraft(session.sourceUid, targetUid);
+				startTransition(() => {
+					setGoogleLinkSession(null);
+					setAccountInfo(account);
+				});
+				if (options.showToast !== false) {
+					pushToast('Google account linked');
+				}
+				return { targetUid, account };
+			} catch (error) {
+				console.error('[Smokeless] google link consume failed', error);
+				if (options.showToast !== false) {
+					pushToast('Could not finish Google linking');
+				}
+				return null;
+			} finally {
+				googleConsumeLockRef.current = false;
+			}
+		},
+	);
+
 	const bootstrap = useEffectEvent(async () => {
 		if (missingClientEnv.length > 0) {
 			setBlockedMessage(`Missing web config: ${missingClientEnv.join(', ')}`);
@@ -480,14 +520,33 @@ export default function App() {
 
 			setEvenUser(normalized);
 
-			const redirectResolution = await resolveGoogleLinkRedirect();
-			const firebaseUid = redirectResolution.activeUid ?? (await ensureFirebaseSession());
-			const activeAccount = redirectResolution.account ?? getCurrentAccountInfo();
+			let firebaseUid = await ensureFirebaseSession();
+			let activeAccount = getCurrentAccountInfo();
+			let activePairing = loadActiveGooglePairing(firebaseUid);
 
-			if (redirectResolution.mergedFromUid && redirectResolution.mergedFromUid !== firebaseUid) {
-				await mergeUserData(redirectResolution.mergedFromUid, firebaseUid, normalized, activeAccount);
-				moveOnboardingDraft(redirectResolution.mergedFromUid, firebaseUid);
+			if (activePairing) {
+				activePairing = await refreshGooglePairingStatus(activePairing);
+				startTransition(() => setGoogleLinkSession(activePairing));
+
+				if (activePairing?.status === 'authorized') {
+					const finalized = await finalizeAuthorizedGoogleLink(activePairing, { showToast: false });
+					if (finalized) {
+						firebaseUid = finalized.targetUid;
+						activeAccount = finalized.account;
+						activePairing = null;
+					}
+				}
+
+				if (activePairing && isTerminalGoogleLinkStatus(activePairing.status)) {
+					clearActiveGooglePairing(activePairing.sourceUid);
+					activePairing = null;
+					startTransition(() => setGoogleLinkSession(null));
+				}
+			} else {
+				startTransition(() => setGoogleLinkSession(null));
 			}
+
+			activeAccount = activeAccount ?? getCurrentAccountInfo();
 
 			setAccountInfo(activeAccount);
 			setCanonicalUid(firebaseUid);
@@ -531,6 +590,41 @@ export default function App() {
 		void bootstrap();
 	}, []);
 
+	useEffect(() => {
+		if (!googleLinkSession) return;
+
+		return watchGooglePairingStatus(googleLinkSession, (nextSession) => {
+			startTransition(() => setGoogleLinkSession(nextSession));
+
+			if (!nextSession) {
+				return;
+			}
+
+			if (nextSession.status === 'authorized') {
+				void (async () => {
+					const finalized = await finalizeAuthorizedGoogleLink(nextSession);
+					if (!finalized) return;
+					setBootState('booting');
+					await bootstrap();
+				})();
+				return;
+			}
+
+			if (nextSession.status === 'expired') {
+				clearActiveGooglePairing(nextSession.sourceUid);
+				pushToast('Google link code expired');
+			}
+
+			if (nextSession.status === 'failed') {
+				pushToast(nextSession.errorMessage || 'Google linking failed');
+			}
+
+			if (isTerminalGoogleLinkStatus(nextSession.status)) {
+				clearActiveGooglePairing(nextSession.sourceUid);
+			}
+		});
+	}, [bootstrap, finalizeAuthorizedGoogleLink, googleLinkSession, pushToast]);
+
 	const handleOnboardingSubmit = useEffectEvent(async () => {
 		if (!evenUser || !canonicalUid) return;
 		setMutating(true);
@@ -546,13 +640,17 @@ export default function App() {
 	});
 
 	const handleGoogleLink = useEffectEvent(async () => {
+		if (!evenUser || !canonicalUid) return;
 		setMutating(true);
 		try {
-			await startGoogleLinkRedirect();
+			const session = await startGooglePairing(canonicalUid, evenUser.uid);
+			startTransition(() => setGoogleLinkSession(session));
+			pushToast('Google link code ready');
 		} catch (error) {
-			console.error('[Smokeless] google link failed to start', error);
+			console.error('[Smokeless] google link session failed to start', error);
+			pushToast('Could not create Google link code');
+		} finally {
 			setMutating(false);
-			pushToast('Could not start Google linking');
 		}
 	});
 
@@ -732,18 +830,37 @@ export default function App() {
 		try {
 			await deleteAllUserData(canonicalUid);
 			clearOnboardingDraft(canonicalUid);
+			clearActiveGooglePairing(canonicalUid);
 			setDailyStats({});
 			setMonthlyStats({});
 			setHistoryGroups([]);
 			setHistoryHasMore(false);
 			setAllSmokeEntries([]);
 			setTodayCount(0);
+			setGoogleLinkSession(null);
 			setUserDocument(null);
 			setOptimisticLastSmokeAt(null);
 			pushToast('All data deleted');
 		} finally {
 			setMutating(false);
 		}
+	});
+
+	const handleCopyGoogleCode = useEffectEvent(async () => {
+		if (!googleLinkSession?.code || !navigator.clipboard?.writeText) return;
+		await navigator.clipboard.writeText(googleLinkSession.code);
+		pushToast('Code copied');
+	});
+
+	const handleCopyGoogleLinkUrl = useEffectEvent(async () => {
+		if (!googleLinkSession?.linkUrl || !navigator.clipboard?.writeText) return;
+		await navigator.clipboard.writeText(googleLinkSession.linkUrl);
+		pushToast('Link copied');
+	});
+
+	const handleOpenGoogleLinkUrl = useEffectEvent(() => {
+		if (!googleLinkSession?.linkUrl) return;
+		window.open(googleLinkSession.linkUrl, '_blank', 'noopener,noreferrer');
 	});
 
 	const openHistoryModal = useEffectEvent(() => {
@@ -767,6 +884,9 @@ export default function App() {
 			? accountInfo?.googleDisplayName || userDocument.providers.google?.displayName
 			: undefined;
 	const googleLinked = effectiveAuthProvider === 'google';
+	const googleLinkExpiresInSeconds = googleLinkSession
+		? Math.max(0, Math.floor((new Date(googleLinkSession.expiresAt).getTime() - clock) / 1000))
+		: null;
 	const currentCurrency =
 		evenUser && canonicalUid && userDocument
 			? currencyForCountry(userDocument.providers.even?.country || evenUser.country)
@@ -885,12 +1005,17 @@ export default function App() {
 										evenName={userDocument.providers.even?.name || evenUser.name}
 										canonicalUid={canonicalUid}
 										googleLinked={googleLinked}
+										googleLinkSession={googleLinkSession}
+										googleLinkExpiresInSeconds={googleLinkExpiresInSeconds}
 										effectiveGoogleEmail={effectiveGoogleEmail}
 										effectiveGoogleDisplayName={effectiveGoogleDisplayName}
 										currentCurrency={currentCurrency}
 										onboardingDraft={onboardingDraft}
 										mutating={mutating}
 										onGoogleLink={() => void handleGoogleLink()}
+										onCopyGoogleCode={() => void handleCopyGoogleCode()}
+										onCopyGoogleLinkUrl={() => void handleCopyGoogleLinkUrl()}
+										onOpenGoogleLinkUrl={handleOpenGoogleLinkUrl}
 										onDraftChange={(updater) => setOnboardingDraft((current) => updater(current))}
 										onProgramSave={() => void handleProgramSave()}
 										onResetOnboarding={handleResetOnboarding}

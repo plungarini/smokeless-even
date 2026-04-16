@@ -1,6 +1,7 @@
 import { getApps, initializeApp } from 'firebase/app';
 import { Auth, browserLocalPersistence, browserPopupRedirectResolver, getAuth, initializeAuth, onAuthStateChanged } from 'firebase/auth';
 import { Firestore, getFirestore, initializeFirestore } from 'firebase/firestore';
+import { Functions, getFunctions } from 'firebase/functions';
 import { env } from '../config/env';
 
 const app = getApps().length > 0 ? getApps()[0] : initializeApp(env.firebaseConfig);
@@ -29,6 +30,8 @@ try {
 }
 
 export const db = firestoreInstance;
+
+export const functions: Functions = getFunctions(app, env.firebaseFunctionsRegion);
 
 export async function waitForInitialAuthState(): Promise<void> {
 	await new Promise<void>((resolve) => {

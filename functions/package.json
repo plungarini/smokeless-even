@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "firebase-admin": "^13.8.0",
+    "firebase-functions": "^7.2.5"
+  },
+	"devDependencies": {
+		"typescript": "^6.0.2"
+	},
+	"engines": {
+		"node": "24"
+	},
+	"main": "lib/index.js",
+	"name": "smokeless-functions",
+	"private": true,
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"clean": "powershell -NoProfile -Command \"if (Test-Path lib) { Remove-Item -Recurse -Force lib }\""
+	}
+}

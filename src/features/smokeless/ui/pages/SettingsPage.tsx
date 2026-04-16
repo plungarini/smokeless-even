@@ -1,20 +1,58 @@
 import { Badge, Button, Card } from 'even-toolkit/web';
-import type { OnboardingDraft, QuitProgram, UserDocument } from '../../../../domain/types';
+import type { GoogleLinkPairingSession, OnboardingDraft, QuitProgram, UserDocument } from '../../../../domain/types';
 import { circleIconButtonClass, detailsCardClass, glassCardClass, sectionLabelClass, smokeInputClass } from '../styles';
 import { NumericField } from '../components/NumericField';
 import { ProgramChoice } from '../components/ProgramChoice';
+
+function formatExpiry(seconds: number | null): string {
+	if (seconds === null) return '';
+	const safeSeconds = Math.max(0, seconds);
+	const minutes = Math.floor(safeSeconds / 60);
+	const remainder = safeSeconds % 60;
+	return `${minutes}:${String(remainder).padStart(2, '0')}`;
+}
+
+function describeGooglePairing(session: GoogleLinkPairingSession | null): string {
+	if (!session) {
+		return 'Generate a 15-minute pairing code, open the secure link page on a normal browser, then finish Google sign-in there.';
+	}
+
+	switch (session.status) {
+		case 'pending':
+			return 'Enter this code on the link page, then continue with Google in that browser.';
+		case 'authorized':
+			return session.targetGoogleEmail
+				? `Authorized as ${session.targetGoogleEmail}. Return to Smokeless to finish the account switch.`
+				: 'Authorized in the browser. Return to Smokeless to finish the account switch.';
+		case 'consumed':
+			return 'Google account linked successfully.';
+		case 'expired':
+			return 'This pairing code expired. Generate a new one to try again.';
+		case 'cancelled':
+			return 'This pairing request was cancelled. Generate a new code to try again.';
+		case 'failed':
+			return session.errorMessage || 'Google linking failed. Generate a new code to try again.';
+		default:
+			return 'Generate a fresh code to link Google.';
+	}
+}
 
 export function SettingsPage({
 	userDocument,
 	evenName,
 	canonicalUid,
 	googleLinked,
+	googleLinkSession,
+	googleLinkExpiresInSeconds,
 	effectiveGoogleEmail,
 	effectiveGoogleDisplayName,
 	currentCurrency,
 	onboardingDraft,
 	mutating,
 	onGoogleLink,
+	onCopyGoogleCode,
+	onCopyGoogleLinkUrl,
+	onOpenGoogleLinkUrl,
 	onDraftChange,
 	onProgramSave,
 	onResetOnboarding,
@@ -25,12 +63,17 @@ export function SettingsPage({
 	evenName: string;
 	canonicalUid: string;
 	googleLinked: boolean;
+	googleLinkSession: GoogleLinkPairingSession | null;
+	googleLinkExpiresInSeconds: number | null;
 	effectiveGoogleEmail?: string;
 	effectiveGoogleDisplayName?: string;
 	currentCurrency: string;
 	onboardingDraft: OnboardingDraft;
 	mutating: boolean;
 	onGoogleLink: () => void;
+	onCopyGoogleCode: () => void;
+	onCopyGoogleLinkUrl: () => void;
+	onOpenGoogleLinkUrl: () => void;
 	onDraftChange: (updater: (current: OnboardingDraft) => OnboardingDraft) => void;
 	onProgramSave: () => void;
 	onResetOnboarding: () => void;
@@ -65,9 +108,53 @@ export function SettingsPage({
 						<div className="mt-3 text-[14px] text-text-dim">{googleLinked ? effectiveGoogleDisplayName || effectiveGoogleEmail || 'Google account linked' : 'Currently using an anonymous Firebase session.'}</div>
 					</div>
 					{googleLinked ? null : (
-						<Button variant="secondary" className="rounded-[20px]" disabled={mutating} onClick={onGoogleLink}>
-							Link Google account
-						</Button>
+						<div className="grid gap-3">
+							<div className="rounded-[20px] border border-white/[0.08] bg-black/[0.14] p-4">
+								<div className="flex items-center justify-between gap-4">
+									<div>
+										<div className="text-[1.1rem] text-text">Pair in browser</div>
+										<div className="mt-1 text-[14px] text-text-dim">{describeGooglePairing(googleLinkSession)}</div>
+									</div>
+									<Badge variant={googleLinkSession?.status === 'authorized' ? 'accent' : 'neutral'}>
+										{googleLinkSession?.status === 'authorized'
+											? 'Ready'
+											: googleLinkSession?.status === 'pending'
+												? 'Pending'
+												: googleLinkSession?.status === 'failed'
+													? 'Failed'
+													: googleLinkSession?.status === 'expired'
+														? 'Expired'
+														: 'New'}
+									</Badge>
+								</div>
+								{googleLinkSession ? (
+									<>
+										<div className="mt-4 rounded-[18px] border border-white/[0.06] bg-black/[0.22] px-4 py-3">
+											<div className="text-detail uppercase tracking-[0.16em] text-text-dim">Pairing code</div>
+											<div className="mt-2 font-mono text-[1.8rem] tracking-[0.18em] text-text">{googleLinkSession.code}</div>
+											<div className="mt-2 text-[13px] text-text-dim">
+												Expires in {formatExpiry(googleLinkExpiresInSeconds)}
+											</div>
+										</div>
+										<div className="mt-3 text-[13px] break-all text-text-dim">{googleLinkSession.linkUrl}</div>
+										<div className="mt-4 grid gap-2 sm:grid-cols-3">
+											<Button variant="secondary" className="rounded-[16px]" onClick={onCopyGoogleCode}>
+												Copy code
+											</Button>
+											<Button variant="secondary" className="rounded-[16px]" onClick={onCopyGoogleLinkUrl}>
+												Copy link
+											</Button>
+											<Button variant="secondary" className="rounded-[16px]" onClick={onOpenGoogleLinkUrl}>
+												Open link
+											</Button>
+										</div>
+									</>
+								) : null}
+							</div>
+							<Button variant="secondary" className="rounded-[20px]" disabled={mutating} onClick={onGoogleLink}>
+								{googleLinkSession ? 'Generate new code' : 'Link Google account'}
+							</Button>
+						</div>
 					)}
 				</div>
 			</Card>

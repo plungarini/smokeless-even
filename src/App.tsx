@@ -701,6 +701,7 @@ export default function App() {
 			void (async () => {
 				const currentUid = await ensureFirebaseSession();
 				if (currentUid !== googleLinkSession.sourceUid) return;
+				if (googleLinkSession.errorCode) return;
 				const transitionedIntoReady =
 					previousStatusKey === null ||
 					!previousStatusKey.startsWith(`${googleLinkSession.sessionId}:ready_to_switch:`);

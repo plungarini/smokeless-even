@@ -302,7 +302,7 @@ export function LinkerApp() {
 
 							<Button
 								variant="highlight"
-								className="linker-button linker-button-primary"
+								className="linker-button linker-button-primary !text-black"
 								onClick={() => void handleGoogleContinue()}
 								disabled={!resolvedPairing || phase === 'authorizing' || expiresInSeconds === 0}
 							>

@@ -48,7 +48,7 @@ export function AddSmokeModal({
 					<Button variant="secondary" className="flex-1 rounded-[20px]" onClick={onClose}>
 						Cancel
 					</Button>
-					<Button variant="highlight" className="flex-1 rounded-[20px]" disabled={mutating} onClick={onSave}>
+					<Button variant="highlight" className="flex-1 rounded-[20px] !text-black" disabled={mutating} onClick={onSave}>
 						Save smoke
 					</Button>
 				</div>

@@ -235,7 +235,7 @@ export function SettingsPage({
 							</label>
 						</>
 					) : null}
-					<Button variant="highlight" className="rounded-[16px]" disabled={mutating} onClick={onProgramSave}>
+					<Button variant="highlight" className="rounded-[16px] !text-black" disabled={mutating} onClick={onProgramSave}>
 						Save program
 					</Button>
 				</div>

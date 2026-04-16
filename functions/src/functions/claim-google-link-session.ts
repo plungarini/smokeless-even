@@ -49,17 +49,19 @@ export const claimGoogleLinkSession = onCall(async (request) => {
 				: 'Could not mint a Firebase custom token for the linked Google account.';
 		const nextErrorCode = 'custom-token-mint-failed';
 		const errorChanged = existingErrorCode !== nextErrorCode || existingErrorMessage !== errorMessage;
-
-		await sessionRef(sessionId).set(
-			{
-				status: 'ready_to_switch',
-				errorCode: nextErrorCode,
-				errorMessage,
-				...(errorChanged ? { switchErrorAt: FieldValue.serverTimestamp() } : {}),
-				updatedAt: FieldValue.serverTimestamp(),
-			},
-			{ merge: true },
-		);
+		const needsWrite = status !== 'ready_to_switch' || errorChanged;
+		if (needsWrite) {
+			await sessionRef(sessionId).set(
+				{
+					status: 'ready_to_switch',
+					errorCode: nextErrorCode,
+					errorMessage,
+					...(errorChanged ? { switchErrorAt: FieldValue.serverTimestamp() } : {}),
+					updatedAt: FieldValue.serverTimestamp(),
+				},
+				{ merge: true },
+			);
+		}
 
 		logger.error('custom-token-mint-failed', {
 			category: 'custom-token-mint-failed',
@@ -69,6 +71,7 @@ export const claimGoogleLinkSession = onCall(async (request) => {
 			projectId: process.env.GCLOUD_PROJECT ?? process.env.GOOGLE_CLOUD_PROJECT ?? null,
 			signerIdentityHint: process.env.GCLOUD_PROJECT ? `${process.env.GCLOUD_PROJECT}@appspot.gserviceaccount.com` : null,
 			errorChanged,
+			needsWrite,
 			error,
 		});
 

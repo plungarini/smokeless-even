@@ -1,5 +1,6 @@
 import { Badge, Button, Card } from 'even-toolkit/web';
 import type { GoogleLinkPairingSession, UserDocument } from '../../../../domain/types';
+import { DebugLogsCard } from '../components/DebugLogsCard';
 import { circleIconButtonClass, glassCardClass, sectionLabelClass } from '../styles';
 
 function formatExpiry(seconds: number | null): string {
@@ -208,6 +209,8 @@ export function SettingsPage({
 					<p className="text-normal-body text-text-dim">{userDocument.providers.even?.uid || 'Not linked yet'}</p>
 				</div>
 			</Card>
+
+			<DebugLogsCard />
 
 			<Card padding="default" className={`${glassCardClass} rounded-[32px]`}>
 				<div className="flex flex-col gap-4">

@@ -15,3 +15,8 @@ export function userRef(uid: string) {
 export function logsRef(uid: string) {
 	return userRef(uid).collection('logs');
 }
+
+/** Maps Even UID → canonical Firebase UID for session recovery. */
+export function evenUidIndexRef(evenUid: string) {
+	return db.collection('evenUidIndex').doc(evenUid);
+}

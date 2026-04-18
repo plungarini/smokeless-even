@@ -420,22 +420,34 @@ export async function ensureCanonicalUserData(firebaseUid: string, evenUser: Eve
 	// NOTE: longestEverCessation and todayMaxCessation are intentionally excluded here.
 	// They are computed values managed exclusively by updateUserMetrics (called on every
 	// addSmokeEntry / deleteLogEntry). Writing defaults here would reset them on every boot.
-	await setDoc(
-		userRef(firebaseUid),
-		{
-			preferences: defaults.preferences,
-			providers: {
-				google: defaults.providers.google,
-				even: {
-					...defaults.providers.even,
-					linkedAt: serverTimestamp(),
+	//
+	// The evenUidIndex write is a best-effort lookup table — it lets the app recover
+	// a Firebase session when the WebView loses its IndexedDB auth state (e.g. after
+	// a Google-link account switch). A separate Cloud Function (resolveEvenSession)
+	// reads this index and mints a custom token so the user returns to the same account.
+	await Promise.all([
+		setDoc(
+			userRef(firebaseUid),
+			{
+				preferences: defaults.preferences,
+				providers: {
+					google: defaults.providers.google,
+					even: {
+						...defaults.providers.even,
+						linkedAt: serverTimestamp(),
+					},
 				},
+				createdAt: serverTimestamp(),
+				updatedAt: serverTimestamp(),
 			},
-			createdAt: serverTimestamp(),
-			updatedAt: serverTimestamp(),
-		},
-		{ merge: true },
-	);
+			{ merge: true },
+		),
+		setDoc(
+			doc(db, 'evenUidIndex', evenUser.uid),
+			{ firebaseUid, updatedAt: serverTimestamp() },
+			{ merge: true },
+		),
+	]);
 }
 
 export async function upsertEvenProfileFields(uid: string, evenUser: EvenUserInfo): Promise<void> {

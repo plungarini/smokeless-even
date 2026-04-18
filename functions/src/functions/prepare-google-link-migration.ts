@@ -2,7 +2,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import { assertString } from '../lib/errors';
-import { sessionRef } from '../repositories/refs';
+import { evenUidIndexRef, sessionRef } from '../repositories/refs';
 import { fetchAllLogEntries, fetchUserDocument } from '../repositories/users';
 import { fetchGoogleUser } from '../services/auth';
 import { dedupeLogs, rebuildIntervals } from '../services/log-merge';
@@ -101,6 +101,15 @@ export const prepareGoogleLinkMigration = onCall(async (request) => {
 			mergedDocument,
 			mergedLogs,
 		});
+
+		// Update the Even UID → Firebase UID index so that the source Even profile
+		// now resolves to the target Google account on next app open.
+		if (sourceEvenUid) {
+			await evenUidIndexRef(sourceEvenUid).set(
+				{ firebaseUid: resolvedTargetUid, updatedAt: FieldValue.serverTimestamp() },
+				{ merge: false },
+			);
+		}
 
 		await sessionRef(sessionId).set(
 			{

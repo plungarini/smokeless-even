@@ -1,12 +1,13 @@
 {
-	"permissions": {
-		"allow": [
-			"Bash(git tag:*)",
-			"Bash(npx tsc:*)",
-			"Bash(npx vite:*)",
-			"Bash(grep -l *)",
-			"Bash(grep -c *)",
-			"Bash(grep -oE *)"
-		]
-	}
+  "permissions": {
+    "allow": [
+      "Bash(git tag:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite:*)",
+      "Bash(grep -l *)",
+      "Bash(grep -c *)",
+      "Bash(grep -oE *)",
+      "Bash(pnpm tsc *)"
+    ]
+  }
 }

@@ -76,15 +76,49 @@ export function OnboardingPage() {
 	}
 
 	async function copyToClipboard(value: string, label: string) {
+		const flash = (msg: string, ms = 2200) => {
+			setCopyToast(msg);
+			if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+			copyTimeoutRef.current = setTimeout(() => setCopyToast(null), ms);
+		};
 		try {
-			await navigator.clipboard.writeText(value);
-			setCopyToast(`${label} copied`);
-			if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-			copyTimeoutRef.current = setTimeout(() => setCopyToast(null), 2200);
+			if (navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(value);
+			} else {
+				const textarea = document.createElement('textarea');
+				textarea.value = value;
+				textarea.setAttribute('readonly', '');
+				textarea.style.position = 'fixed';
+				textarea.style.top = '0';
+				textarea.style.opacity = '0';
+				document.body.appendChild(textarea);
+				textarea.select();
+				textarea.setSelectionRange(0, value.length);
+				const ok = document.execCommand('copy');
+				document.body.removeChild(textarea);
+				if (!ok) throw new Error('execCommand returned false');
+			}
+			flash(`${label} copied`);
 		} catch {
-			setCopyToast('Copy failed — long-press to copy manually');
-			if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-			copyTimeoutRef.current = setTimeout(() => setCopyToast(null), 2800);
+			// Secure-context / permissions fallback: retry via execCommand;
+			// if that also fails, tell the user to long-press.
+			try {
+				const textarea = document.createElement('textarea');
+				textarea.value = value;
+				textarea.setAttribute('readonly', '');
+				textarea.style.position = 'fixed';
+				textarea.style.top = '0';
+				textarea.style.opacity = '0';
+				document.body.appendChild(textarea);
+				textarea.select();
+				textarea.setSelectionRange(0, value.length);
+				const ok = document.execCommand('copy');
+				document.body.removeChild(textarea);
+				if (!ok) throw new Error('fallback failed');
+				flash(`${label} copied`);
+			} catch {
+				flash('Copy failed — long-press to copy', 2800);
+			}
 		}
 	}
 
@@ -129,13 +163,18 @@ export function OnboardingPage() {
 								<p className="px-1 text-[13px] leading-relaxed text-text-dim">
 									Or open this link on your phone's browser:
 								</p>
-								<button
-									type="button"
-									onClick={() => void copyToClipboard(linkUrl, 'Link')}
-									className="break-all rounded-[16px] border border-border-light bg-bg px-3 py-2 text-left text-[12px] leading-relaxed text-text underline-offset-2 transition active:scale-[0.99]"
+								<a
+									href={linkUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									onClick={(e) => {
+										e.preventDefault();
+										void copyToClipboard(linkUrl, 'Link');
+									}}
+									className="block break-all rounded-[16px] border border-border-light bg-bg px-3 py-2 text-left text-[12px] leading-relaxed text-text underline underline-offset-2 transition active:scale-[0.99]"
 								>
 									{linkUrl}
-								</button>
+								</a>
 							</div>
 
 							<p className="px-1 text-[13px] leading-relaxed text-text-dim">

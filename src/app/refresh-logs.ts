@@ -2,7 +2,7 @@ import {
 	deriveHistoryGroupsFromLogs,
 	deriveStatsFromLogs,
 	fetchAllLogEntries,
-} from '../services/firestore';
+} from '../services/db.service';
 import { appStore } from './store';
 
 /**

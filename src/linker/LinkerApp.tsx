@@ -37,8 +37,8 @@ export function LinkerApp() {
 	const auth = useMemo(() => getFirebaseAuth(), []);
 	const [phase, setPhase] = useState<Phase>('loading');
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-	const code = useMemo(() => readCodeFromUrl(), []);
+	const urlCode = useMemo(() => readCodeFromUrl(), []);
+	const [codeInput, setCodeInput] = useState(urlCode ?? '');
 
 	useEffect(() => {
 		let cancelled = false;
@@ -46,8 +46,8 @@ export function LinkerApp() {
 			await setPersistence(auth, indexedDBLocalPersistence).catch(() => undefined);
 			try {
 				const result = await getRedirectResult(auth);
-				if (result && code && !cancelled) {
-					await finish(code);
+				if (result && urlCode && !cancelled) {
+					await finish(urlCode);
 					return;
 				}
 			} catch (error) {
@@ -56,7 +56,7 @@ export function LinkerApp() {
 			if (!cancelled) setPhase('idle');
 		})();
 		return () => { cancelled = true; };
-	}, [auth, code]);
+	}, [auth, urlCode]);
 
 	async function finish(handoffCode: string) {
 		setPhase('authorizing');
@@ -78,6 +78,7 @@ export function LinkerApp() {
 	}
 
 	async function startSignIn() {
+		const code = codeInput.trim();
 		if (!code) return;
 		setPhase('signing-in');
 		setErrorMessage(null);
@@ -130,47 +131,41 @@ export function LinkerApp() {
 		);
 	}
 
-	if (!code) {
-		return (
-			<Shell>
-				<div className="flex flex-col items-center gap-3 py-4 text-center">
-					<div className="flex h-14 w-14 items-center justify-center rounded-full bg-yellow-500/15">
-						<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-yellow-500">
-							<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-							<line x1="12" y1="9" x2="12" y2="13" />
-							<line x1="12" y1="17" x2="12.01" y2="17" />
-						</svg>
-					</div>
-					<div>
-						<h1 className="text-xl font-semibold text-text">No sign-in code found</h1>
-						<p className="mt-2 text-[14px] leading-relaxed text-text-dim">
-							Open the Smokeless app on your glasses, tap <strong>Sign in with Google</strong>, then copy and open the link it generates.
-						</p>
-					</div>
-				</div>
-			</Shell>
-		);
-	}
-
 	// idle or error
+	const trimmed = codeInput.trim();
 	return (
 		<Shell>
 			<div className="flex flex-col gap-5">
 				<div>
 					<h1 className="text-2xl font-semibold text-text">Sign in to Smokeless</h1>
 					<p className="mt-2 text-[15px] leading-relaxed text-text-dim">
-						Continue with Google to finish signing in on your glasses.
+						{urlCode
+							? 'Continue with Google to finish signing in on your glasses.'
+							: 'Enter the sign-in code from the Smokeless onboarding screen, then continue with Google.'}
 					</p>
 				</div>
 
-				<div className="rounded-[16px] border border-border-light bg-bg px-4 py-3">
-					<p className="text-[11px] font-medium uppercase tracking-[0.14em] text-text-dim">Sign-in code</p>
-					<p className="mt-1 font-mono text-[1.35rem] tracking-[0.22em] text-text">{code}</p>
+				<div className="flex flex-col gap-2">
+					<label className="text-[11px] font-medium uppercase tracking-[0.14em] text-text-dim" htmlFor="linker-code">
+						Sign-in code
+					</label>
+					<input
+						id="linker-code"
+						type="text"
+						autoComplete="off"
+						autoCapitalize="characters"
+						spellCheck={false}
+						className="w-full rounded-[16px] border border-border-light bg-bg px-4 py-3 font-mono text-[1.35rem] tracking-[0.22em] text-text outline-none focus:border-accent"
+						placeholder="XXXXXXXX"
+						value={codeInput}
+						onChange={(e) => setCodeInput(e.target.value.toUpperCase().replace(/\s+/g, ''))}
+					/>
 				</div>
 
 				<Button
 					variant="highlight"
 					className="w-full rounded-[20px] !text-black"
+					disabled={!trimmed}
 					onClick={() => void startSignIn()}
 				>
 					Continue with Google
@@ -179,7 +174,7 @@ export function LinkerApp() {
 				{errorMessage ? (
 					<div className="flex flex-col gap-3">
 						<p className="text-[14px] text-red-400">{errorMessage}</p>
-						<Button variant="secondary" className="w-full rounded-[20px]" onClick={() => void startSignIn()}>
+						<Button variant="secondary" className="w-full rounded-[20px]" disabled={!trimmed} onClick={() => void startSignIn()}>
 							Try again
 						</Button>
 					</div>

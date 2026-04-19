@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 
+@source "./**/*.{ts,tsx}";
+
 :root {
 	--link-bg: #121212;
 	--link-panel: rgba(20, 22, 20, 0.84);

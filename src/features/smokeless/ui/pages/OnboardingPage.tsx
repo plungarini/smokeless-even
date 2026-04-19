@@ -15,8 +15,9 @@ import { appStore } from '../../../../app/store';
  */
 export function OnboardingPage() {
 	const [mode, setMode] = useState<'idle' | 'picking-local' | 'picking-google'>('idle');
+	const [pairingCode, setPairingCode] = useState<string | null>(null);
 	const [linkUrl, setLinkUrl] = useState<string | null>(null);
-	const [copied, setCopied] = useState(false);
+	const [copyToast, setCopyToast] = useState<string | null>(null);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const abortRef = useRef<AbortController | null>(null);
 	const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,13 +47,17 @@ export function OnboardingPage() {
 		}
 		setMode('picking-google');
 		setErrorMessage(null);
+		setPairingCode(null);
 		setLinkUrl(null);
-		setCopied(false);
+		setCopyToast(null);
 		const controller = new AbortController();
 		abortRef.current = controller;
 		try {
 			await runGoogleHandoff(evenUser.uid, {
-				onCode: (_code, url) => setLinkUrl(url),
+				onCode: (code, url) => {
+					setPairingCode(code);
+					setLinkUrl(url);
+				},
 				signal: controller.signal,
 			});
 			await completeOnboarding('google');
@@ -70,27 +75,34 @@ export function OnboardingPage() {
 		}
 	}
 
-	async function copyLink() {
-		if (!linkUrl) return;
+	async function copyToClipboard(value: string, label: string) {
 		try {
-			await navigator.clipboard.writeText(linkUrl);
-			setCopied(true);
+			await navigator.clipboard.writeText(value);
+			setCopyToast(`${label} copied`);
 			if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-			copyTimeoutRef.current = setTimeout(() => setCopied(false), 2500);
+			copyTimeoutRef.current = setTimeout(() => setCopyToast(null), 2200);
 		} catch {
-			// clipboard API unavailable — user can still tap the link
+			setCopyToast('Copy failed — long-press to copy manually');
+			if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+			copyTimeoutRef.current = setTimeout(() => setCopyToast(null), 2800);
 		}
 	}
 
 	function cancelGoogle() {
 		abortRef.current?.abort();
 		setMode('idle');
+		setPairingCode(null);
 		setLinkUrl(null);
-		setCopied(false);
+		setCopyToast(null);
 	}
 
 	return (
-		<div className="mx-auto flex min-h-dvh max-w-md items-center px-4 py-10">
+		<div className="relative mx-auto flex min-h-dvh max-w-md items-center px-4 py-10">
+			{copyToast ? (
+				<div className="pointer-events-none fixed left-1/2 top-6 z-50 -translate-x-1/2 rounded-full border border-border-light bg-surface px-4 py-2 text-[13px] font-medium text-text shadow-lg">
+					{copyToast}
+				</div>
+			) : null}
 			<Card padding="default" className="w-full rounded-[24px] border border-border-light bg-surface p-6">
 				<h1 className="font-[DM_Serif_Display] text-4xl tracking-[-0.04em] text-text">Welcome to Smokeless</h1>
 				<p className="mt-3 text-normal-body leading-relaxed text-text-dim">
@@ -98,28 +110,34 @@ export function OnboardingPage() {
 				</p>
 
 				{mode === 'picking-google' ? (
-					linkUrl ? (
-						<div className="mt-6 flex flex-col gap-4">
-							<div className="rounded-[20px] border border-border-light bg-bg p-4">
-								<p className="text-[13px] font-medium uppercase tracking-[0.14em] text-text-dim">
-									Open this link on your phone's browser
+					pairingCode && linkUrl ? (
+						<div className="mt-6 flex flex-col gap-5">
+							<button
+								type="button"
+								onClick={() => void copyToClipboard(pairingCode, 'Code')}
+								className="group flex flex-col items-center gap-2 rounded-[24px] border border-border-light bg-bg px-4 py-6 transition active:scale-[0.99]"
+							>
+								<span className="text-[11px] font-medium uppercase tracking-[0.18em] text-text-dim">
+									Tap the code to copy
+								</span>
+								<span className="font-mono text-[2.5rem] font-semibold leading-none tracking-[0.28em] text-text">
+									{pairingCode}
+								</span>
+							</button>
+
+							<div className="flex flex-col gap-2">
+								<p className="px-1 text-[13px] leading-relaxed text-text-dim">
+									Or open this link on your phone's browser:
 								</p>
-								<a
-									href={linkUrl}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="mt-2 block break-all text-[13px] leading-relaxed text-text underline underline-offset-2"
+								<button
+									type="button"
+									onClick={() => void copyToClipboard(linkUrl, 'Link')}
+									className="break-all rounded-[16px] border border-border-light bg-bg px-3 py-2 text-left text-[12px] leading-relaxed text-text underline-offset-2 transition active:scale-[0.99]"
 								>
 									{linkUrl}
-								</a>
+								</button>
 							</div>
-							<Button
-								variant="secondary"
-								className="w-full rounded-[20px]"
-								onClick={() => void copyLink()}
-							>
-								{copied ? 'Copied!' : 'Copy link'}
-							</Button>
+
 							<p className="px-1 text-[13px] leading-relaxed text-text-dim">
 								Sign in with Google on that page — we'll detect it automatically and sign you in here.
 							</p>

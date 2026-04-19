@@ -19,5 +19,5 @@ export const env = {
 		appId: import.meta.env.VITE_FIREBASE_APP_ID ?? '',
 	},
 	firebaseFunctionsRegion: import.meta.env.VITE_FIREBASE_FUNCTIONS_REGION ?? 'us-central1',
-	googleLinkUrl: import.meta.env.VITE_GOOGLE_LINK_URL ?? '',
+	linkSiteUrl: import.meta.env.VITE_LINK_SITE_URL ?? import.meta.env.VITE_GOOGLE_LINK_URL ?? '',
 };

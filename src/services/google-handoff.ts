@@ -104,7 +104,11 @@ export interface GoogleHandoffResult {
  * the user is fully signed in; rejects on timeout / cancel / CF error.
  */
 export async function runGoogleHandoff(evenUid: string, opts: GoogleHandoffOptions): Promise<GoogleHandoffResult> {
-	const { code, linkUrl, expiresAt } = await createHandoffCode({ evenUid });
+	const { code, expiresAt } = await createHandoffCode({ evenUid });
+	// The CF returns its own linkUrl based on a server-side LINK_SITE_URL,
+	// but the client is the authoritative source of truth for staging vs
+	// production URLs (via VITE_LINK_SITE_URL). Build the URL here.
+	const linkUrl = buildLinkUrl(code);
 	opts.onCode(code, linkUrl);
 
 	const pollInterval = opts.pollIntervalMs ?? 2000;
@@ -151,4 +155,16 @@ function delay(ms: number, signal?: AbortSignal): Promise<void> {
 
 export function getLinkSiteBaseUrl(): string {
 	return env.linkSiteUrl;
+}
+
+function buildLinkUrl(code: string): string {
+	const base = env.linkSiteUrl || 'https://plungarini.github.io/smokeless-even/';
+	try {
+		const url = new URL(base);
+		url.searchParams.set('code', code);
+		return url.toString();
+	} catch {
+		const separator = base.includes('?') ? '&' : '?';
+		return `${base}${separator}code=${encodeURIComponent(code)}`;
+	}
 }

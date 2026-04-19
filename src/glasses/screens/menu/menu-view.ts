@@ -1,4 +1,4 @@
-import { OsEventTypeList, type EvenHubEvent } from '@evenrealities/even_hub_sdk';
+import { OsEventTypeList, type EvenAppBridge, type EvenHubEvent } from '@evenrealities/even_hub_sdk';
 import { appStore } from '../../../app/store';
 import { HUD_HEIGHT } from '../../constants';
 import { scheduleRender } from '../../render-loop';
@@ -89,6 +89,8 @@ export class MenuView implements View {
 	private router: Router | null = null;
 	private selectedIndex = 0;
 
+	constructor(private readonly bridge: EvenAppBridge) {}
+
 	setRouter(router: Router): void {
 		this.router = router;
 	}
@@ -111,7 +113,9 @@ export class MenuView implements View {
 		const type = event.textEvent?.eventType ?? event.sysEvent?.eventType ?? event.listEvent?.eventType;
 
 		if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) {
-			this.router?.pop();
+			void this.bridge.shutDownPageContainer(1).catch((error) => {
+				console.error('[MenuView] shutDownPageContainer failed', error);
+			});
 			return;
 		}
 		if (type === OsEventTypeList.SCROLL_TOP_EVENT) {

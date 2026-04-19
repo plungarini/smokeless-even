@@ -43,7 +43,7 @@ async function main(): Promise<void> {
 	const homeView = new HomeView();
 	const statsView = new StatsView();
 	const historyView = new HistoryView();
-	const menuView = new MenuView();
+	const menuView = new MenuView(bridge);
 
 	const initialKey = TAB_TO_VIEW[appStore.getState().tab] ?? 'home';
 	const router = new Router(

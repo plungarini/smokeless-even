@@ -35,9 +35,11 @@ const STATUS_LAYOUT: HudLayoutDescriptor = {
  */
 export function buildStatusRenderState(phase: HudPhase, statusMessage: string | null): HudRenderState {
 	const body =
-		phase === 'blocked'
-			? [statusMessage ?? 'Please restart the app on your phone.']
-			: [statusMessage ?? 'Connecting to Even and syncing your smoking history.'];
+		phase === 'onboarding'
+			? [statusMessage ?? 'Open Smokeless on your phone to finish setup.']
+			: phase === 'blocked'
+				? [statusMessage ?? 'Please restart the app on your phone.']
+				: [statusMessage ?? 'Connecting to Even and syncing your smoking history.'];
 	return {
 		layout: STATUS_LAYOUT,
 		textContents: {

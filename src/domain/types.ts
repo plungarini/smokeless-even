@@ -1,16 +1,6 @@
-export type AuthProvider = 'anonymous' | 'google';
+export type AuthProvider = 'local' | 'google';
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type WeekStart = 'Monday' | 'Sunday';
-export type GoogleLinkSessionStatus =
-	| 'pending'
-	| 'authorized'
-	| 'migrating'
-	| 'ready_to_switch'
-	| 'switched'
-	| 'consumed'
-	| 'expired'
-	| 'cancelled'
-	| 'failed';
 
 export interface EvenUserInfo {
 	uid: string;
@@ -25,21 +15,6 @@ export interface AuthAccountInfo {
 	googleEmail: string;
 	googleDisplayName: string;
 	isAnonymous: boolean;
-}
-
-export interface GoogleLinkPairingSession {
-	sessionId: string;
-	sourceUid: string;
-	code: string;
-	linkUrl: string;
-	expiresAt: string;
-	status: GoogleLinkSessionStatus;
-	targetGoogleUid?: string;
-	targetGoogleEmail?: string;
-	targetGoogleDisplayName?: string;
-	switchErrorAt?: string;
-	errorCode?: string;
-	errorMessage?: string;
 }
 
 export interface UserPreferences {
@@ -95,7 +70,7 @@ export interface HistoryDayGroup {
 	entries: SmokeLogEntry[];
 }
 
-export type HudPhase = 'booting' | 'blocked' | 'ready';
+export type HudPhase = 'booting' | 'blocked' | 'ready' | 'onboarding';
 export type HudPendingAction = 'logSmoke' | 'loadMoreHistory' | null;
 export type HudStatsPeriod = 'week' | 'month' | 'year';
 

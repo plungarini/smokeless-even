@@ -1,7 +1,6 @@
 import type {
 	AuthAccountInfo,
 	EvenUserInfo,
-	GoogleLinkPairingSession,
 	HistoryDayGroup,
 	HudPendingAction,
 	HudPhase,
@@ -9,16 +8,16 @@ import type {
 	SmokeLogEntry,
 	UserDocument,
 } from '../domain/types';
+import type { AuthMode } from '../services/auth-mode';
 import { monthStart } from '../features/smokeless/lib/history-calendar';
 import type { AppTab } from '../features/smokeless/ui/types';
 import { combineDateAndTime, toDayKey } from '../lib/time';
 import {
-	addSmokeEntry as firestoreAddSmoke,
-	deleteAllUserData as firestoreDeleteAll,
-	deleteLogEntry as firestoreDeleteEntry,
-	exportLogs as firestoreExportLogs,
-} from '../services/firestore';
-import { clearGooglePairingSession } from '../services/google-link';
+	addSmokeEntry as dbAddSmoke,
+	deleteAllUserData as dbDeleteAll,
+	deleteLogEntry as dbDeleteEntry,
+	exportLogs as dbExportLogs,
+} from '../services/db.service';
 import { refreshLogs } from './refresh-logs';
 
 export interface AppState {
@@ -32,7 +31,7 @@ export interface AppState {
 	accountInfo: AuthAccountInfo | null;
 	canonicalUid: string | null;
 	userDocument: UserDocument | null;
-	googleLinkSession: GoogleLinkPairingSession | null;
+	authMode: AuthMode | null;
 
 	// Data
 	allSmokeEntries: SmokeLogEntry[];
@@ -67,7 +66,7 @@ const initialState: AppState = {
 	accountInfo: null,
 	canonicalUid: null,
 	userDocument: null,
-	googleLinkSession: null,
+	authMode: null,
 
 	allSmokeEntries: [],
 	dailyStats: {},
@@ -155,8 +154,9 @@ export class AppStore {
 		this.commit({ ...this.state, userDocument: doc });
 	}
 
-	setGoogleLinkSession(session: GoogleLinkPairingSession | null): void {
-		this.commit({ ...this.state, googleLinkSession: session });
+	setAuthMode(mode: AuthMode | null): void {
+		if (this.state.authMode === mode) return;
+		this.commit({ ...this.state, authMode: mode });
 	}
 
 	// ── Data ──────────────────────────────────────────────────────────
@@ -326,7 +326,7 @@ export class AppStore {
 		this.applyOptimisticSmoke(optimisticNow);
 
 		try {
-			await firestoreAddSmoke(canonicalUid, optimisticNow);
+			await dbAddSmoke(canonicalUid, optimisticNow);
 			await this.refreshLogsFromFirestore();
 			return { ok: true, todayCount: snapshotTodayCount + 1, loggedAt: optimisticNow };
 		} catch (error) {
@@ -346,7 +346,7 @@ export class AppStore {
 		this.setMutating(true);
 		try {
 			const entryDate = combineDateAndTime(dateInputValue, timeInputValue);
-			await firestoreAddSmoke(canonicalUid, entryDate);
+			await dbAddSmoke(canonicalUid, entryDate);
 			await this.refreshLogsFromFirestore();
 			this.setHistoryDay(dateInputValue);
 			return true;
@@ -363,7 +363,7 @@ export class AppStore {
 		if (!canonicalUid) return false;
 		this.setMutating(true);
 		try {
-			await firestoreDeleteEntry(canonicalUid, id);
+			await dbDeleteEntry(canonicalUid, id);
 			await this.refreshLogsFromFirestore();
 			return true;
 		} catch (error) {
@@ -378,7 +378,7 @@ export class AppStore {
 		const { canonicalUid } = this.state;
 		if (!canonicalUid) return null;
 		try {
-			return await firestoreExportLogs(canonicalUid);
+			return await dbExportLogs(canonicalUid);
 		} catch (error) {
 			console.error('[Smokeless] export failed', error);
 			return null;
@@ -386,12 +386,11 @@ export class AppStore {
 	}
 
 	async deleteAllData(): Promise<boolean> {
-		const { canonicalUid, googleLinkSession } = this.state;
+		const { canonicalUid } = this.state;
 		if (!canonicalUid) return false;
 		this.setMutating(true);
 		try {
-			await firestoreDeleteAll(canonicalUid);
-			if (googleLinkSession) clearGooglePairingSession(googleLinkSession);
+			await dbDeleteAll(canonicalUid);
 			this.commit({
 				...this.state,
 				dailyStats: {},
@@ -400,7 +399,6 @@ export class AppStore {
 				historyHasMore: false,
 				allSmokeEntries: [],
 				todayCount: 0,
-				googleLinkSession: null,
 				userDocument: null,
 				optimisticLastSmokeAt: null,
 			});
@@ -427,6 +425,7 @@ export class AppStore {
 			// Preserve UX preferences across reboot.
 			tab: this.state.tab,
 			statsPeriod: this.state.statsPeriod,
+			authMode: this.state.authMode,
 			today: toDayKey(new Date()),
 			selectedHistoryDay: toDayKey(new Date()),
 			historyMonth: monthStart(new Date()),

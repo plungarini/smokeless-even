@@ -29,7 +29,7 @@ import type {
 	UserGoogleProvider,
 	UserPreferences,
 } from '../domain/types';
-import { db } from '../lib/firebase';
+import { getFirebaseDb } from '../lib/firebase';
 import { addDays, diffCalendarDays, parseDayKey, startOfDay, toDayKey, toMonthKey } from '../lib/time';
 
 export type HistoryCursor = QueryDocumentSnapshot | null;
@@ -41,11 +41,11 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 };
 
 function userRef(uid: string) {
-	return doc(db, 'users', uid);
+	return doc(getFirebaseDb(), 'users', uid);
 }
 
 function logsRef(uid: string) {
-	return collection(db, 'users', uid, 'logs');
+	return collection(getFirebaseDb(), 'users', uid, 'logs');
 }
 
 function toDate(value: unknown): Date | null {
@@ -177,7 +177,7 @@ function mergeProviders(
 	return {
 		google:
 			buildGoogleProvider(
-				account ?? { uid: '', authProvider: 'anonymous', googleEmail: '', googleDisplayName: '', isAnonymous: true },
+				account ?? { uid: '', authProvider: 'local', googleEmail: '', googleDisplayName: '', isAnonymous: true },
 			) ??
 			target.google ??
 			source.google,
@@ -331,7 +331,7 @@ async function clearLogs(uid: string): Promise<void> {
 		const snapshot = await getDocs(query(logsRef(uid), orderBy('timestamp'), limit(200)));
 		if (snapshot.empty) break;
 
-		const batch = writeBatch(db);
+		const batch = writeBatch(getFirebaseDb());
 		snapshot.forEach((docSnapshot) => batch.delete(docSnapshot.ref));
 		await batch.commit();
 
@@ -343,9 +343,9 @@ async function rewriteLogs(uid: string, entries: SmokeLogEntry[]): Promise<void>
 	await clearLogs(uid);
 	const rebuilt = rebuildIntervals(entries);
 	for (let index = 0; index < rebuilt.length; index += 200) {
-		const batch = writeBatch(db);
+		const batch = writeBatch(getFirebaseDb());
 		for (const entry of rebuilt.slice(index, index + 200)) {
-			const ref = entry.id ? doc(db, 'users', uid, 'logs', entry.id) : doc(logsRef(uid));
+			const ref = entry.id ? doc(getFirebaseDb(), 'users', uid, 'logs', entry.id) : doc(logsRef(uid));
 			batch.set(ref, {
 				timestamp: entry.timestamp,
 				intervalSincePrevious: entry.intervalSincePrevious,
@@ -420,47 +420,22 @@ export async function ensureCanonicalUserData(firebaseUid: string, evenUser: Eve
 	// NOTE: longestEverCessation and todayMaxCessation are intentionally excluded here.
 	// They are computed values managed exclusively by updateUserMetrics (called on every
 	// addSmokeEntry / deleteLogEntry). Writing defaults here would reset them on every boot.
-	await Promise.all([
-		setDoc(
-			userRef(firebaseUid),
-			{
-				preferences: defaults.preferences,
-				providers: {
-					google: defaults.providers.google,
-					even: {
-						...defaults.providers.even,
-						linkedAt: serverTimestamp(),
-					},
+	await setDoc(
+		userRef(firebaseUid),
+		{
+			preferences: defaults.preferences,
+			providers: {
+				google: defaults.providers.google,
+				even: {
+					...defaults.providers.even,
+					linkedAt: serverTimestamp(),
 				},
-				createdAt: serverTimestamp(),
-				updatedAt: serverTimestamp(),
 			},
-			{ merge: true },
-		),
-		ensureEvenUidIndexMapping(evenUser.uid, firebaseUid),
-	]);
-}
-
-// The evenUidIndex is the lookup table the app uses to recover a Firebase
-// session when the WebView loses its auth state. We only write it when:
-//   1. No mapping exists yet (first-ever boot on this Even profile), OR
-//   2. The mapping already points at this same firebaseUid (idempotent refresh).
-// We never overwrite a mapping that points at a different UID — the server-side
-// Google-link migration owns those transitions via the admin SDK.
-async function ensureEvenUidIndexMapping(evenUid: string, firebaseUid: string): Promise<void> {
-	const ref = doc(db, 'evenUidIndex', evenUid);
-	try {
-		const snapshot = await getDoc(ref);
-		if (!snapshot.exists()) {
-			await setDoc(ref, { firebaseUid, updatedAt: serverTimestamp() });
-			return;
-		}
-		if (snapshot.data()?.firebaseUid === firebaseUid) {
-			return; // already correct — skip the write
-		}
-	} catch (error) {
-		console.warn('[Firestore] evenUidIndex check failed', error);
-	}
+			createdAt: serverTimestamp(),
+			updatedAt: serverTimestamp(),
+		},
+		{ merge: true },
+	);
 }
 
 export async function upsertEvenProfileFields(uid: string, evenUser: EvenUserInfo): Promise<void> {
@@ -557,7 +532,7 @@ export async function addSmokeEntry(uid: string, timestamp = new Date()): Promis
 			.filter((entry) => entry.timestamp.getTime() > timestamp.getTime())
 			.sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime())[0] ?? null;
 	if (next) {
-		await updateDoc(doc(db, 'users', uid, 'logs', next.id), {
+		await updateDoc(doc(getFirebaseDb(), 'users', uid, 'logs', next.id), {
 			intervalSincePrevious: Math.max(0, Math.round((next.timestamp.getTime() - timestamp.getTime()) / 1000)),
 		});
 	}
@@ -577,11 +552,11 @@ export async function deleteLogEntry(uid: string, logId: string): Promise<void> 
 
 	const next = sorted[index + 1] ?? null;
 	const previous = sorted[index - 1] ?? null;
-	const batch = writeBatch(db);
-	batch.delete(doc(db, 'users', uid, 'logs', logId));
+	const batch = writeBatch(getFirebaseDb());
+	batch.delete(doc(getFirebaseDb(), 'users', uid, 'logs', logId));
 
 	if (next) {
-		batch.update(doc(db, 'users', uid, 'logs', next.id), {
+		batch.update(doc(getFirebaseDb(), 'users', uid, 'logs', next.id), {
 			intervalSincePrevious: previous
 				? Math.max(0, Math.round((next.timestamp.getTime() - previous.timestamp.getTime()) / 1000))
 				: null,

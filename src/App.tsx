@@ -1,11 +1,10 @@
 import { Card } from 'even-toolkit/web';
 import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { appStore } from './app/store';
-import { startBootstrap } from './app/bootstrap';
+import { resetAuthMode, startBootstrap } from './app/bootstrap';
 import { useAppSelector } from './app/hooks/useAppSelector';
 import { useClock } from './app/hooks/useClock';
 import { useCountBump } from './app/hooks/useCountBump';
-import { useGoogleLinkFlow } from './app/hooks/useGoogleLinkFlow';
 import { useSmokeActions } from './app/hooks/useSmokeActions';
 import { useToast } from './app/hooks/useToast';
 import { selectHudSnapshot } from './app/selectors';
@@ -24,6 +23,7 @@ import { FullScreenState } from './features/smokeless/ui/components/FullScreenSt
 import { PageHeader } from './features/smokeless/ui/components/PageHeader';
 import { HistoryPage } from './features/smokeless/ui/pages/HistoryPage';
 import { HomePage } from './features/smokeless/ui/pages/HomePage';
+import { OnboardingPage } from './features/smokeless/ui/pages/OnboardingPage';
 import { SettingsPage } from './features/smokeless/ui/pages/settings/SettingsPage';
 import { StatsPage } from './features/smokeless/ui/pages/StatsPage';
 import type { StatsPeriod } from './features/smokeless/ui/types';
@@ -50,6 +50,7 @@ export default function App() {
 	const canonicalUid = useAppSelector((s) => s.canonicalUid);
 	const evenUser = useAppSelector((s) => s.evenUser);
 	const accountInfo = useAppSelector((s) => s.accountInfo);
+	const authMode = useAppSelector((s) => s.authMode);
 	const userDocument = useAppSelector((s) => s.userDocument);
 	const todayCount = useAppSelector((s) => s.todayCount);
 	const allSmokeEntries = useAppSelector((s) => s.allSmokeEntries);
@@ -70,7 +71,6 @@ export default function App() {
 	const { toast, push: pushToast, dismiss: dismissToast } = useToast();
 	const countBump = useCountBump(todayCount);
 	const now = useClock();
-	const googleLink = useGoogleLinkFlow(pushToast, now.getTime());
 	const smokeActions = useSmokeActions(pushToast);
 
 	// ── Transient React-local state ───────────────────────────────────
@@ -133,19 +133,10 @@ export default function App() {
 	const longestEverCessationLabel = formatDurationClock(longestEverCessationSeconds * 1000);
 
 	// ── Settings-page derived values ──────────────────────────────────
-	const effectiveAuthProvider =
-		evenUser && canonicalUid && userDocument
-			? (accountInfo?.authProvider ?? (userDocument.providers.google ? 'google' : 'anonymous'))
-			: 'anonymous';
 	const effectiveGoogleEmail =
 		evenUser && canonicalUid && userDocument
 			? accountInfo?.googleEmail || userDocument.providers.google?.email
 			: undefined;
-	const effectiveGoogleDisplayName =
-		evenUser && canonicalUid && userDocument
-			? accountInfo?.googleDisplayName || userDocument.providers.google?.displayName
-			: undefined;
-	const googleLinked = effectiveAuthProvider === 'google';
 
 	// ── Modal plumbing ────────────────────────────────────────────────
 	const openHistoryModal = useCallback(() => {
@@ -164,6 +155,8 @@ export default function App() {
 		<>
 			{phase === 'booting' ? (
 				<FullScreenState title="Smokeless" body="Connecting to Even and loading your smoking data." loading />
+			) : phase === 'onboarding' ? (
+				<OnboardingPage />
 			) : phase === 'blocked' ? (
 				<div className="mx-auto flex h-dvh items-center px-4 py-10">
 					<Card padding="default" className="w-full rounded-[20px] border border-border-light bg-surface">
@@ -250,17 +243,10 @@ export default function App() {
 											userDocument={userDocument}
 											evenName={userDocument.providers.even?.name || evenUser.name}
 											canonicalUid={canonicalUid}
-											googleLinked={googleLinked}
-											googleLinkSession={googleLink.session}
-											googleLinkExpiresInSeconds={googleLink.expiresInSeconds}
+											authMode={authMode}
 											effectiveGoogleEmail={effectiveGoogleEmail}
-											effectiveGoogleDisplayName={effectiveGoogleDisplayName}
-											mutating={mutating}
-											onGoogleLink={() => void googleLink.start()}
-											onCopyGoogleCode={() => void googleLink.copyCode()}
-											onCopyGoogleLinkUrl={() => void googleLink.copyUrl()}
-											onOpenGoogleLinkUrl={googleLink.openUrl}
 											onExport={() => void smokeActions.exportLogs()}
+											onSignOut={() => void resetAuthMode()}
 											onDeleteAll={() => void smokeActions.deleteAll()}
 										/>
 									) : null}

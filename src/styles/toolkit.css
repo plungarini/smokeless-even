@@ -5,3 +5,4 @@
 @import 'even-toolkit/web/utilities.css';
 
 @source "../../node_modules/even-toolkit/dist/web/**/*.js";
+@source "../**/*.{ts,tsx}";

@@ -177,7 +177,7 @@ function mergeProviders(
 	return {
 		google:
 			buildGoogleProvider(
-				account ?? { uid: '', authProvider: 'anonymous', googleEmail: '', googleDisplayName: '', isAnonymous: true },
+				account ?? { uid: '', authProvider: 'local', googleEmail: '', googleDisplayName: '', isAnonymous: true },
 			) ??
 			target.google ??
 			source.google,

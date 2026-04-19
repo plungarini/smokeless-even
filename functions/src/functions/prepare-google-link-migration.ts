@@ -44,15 +44,29 @@ export const prepareGoogleLinkMigration = onCall(async (request) => {
 		};
 	}
 
-	const session = assertActiveSession(sessionSnapshot, ['authorized', 'migrating']);
-	const resolvedTargetUid = String(session.targetGoogleUid ?? targetUid ?? '');
-	if (!resolvedTargetUid || resolvedTargetUid !== googleUser.uid) {
+	const session = assertActiveSession(sessionSnapshot, ['pending', 'authorized', 'migrating']);
+
+	// When the linker is the sole caller, the session arrives as `pending`.
+	// Transition pending → authorized → migrating in one server-side step so
+	// the client only has to make a single round-trip.
+	if (session.sourceUid === googleUser.uid) {
+		throw new HttpsError('failed-precondition', 'The target Google account must be different from the anonymous source account.');
+	}
+
+	const priorTargetUid = String(session.targetGoogleUid ?? '');
+	if (priorTargetUid && priorTargetUid !== googleUser.uid) {
 		throw new HttpsError('permission-denied', 'Only the authorized Google account can prepare this migration.');
 	}
+
+	const resolvedTargetUid = googleUser.uid;
 
 	await sessionRef(sessionId).set(
 		{
 			status: 'migrating',
+			targetGoogleUid: resolvedTargetUid,
+			targetGoogleEmail: googleUser.email || targetGoogleEmail,
+			targetGoogleDisplayName: googleUser.displayName || targetGoogleDisplayName,
+			authorizedAt: session.authorizedAt ?? FieldValue.serverTimestamp(),
 			migrationStartedAt: FieldValue.serverTimestamp(),
 			updatedAt: FieldValue.serverTimestamp(),
 			errorCode: null,

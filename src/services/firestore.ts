@@ -420,11 +420,6 @@ export async function ensureCanonicalUserData(firebaseUid: string, evenUser: Eve
 	// NOTE: longestEverCessation and todayMaxCessation are intentionally excluded here.
 	// They are computed values managed exclusively by updateUserMetrics (called on every
 	// addSmokeEntry / deleteLogEntry). Writing defaults here would reset them on every boot.
-	//
-	// The evenUidIndex write is a best-effort lookup table — it lets the app recover
-	// a Firebase session when the WebView loses its IndexedDB auth state (e.g. after
-	// a Google-link account switch). A separate Cloud Function (resolveEvenSession)
-	// reads this index and mints a custom token so the user returns to the same account.
 	await Promise.all([
 		setDoc(
 			userRef(firebaseUid),
@@ -442,12 +437,30 @@ export async function ensureCanonicalUserData(firebaseUid: string, evenUser: Eve
 			},
 			{ merge: true },
 		),
-		setDoc(
-			doc(db, 'evenUidIndex', evenUser.uid),
-			{ firebaseUid, updatedAt: serverTimestamp() },
-			{ merge: true },
-		),
+		ensureEvenUidIndexMapping(evenUser.uid, firebaseUid),
 	]);
+}
+
+// The evenUidIndex is the lookup table the app uses to recover a Firebase
+// session when the WebView loses its auth state. We only write it when:
+//   1. No mapping exists yet (first-ever boot on this Even profile), OR
+//   2. The mapping already points at this same firebaseUid (idempotent refresh).
+// We never overwrite a mapping that points at a different UID — the server-side
+// Google-link migration owns those transitions via the admin SDK.
+async function ensureEvenUidIndexMapping(evenUid: string, firebaseUid: string): Promise<void> {
+	const ref = doc(db, 'evenUidIndex', evenUid);
+	try {
+		const snapshot = await getDoc(ref);
+		if (!snapshot.exists()) {
+			await setDoc(ref, { firebaseUid, updatedAt: serverTimestamp() });
+			return;
+		}
+		if (snapshot.data()?.firebaseUid === firebaseUid) {
+			return; // already correct — skip the write
+		}
+	} catch (error) {
+		console.warn('[Firestore] evenUidIndex check failed', error);
+	}
 }
 
 export async function upsertEvenProfileFields(uid: string, evenUser: EvenUserInfo): Promise<void> {

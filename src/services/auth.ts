@@ -33,26 +33,73 @@ export function getCurrentAccountInfo(): AuthAccountInfo | null {
  * Errors are swallowed: if the lookup fails for any reason the caller falls
  * through to `ensureFirebaseSession()` which issues a fresh anonymous UID.
  */
-export async function tryRestoreSessionFromEvenUid(evenUid: string): Promise<void> {
-	// Only act if auth state is not already known.
-	await waitForInitialAuthState();
-	if (auth.currentUser) return;
+export interface RestoreSessionOutcome {
+	restored: boolean;
+	fatalErrorCode?: 'custom-token-mint-failed' | 'lookup-failed';
+	fatalErrorMessage?: string;
+}
 
+interface ResolveEvenSessionResponse {
+	customToken: string | null;
+	firebaseUid: string | null;
+	errorCode?: 'no-mapping' | 'custom-token-mint-failed' | 'lookup-failed';
+	errorMessage?: string;
+}
+
+export async function tryRestoreSessionFromEvenUid(evenUid: string): Promise<RestoreSessionOutcome> {
+	await waitForInitialAuthState();
+	if (auth.currentUser) return { restored: true };
+
+	let result: { data: ResolveEvenSessionResponse };
 	try {
-		const resolve = httpsCallable<{ evenUid: string }, { customToken: string | null }>(
+		const resolve = httpsCallable<{ evenUid: string }, ResolveEvenSessionResponse>(
 			functions,
 			'resolveEvenSession',
 		);
-		const result = await resolve({ evenUid });
-		const customToken = result.data?.customToken;
-		if (customToken) {
+		result = await resolve({ evenUid });
+	} catch (error) {
+		// Network / transport failure — non-fatal, caller falls back to anonymous.
+		console.error('[Auth] resolveEvenSession transport error', error);
+		return { restored: false };
+	}
+
+	const { customToken, errorCode, errorMessage } = result.data ?? {};
+
+	// A mint failure means the mapping exists but IAM blocks token creation.
+	// This is the exact condition that produces duplicate accounts, so we
+	// surface it loudly instead of falling through to anonymous sign-in.
+	if (errorCode === 'custom-token-mint-failed') {
+		console.error('[Auth] resolveEvenSession: token mint blocked by IAM', { evenUid, errorMessage });
+		return {
+			restored: false,
+			fatalErrorCode: 'custom-token-mint-failed',
+			fatalErrorMessage: errorMessage ?? 'Firebase custom-token minting is blocked. Check Functions IAM (Service Account Token Creator).',
+		};
+	}
+
+	if (errorCode === 'lookup-failed') {
+		console.error('[Auth] resolveEvenSession: index lookup failed', { evenUid, errorMessage });
+		return {
+			restored: false,
+			fatalErrorCode: 'lookup-failed',
+			fatalErrorMessage: errorMessage ?? 'Could not read the Even UID index.',
+		};
+	}
+
+	if (customToken) {
+		try {
 			await signInWithCustomToken(auth, customToken);
 			console.info('[Auth] restored session via Even UID index', { evenUid });
+			return { restored: true };
+		} catch (error) {
+			console.error('[Auth] signInWithCustomToken failed', error);
+			return { restored: false };
 		}
-	} catch (error) {
-		// Non-fatal: fall through to anonymous sign-in.
-		console.warn('[Auth] resolveEvenSession failed, falling back to anonymous', error);
 	}
+
+	// No mapping yet — caller will sign in anonymously, which is correct for a
+	// first-ever boot on this device.
+	return { restored: false };
 }
 
 export async function ensureFirebaseSession(): Promise<string> {

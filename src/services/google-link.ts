@@ -324,25 +324,77 @@ export async function refreshGooglePairingStatus(
 	return mapSessionSnapshot(current.sourceUid, current, snapshot.data() as Record<string, unknown> | undefined);
 }
 
+const POLLING_INTERVAL_MS = 3_000;
+const POLLING_MAX_DURATION_MS = 5 * 60_000;
+
+export interface WatchGooglePairingStatusOptions {
+	onError?: (error: unknown) => void;
+	viewerUid?: string | null;
+}
+
 export function watchGooglePairingStatus(
 	current: GoogleLinkPairingSession,
 	onValue: (session: GoogleLinkPairingSession | null) => void,
+	options: WatchGooglePairingStatusOptions = {},
 ): () => void {
-	return onSnapshot(
+	let cancelled = false;
+	let pollingTimer: ReturnType<typeof setInterval> | null = null;
+	let pollingStartedAt = 0;
+
+	const stopPolling = () => {
+		if (pollingTimer) {
+			clearInterval(pollingTimer);
+			pollingTimer = null;
+		}
+	};
+
+	const startPolling = () => {
+		if (pollingTimer || cancelled) return;
+		pollingStartedAt = Date.now();
+		pollingTimer = setInterval(() => {
+			if (cancelled) {
+				stopPolling();
+				return;
+			}
+			if (Date.now() - pollingStartedAt > POLLING_MAX_DURATION_MS) {
+				stopPolling();
+				return;
+			}
+			void refreshGooglePairingStatus(current, options.viewerUid ?? null)
+				.then((next) => {
+					if (!cancelled) onValue(next);
+				})
+				.catch((error) => {
+					console.error('[Smokeless] google link polling failed', error);
+					options.onError?.(error);
+				});
+		}, POLLING_INTERVAL_MS);
+	};
+
+	const unsubscribe = onSnapshot(
 		doc(db, 'googleLinkSessions', current.sessionId),
 		(snapshot) => {
+			stopPolling();
 			if (!snapshot.exists()) {
 				clearGooglePairingSession(current);
 				onValue(null);
 				return;
 			}
-
 			onValue(mapSessionSnapshot(current.sourceUid, current, snapshot.data() as Record<string, unknown> | undefined));
 		},
-		() => {
-			onValue(current);
+		(error) => {
+			console.error('[Smokeless] google link snapshot failed', error);
+			options.onError?.(error);
+			// Fall back to polling so we still observe the linker's progress.
+			startPolling();
 		},
 	);
+
+	return () => {
+		cancelled = true;
+		stopPolling();
+		unsubscribe();
+	};
 }
 
 function getFirebaseErrorCode(error: unknown): string | null {

@@ -98,15 +98,30 @@ export function useGoogleLinkFlow(onToast: (message: string) => void, nowMs: num
 	// Pairing status watcher — re-subscribes when sessionId changes.
 	useEffect(() => {
 		if (!session?.sessionId) return;
-		return watchGooglePairingStatus(session, (next) => {
-			startTransition(() => {
-				const current = appStore.getState().googleLinkSession;
-				if (!isSameGoogleLinkSession(current, next)) {
-					appStore.setGoogleLinkSession(next);
-				}
-			});
-		});
-	}, [session?.sessionId, session?.sourceUid]);
+		const snapshotErrorKeyRef = { current: null as string | null };
+		return watchGooglePairingStatus(
+			session,
+			(next) => {
+				startTransition(() => {
+					const current = appStore.getState().googleLinkSession;
+					if (!isSameGoogleLinkSession(current, next)) {
+						appStore.setGoogleLinkSession(next);
+					}
+				});
+			},
+			{
+				viewerUid: canonicalUid,
+				onError: (error) => {
+					const code = error && typeof error === 'object' && 'code' in error ? String((error as { code?: unknown }).code ?? '') : '';
+					// Debounce noise: only toast when the error kind changes.
+					if (snapshotErrorKeyRef.current === code) return;
+					snapshotErrorKeyRef.current = code;
+					const message = error instanceof Error ? error.message : 'Google link status updates are temporarily unavailable.';
+					onToast(`Link status: ${message}`);
+				},
+			},
+		);
+	}, [session?.sessionId, session?.sourceUid, canonicalUid, onToast]);
 
 	// Status-transition driver — claims / cleans up on the appropriate phases.
 	useEffect(() => {
@@ -184,7 +199,14 @@ export function useGoogleLinkFlow(onToast: (message: string) => void, nowMs: num
 	}, [claimReady, cleanupSwitched, session, onToast]);
 
 	const start = useEffectEvent(async () => {
-		if (!evenUser || !canonicalUid) return;
+		if (!evenUser) {
+			onToast('Even user not yet available — try again in a moment.');
+			return;
+		}
+		if (!canonicalUid) {
+			onToast('Firebase account not yet ready — try again in a moment.');
+			return;
+		}
 		appStore.setMutating(true);
 		try {
 			const next = await startGooglePairing(canonicalUid, evenUser.uid);
@@ -192,7 +214,8 @@ export function useGoogleLinkFlow(onToast: (message: string) => void, nowMs: num
 			onToast('Google link code ready');
 		} catch (error) {
 			console.error('[Smokeless] google link session failed to start', error);
-			onToast('Could not create Google link code');
+			const message = error instanceof Error ? error.message : 'Could not create Google link code.';
+			onToast(message);
 		} finally {
 			appStore.setMutating(false);
 		}

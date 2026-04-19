@@ -90,7 +90,20 @@ async function runBootstrap(): Promise<void> {
 		// the WebView's IndexedDB auth state was cleared (e.g. after a Google-link
 		// account switch restarted the app), which would otherwise issue a fresh
 		// anonymous UID and create a duplicate Firestore document.
-		await tryRestoreSessionFromEvenUid(normalized.uid);
+		//
+		// If restore fails with a *fatal* reason (IAM blocking custom-token mint,
+		// index lookup failure), we surface that instead of silently creating a
+		// duplicate account — the duplicate is the very bug this path exists to
+		// prevent.
+		const restore = await tryRestoreSessionFromEvenUid(normalized.uid);
+		if (restore.fatalErrorCode) {
+			appStore.setPhase(
+				'blocked',
+				restore.fatalErrorMessage ?? 'Could not restore your Smokeless account. Please try again later.',
+				`restore:${restore.fatalErrorCode}`,
+			);
+			return;
+		}
 
 		const firebaseUid = await ensureFirebaseSession();
 		const activeAccount = getCurrentAccountInfo();

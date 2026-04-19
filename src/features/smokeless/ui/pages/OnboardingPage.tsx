@@ -9,17 +9,22 @@ import { appStore } from '../../../../app/store';
  *
  * Two mutually exclusive choices:
  *   - Local: no account, data in Bridge Local Storage only.
- *   - Google: opens GitHub Pages in the phone's browser for Google sign-in,
- *             polls for authorization, then signs in via custom token.
+ *   - Google: shows a pre-compiled sign-in URL (with ?code= embedded) that
+ *             the user copies and opens in their phone's browser. Polls for
+ *             authorization then signs in via custom token.
  */
 export function OnboardingPage() {
 	const [mode, setMode] = useState<'idle' | 'picking-local' | 'picking-google'>('idle');
-	const [pairingCode, setPairingCode] = useState<string | null>(null);
-	const [pairingUrl, setPairingUrl] = useState<string | null>(null);
+	const [linkUrl, setLinkUrl] = useState<string | null>(null);
+	const [copied, setCopied] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const abortRef = useRef<AbortController | null>(null);
+	const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-	useEffect(() => () => abortRef.current?.abort(), []);
+	useEffect(() => () => {
+		abortRef.current?.abort();
+		if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+	}, []);
 
 	async function pickLocal() {
 		setMode('picking-local');
@@ -41,16 +46,13 @@ export function OnboardingPage() {
 		}
 		setMode('picking-google');
 		setErrorMessage(null);
-		setPairingCode(null);
-		setPairingUrl(null);
+		setLinkUrl(null);
+		setCopied(false);
 		const controller = new AbortController();
 		abortRef.current = controller;
 		try {
 			await runGoogleHandoff(evenUser.uid, {
-				onCode: (code, linkUrl) => {
-					setPairingCode(code);
-					setPairingUrl(linkUrl);
-				},
+				onCode: (_code, url) => setLinkUrl(url),
 				signal: controller.signal,
 			});
 			await completeOnboarding('google');
@@ -68,11 +70,23 @@ export function OnboardingPage() {
 		}
 	}
 
+	async function copyLink() {
+		if (!linkUrl) return;
+		try {
+			await navigator.clipboard.writeText(linkUrl);
+			setCopied(true);
+			if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+			copyTimeoutRef.current = setTimeout(() => setCopied(false), 2500);
+		} catch {
+			// clipboard API unavailable — user can still tap the link
+		}
+	}
+
 	function cancelGoogle() {
 		abortRef.current?.abort();
 		setMode('idle');
-		setPairingCode(null);
-		setPairingUrl(null);
+		setLinkUrl(null);
+		setCopied(false);
 	}
 
 	return (
@@ -83,29 +97,44 @@ export function OnboardingPage() {
 					Choose how Smokeless should store your data. You can't change this later without resetting.
 				</p>
 
-				{mode === 'picking-google' && pairingCode ? (
-					<div className="mt-6 flex flex-col gap-4">
-						<div className="rounded-[20px] border border-border-light bg-bg p-4">
-							<div className="text-detail uppercase tracking-[0.18em] text-text-dim">Pairing code</div>
-							<div className="mt-2 font-mono text-[2rem] tracking-[0.2em] text-text">{pairingCode}</div>
-						</div>
-						<p className="text-[14px] text-text-dim">
-							We opened the sign-in page in your browser. If nothing happened, open this link:
-						</p>
-						{pairingUrl ? (
-							<a
-								className="break-all text-[13px] text-text underline"
-								href={pairingUrl}
-								target="_blank"
-								rel="noopener noreferrer"
+				{mode === 'picking-google' ? (
+					linkUrl ? (
+						<div className="mt-6 flex flex-col gap-4">
+							<div className="rounded-[20px] border border-border-light bg-bg p-4">
+								<p className="text-[13px] font-medium uppercase tracking-[0.14em] text-text-dim">
+									Open this link on your phone's browser
+								</p>
+								<a
+									href={linkUrl}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="mt-2 block break-all text-[13px] leading-relaxed text-text underline underline-offset-2"
+								>
+									{linkUrl}
+								</a>
+							</div>
+							<Button
+								variant="secondary"
+								className="w-full rounded-[20px]"
+								onClick={() => void copyLink()}
 							>
-								{pairingUrl}
-							</a>
-						) : null}
-						<Button variant="secondary" className="w-full rounded-[20px]" onClick={cancelGoogle}>
-							Cancel
-						</Button>
-					</div>
+								{copied ? 'Copied!' : 'Copy link'}
+							</Button>
+							<p className="px-1 text-[13px] leading-relaxed text-text-dim">
+								Sign in with Google on that page — we'll detect it automatically and sign you in here.
+							</p>
+							<Button variant="ghost" className="w-full rounded-[20px]" onClick={cancelGoogle}>
+								Cancel
+							</Button>
+						</div>
+					) : (
+						<div className="mt-6 flex flex-col items-center gap-3 py-4 text-text-dim">
+							<svg className="animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+								<path d="M21 12a9 9 0 1 1-6.219-8.56" />
+							</svg>
+							<p className="text-[14px]">Generating sign-in link…</p>
+						</div>
+					)
 				) : (
 					<div className="mt-6 flex flex-col gap-3">
 						<Button
@@ -117,7 +146,7 @@ export function OnboardingPage() {
 							Sign in with Google
 						</Button>
 						<p className="px-1 text-[12px] text-text-dim">
-							Syncs across devices. Opens a secure sign-in page in your browser.
+							Syncs across devices. Opens a secure sign-in link you copy to your browser.
 						</p>
 						<Button
 							variant="secondary"

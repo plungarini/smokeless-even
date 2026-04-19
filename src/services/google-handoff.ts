@@ -107,15 +107,6 @@ export async function runGoogleHandoff(evenUid: string, opts: GoogleHandoffOptio
 	const { code, linkUrl, expiresAt } = await createHandoffCode({ evenUid });
 	opts.onCode(code, linkUrl);
 
-	// Nudge the OS to open the link site externally. The Even Hub WebView
-	// typically routes `_blank` through the phone's default browser — if
-	// that fails the user can still copy/paste the URL manually.
-	try {
-		window.open(linkUrl, '_blank', 'noopener,noreferrer');
-	} catch {
-		// Non-fatal — user has the code/URL visible in the UI either way.
-	}
-
 	const pollInterval = opts.pollIntervalMs ?? 2000;
 	const timeoutMs = opts.timeoutMs ?? 10 * 60 * 1000;
 	const deadlineMs = Math.min(Date.parse(expiresAt) || Date.now() + timeoutMs, Date.now() + timeoutMs);

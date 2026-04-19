@@ -1,11 +1,21 @@
 rules_version = '2';
 
+// Smokeless Firestore rules.
+//
+// Data model (Google mode only — Local mode stays out of Firestore):
+//   /users/{uid}                — canonical user doc + preferences.
+//   /users/{uid}/logs/{logId}   — smoke log entries.
+//   /handoffCodes/{code}        — short-lived Google sign-in handoff docs.
+//                                 Managed exclusively by Cloud Functions
+//                                 (admin SDK) — clients never read/write.
+//   /googleSessions/{uid}       — hashed rotating session tokens.
+//                                 Managed exclusively by Cloud Functions.
+
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() {
       return request.auth != null;
     }
-
     function isUserOwner(uid) {
       return isSignedIn() && request.auth.uid == uid;
     }
@@ -19,25 +29,14 @@ service cloud.firestore {
       }
     }
 
-    match /googleLinkSessions/{sessionId} {
-      allow get: if isSignedIn() && request.auth.uid == resource.data.sourceUid;
-      allow list, create, update, delete: if false;
+    match /handoffCodes/{code} {
+      // All access goes through Cloud Functions (admin SDK). Clients poll
+      // via callables, never direct reads/writes.
+      allow read, write: if false;
     }
 
-    // Maps Even UID → canonical Firebase UID so the app can restore a session
-    // when the WebView loses its IndexedDB auth state (e.g. after Google link).
-    // Clients may read any entry (they know their own Even UID).
-    // Clients may write only if the stored firebaseUid matches their own auth UID
-    // (prevents one user from overwriting another user's mapping).
-    // Cloud Functions update this via the admin SDK (bypasses rules) after
-    // Google-link migration to point the Even UID at the new Google Firebase UID.
-    match /evenUidIndex/{evenUid} {
-      allow get: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.firebaseUid == request.auth.uid;
-      allow update: if isSignedIn()
-        && resource.data.firebaseUid == request.auth.uid
-        && request.resource.data.firebaseUid == request.auth.uid;
-      allow delete: if false;
+    match /googleSessions/{uid} {
+      allow read, write: if false;
     }
   }
 }

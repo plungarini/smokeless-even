@@ -50,6 +50,15 @@ export const createGoogleLinkSession = onCall(async (request) => {
 		sessionId,
 		code,
 		expiresAt: expiresAt.toISOString(),
-		linkUrl: GOOGLE_LINK_URL,
+		linkUrl: buildLinkUrl(sessionId, expiresAt, code),
 	};
 });
+
+function buildLinkUrl(sessionId: string, expiresAt: Date, code: string): string {
+	const params = new URLSearchParams({
+		sessionId,
+		expiresAt: expiresAt.toISOString(),
+		code,
+	});
+	return `${GOOGLE_LINK_URL}${GOOGLE_LINK_URL.includes('?') ? '&' : '?'}${params.toString()}`;
+}

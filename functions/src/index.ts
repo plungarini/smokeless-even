@@ -14,3 +14,4 @@ export { createGoogleLinkSession } from './functions/create-google-link-session'
 export { getGoogleLinkSessionStatus } from './functions/get-google-link-session-status';
 export { prepareGoogleLinkMigration } from './functions/prepare-google-link-migration';
 export { resolveGoogleLinkCode } from './functions/resolve-google-link-code';
+export { resolveEvenSession } from './functions/resolve-even-session';

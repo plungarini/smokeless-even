@@ -1,8 +1,8 @@
 import { Button, Card } from 'even-toolkit/web';
 import {
 	GoogleAuthProvider,
-	browserSessionPersistence,
 	getRedirectResult,
+	indexedDBLocalPersistence,
 	setPersistence,
 	signInWithPopup,
 	signInWithRedirect,
@@ -10,7 +10,7 @@ import {
 } from 'firebase/auth';
 import { useEffect, useMemo, useState } from 'react';
 import { auth } from '../lib/firebase';
-import { completeGoogleLinkSession, finalizeGoogleLinkSession, resolveGoogleLinkCode } from '../services/google-link';
+import { finalizeGoogleLinkSession, resolveGoogleLinkCode } from '../services/google-link';
 
 type LinkerPhase = 'idle' | 'ready' | 'authorizing' | 'success' | 'error';
 
@@ -110,7 +110,7 @@ export function LinkerApp() {
 		let cancelled = false;
 
 		const initialize = async () => {
-			await setPersistence(auth, browserSessionPersistence);
+			await setPersistence(auth, indexedDBLocalPersistence);
 			const storedPairing = readStoredPairing();
 			const redirectResult = await getRedirectResult(auth);
 
@@ -121,10 +121,9 @@ export function LinkerApp() {
 				setPhase('authorizing');
 				setMessage('Preparing your Smokeless data...');
 				try {
-					const completion = await completeGoogleLinkSession(storedPairing.sessionId);
-					await finalizeGoogleLinkSession(storedPairing.sessionId);
+					const migration = await finalizeGoogleLinkSession(storedPairing.sessionId);
 					if (cancelled) return;
-					setLinkedEmail(completion.targetGoogleEmail ?? redirectResult.user.email ?? '');
+					setLinkedEmail(migration.targetGoogleEmail ?? redirectResult.user.email ?? '');
 					setPostAuthError(false);
 					setPhase('success');
 					setMessage('Google account linked successfully. Return to Smokeless to finish the account switch.');
@@ -225,9 +224,8 @@ export function LinkerApp() {
 			}
 
 			const result = await signInWithPopup(auth, provider);
-			const completion = await completeGoogleLinkSession(resolvedPairing.sessionId);
 			const migration = await finalizeGoogleLinkSession(resolvedPairing.sessionId);
-			setLinkedEmail(completion.targetGoogleEmail ?? migration.targetGoogleEmail ?? result.user.email ?? '');
+			setLinkedEmail(migration.targetGoogleEmail ?? result.user.email ?? '');
 			setPostAuthError(false);
 			setPhase('success');
 			setMessage('Google account linked successfully. Return to Smokeless to finish the account switch.');

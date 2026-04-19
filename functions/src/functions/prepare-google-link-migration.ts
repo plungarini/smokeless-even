@@ -2,7 +2,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import * as logger from 'firebase-functions/logger';
 import { assertString } from '../lib/errors';
-import { sessionRef } from '../repositories/refs';
+import { evenUidIndexRef, sessionRef } from '../repositories/refs';
 import { fetchAllLogEntries, fetchUserDocument } from '../repositories/users';
 import { fetchGoogleUser } from '../services/auth';
 import { dedupeLogs, rebuildIntervals } from '../services/log-merge';
@@ -44,15 +44,29 @@ export const prepareGoogleLinkMigration = onCall(async (request) => {
 		};
 	}
 
-	const session = assertActiveSession(sessionSnapshot, ['authorized', 'migrating']);
-	const resolvedTargetUid = String(session.targetGoogleUid ?? targetUid ?? '');
-	if (!resolvedTargetUid || resolvedTargetUid !== googleUser.uid) {
+	const session = assertActiveSession(sessionSnapshot, ['pending', 'authorized', 'migrating']);
+
+	// When the linker is the sole caller, the session arrives as `pending`.
+	// Transition pending → authorized → migrating in one server-side step so
+	// the client only has to make a single round-trip.
+	if (session.sourceUid === googleUser.uid) {
+		throw new HttpsError('failed-precondition', 'The target Google account must be different from the anonymous source account.');
+	}
+
+	const priorTargetUid = String(session.targetGoogleUid ?? '');
+	if (priorTargetUid && priorTargetUid !== googleUser.uid) {
 		throw new HttpsError('permission-denied', 'Only the authorized Google account can prepare this migration.');
 	}
+
+	const resolvedTargetUid = googleUser.uid;
 
 	await sessionRef(sessionId).set(
 		{
 			status: 'migrating',
+			targetGoogleUid: resolvedTargetUid,
+			targetGoogleEmail: googleUser.email || targetGoogleEmail,
+			targetGoogleDisplayName: googleUser.displayName || targetGoogleDisplayName,
+			authorizedAt: session.authorizedAt ?? FieldValue.serverTimestamp(),
 			migrationStartedAt: FieldValue.serverTimestamp(),
 			updatedAt: FieldValue.serverTimestamp(),
 			errorCode: null,
@@ -101,6 +115,15 @@ export const prepareGoogleLinkMigration = onCall(async (request) => {
 			mergedDocument,
 			mergedLogs,
 		});
+
+		// Update the Even UID → Firebase UID index so that the source Even profile
+		// now resolves to the target Google account on next app open.
+		if (sourceEvenUid) {
+			await evenUidIndexRef(sourceEvenUid).set(
+				{ firebaseUid: resolvedTargetUid, updatedAt: FieldValue.serverTimestamp() },
+				{ merge: false },
+			);
+		}
 
 		await sessionRef(sessionId).set(
 			{

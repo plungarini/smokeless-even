@@ -3,7 +3,7 @@ import { missingClientEnv } from '../config/env';
 import type { AuthAccountInfo, EvenUserInfo, UserDocument } from '../domain/types';
 import { toDayKey } from '../lib/time';
 import { normalizeEvenUserInfo } from '../lib/even';
-import { ensureFirebaseSession, getCurrentAccountInfo, observeAccountInfo } from '../services/auth';
+import { ensureFirebaseSession, getCurrentAccountInfo, observeAccountInfo, tryRestoreSessionFromEvenUid } from '../services/auth';
 import {
 	ensureCanonicalUserData,
 	fetchUserDocument,
@@ -85,21 +85,53 @@ async function runBootstrap(): Promise<void> {
 		// attach a new set — otherwise rebootForUid() leaks listeners.
 		teardownSubscriptions();
 
+		// Attempt to restore the canonical Firebase session for this Even UID
+		// before falling back to anonymous sign-in. This handles the case where
+		// the WebView's IndexedDB auth state was cleared (e.g. after a Google-link
+		// account switch restarted the app), which would otherwise issue a fresh
+		// anonymous UID and create a duplicate Firestore document.
+		//
+		// If restore fails with a *fatal* reason (IAM blocking custom-token mint,
+		// index lookup failure), we surface that instead of silently creating a
+		// duplicate account — the duplicate is the very bug this path exists to
+		// prevent.
+		const restore = await tryRestoreSessionFromEvenUid(normalized.uid);
+		if (restore.fatalErrorCode) {
+			appStore.setPhase(
+				'blocked',
+				restore.fatalErrorMessage ?? 'Could not restore your Smokeless account. Please try again later.',
+				`restore:${restore.fatalErrorCode}`,
+			);
+			return;
+		}
+
 		const firebaseUid = await ensureFirebaseSession();
 		const activeAccount = getCurrentAccountInfo();
-		let activePairing = await loadActiveGooglePairingAsync(firebaseUid);
-		if (activePairing) {
-			activePairing = await refreshGooglePairingStatus(activePairing, firebaseUid);
-		}
-		appStore.setGoogleLinkSession(activePairing);
 
+		// Everything below only needs `firebaseUid` — run it all in parallel.
+		//
+		// • pairingPromise: load + conditionally refresh the Google pairing in
+		//   a chained promise so the refresh step doesn't block Firestore work.
+		// • fetchUserDocument: one-shot read of the user document. For a new
+		//   user this returns null (document doesn't exist yet at read time);
+		//   the onSnapshot listener attached below will push the real document
+		//   into the store once Firestore reflects the write.
+		// • ensureCanonicalUserData / upsertAuthProviderFields: writes that
+		//   don't depend on each other or the read.
+		const pairingPromise = loadActiveGooglePairingAsync(firebaseUid).then((raw) =>
+			raw ? refreshGooglePairingStatus(raw, firebaseUid) : null,
+		);
+
+		const [activePairing, existingDocument] = await Promise.all([
+			pairingPromise,
+			fetchUserDocument(firebaseUid),
+			ensureCanonicalUserData(firebaseUid, normalized),
+			activeAccount ? upsertAuthProviderFields(firebaseUid, activeAccount) : Promise.resolve(),
+		]);
+
+		appStore.setGoogleLinkSession(activePairing ?? null);
 		appStore.setAccountInfo(activeAccount);
 		appStore.setCanonicalUid(firebaseUid);
-
-		await ensureCanonicalUserData(firebaseUid, normalized);
-		if (activeAccount) await upsertAuthProviderFields(firebaseUid, activeAccount);
-
-		const existingDocument = await fetchUserDocument(firebaseUid);
 		appStore.setUserDocument(existingDocument ?? buildMinimalDocument(normalized));
 
 		attachFirestoreSubscriptions(firebaseUid);

@@ -23,5 +23,21 @@ service cloud.firestore {
       allow get: if isSignedIn() && request.auth.uid == resource.data.sourceUid;
       allow list, create, update, delete: if false;
     }
+
+    // Maps Even UID → canonical Firebase UID so the app can restore a session
+    // when the WebView loses its IndexedDB auth state (e.g. after Google link).
+    // Clients may read any entry (they know their own Even UID).
+    // Clients may write only if the stored firebaseUid matches their own auth UID
+    // (prevents one user from overwriting another user's mapping).
+    // Cloud Functions update this via the admin SDK (bypasses rules) after
+    // Google-link migration to point the Even UID at the new Google Firebase UID.
+    match /evenUidIndex/{evenUid} {
+      allow get: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.firebaseUid == request.auth.uid;
+      allow update: if isSignedIn()
+        && resource.data.firebaseUid == request.auth.uid
+        && request.resource.data.firebaseUid == request.auth.uid;
+      allow delete: if false;
+    }
   }
 }

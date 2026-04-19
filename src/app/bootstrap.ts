@@ -23,7 +23,7 @@ import {
 	clearStoredAuthMode,
 	type AuthMode,
 } from '../services/auth-mode';
-import { tryReauthWithStoredGoogleSession } from '../services/google-session';
+import { clearStoredGoogleSession, tryReauthWithStoredGoogleSession } from '../services/google-session';
 import { appStore } from './store';
 
 // ── Module-scoped lifecycle state ───────────────────────────────────
@@ -66,7 +66,9 @@ export async function completeOnboarding(mode: AuthMode): Promise<void> {
  * Firebase session.
  */
 export async function resetAuthMode(): Promise<void> {
+	teardownSubscriptions();
 	await clearStoredAuthMode();
+	await clearStoredGoogleSession();
 	try {
 		await signOutFirebase();
 	} catch {
@@ -77,6 +79,7 @@ export async function resetAuthMode(): Promise<void> {
 	appStore.setCanonicalUid(null);
 	appStore.setUserDocument(null);
 	appStore.setPhase('onboarding');
+	bootstrapPromise = null;
 }
 
 async function runBootstrap(): Promise<void> {

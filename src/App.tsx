@@ -1,7 +1,7 @@
 import { Card } from 'even-toolkit/web';
 import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { appStore } from './app/store';
-import { startBootstrap } from './app/bootstrap';
+import { resetAuthMode, startBootstrap } from './app/bootstrap';
 import { useAppSelector } from './app/hooks/useAppSelector';
 import { useClock } from './app/hooks/useClock';
 import { useCountBump } from './app/hooks/useCountBump';
@@ -50,6 +50,7 @@ export default function App() {
 	const canonicalUid = useAppSelector((s) => s.canonicalUid);
 	const evenUser = useAppSelector((s) => s.evenUser);
 	const accountInfo = useAppSelector((s) => s.accountInfo);
+	const authMode = useAppSelector((s) => s.authMode);
 	const userDocument = useAppSelector((s) => s.userDocument);
 	const todayCount = useAppSelector((s) => s.todayCount);
 	const allSmokeEntries = useAppSelector((s) => s.allSmokeEntries);
@@ -242,8 +243,10 @@ export default function App() {
 											userDocument={userDocument}
 											evenName={userDocument.providers.even?.name || evenUser.name}
 											canonicalUid={canonicalUid}
+											authMode={authMode}
 											effectiveGoogleEmail={effectiveGoogleEmail}
 											onExport={() => void smokeActions.exportLogs()}
+											onSignOut={() => void resetAuthMode()}
 											onDeleteAll={() => void smokeActions.deleteAll()}
 										/>
 									) : null}

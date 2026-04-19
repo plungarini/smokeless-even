@@ -68,24 +68,6 @@ export function getFirebaseFunctions(): Functions {
 	return functionsInstance;
 }
 
-// Lazy proxy so existing `import { db, auth, functions }` code keeps working
-// without touching every call site. Method/property access on the proxy
-// triggers init of the underlying SDK instance.
-function lazyProxy<T extends object>(get: () => T): T {
-	return new Proxy({} as T, {
-		get(_target, prop, receiver) {
-			return Reflect.get(get() as object, prop, receiver);
-		},
-		has(_target, prop) {
-			return prop in (get() as object);
-		},
-	});
-}
-
-export const auth: Auth = lazyProxy(getFirebaseAuth);
-export const db: Firestore = lazyProxy(getFirebaseDb);
-export const functions: Functions = lazyProxy(getFirebaseFunctions);
-
 export async function waitForInitialAuthState(): Promise<void> {
 	await new Promise<void>((resolve) => {
 		const unsubscribe = onAuthStateChanged(getFirebaseAuth(), () => {

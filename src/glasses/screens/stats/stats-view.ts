@@ -3,7 +3,10 @@ import { appStore } from '../../../app/store';
 import { selectHudStatsSummaries } from '../../../app/selectors';
 import type { Router, View, ViewKey } from '../../router';
 import type { HudLayoutDescriptor } from '../../types';
+import { centerLine, padToWidth } from '../../utils';
 import { ROOT_LAYOUT, buildFooter, buildHeader } from '../shared-shell';
+
+const BODY_INNER_WIDTH_PX = 544;
 
 export class StatsView implements View {
 	readonly key: ViewKey = 'stats';
@@ -33,22 +36,19 @@ export class StatsView implements View {
 		}
 
 		const itemsPerLine = 4;
+		const cellWidthPx = Math.floor(BODY_INNER_WIDTH_PX / itemsPerLine);
 		const lines: string[] = [];
 		for (let i = 0; i < series.length; i += itemsPerLine) {
 			const row = series.slice(i, i + itemsPerLine);
-			lines.push(
-				row
-					.map((item) => {
-						const countStr = String(item.count).padStart(6, ' ');
-						return `•  ${item.label}: ${countStr}`;
-					})
-					.join('  '),
-			);
+			lines.push(row.map((item) => padToWidth(`• ${item.label}: ${item.count}`, cellWidthPx)).join(''));
 		}
-		const gridText = `${lines.join('  •\n')}  •`;
-		const body = `[${period.toUpperCase()}]  ${stats.totalSmoked} smoked\n\n----     Average:     ${Math.round(
-			stats.weightedAverage,
-		)} /day   (${stats.averageIntervalLabel})     ----\n\n${gridText}`;
+		const gridText = lines.join('\n');
+		const title = centerLine(`[${period.toUpperCase()}]   ${stats.totalSmoked} smoked`, BODY_INNER_WIDTH_PX);
+		const avgLine = centerLine(
+			`-- Average: ${Math.round(stats.weightedAverage)}/day   (${stats.averageIntervalLabel}) --`,
+			BODY_INNER_WIDTH_PX,
+		);
+		const body = `${title}\n\n${avgLine}\n\n${gridText}`;
 
 		return {
 			header: buildHeader(now),

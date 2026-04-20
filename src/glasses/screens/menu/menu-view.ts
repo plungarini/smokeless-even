@@ -4,6 +4,7 @@ import { HUD_HEIGHT } from '../../constants';
 import { scheduleRender } from '../../render-loop';
 import type { Router, View, ViewKey } from '../../router';
 import type { HudLayoutDescriptor } from '../../types';
+import { centerLine } from '../../utils';
 
 interface MenuEntry {
 	view: ViewKey;
@@ -67,12 +68,10 @@ function buildMenuLayout(selectedIndex: number): HudLayoutDescriptor {
 
 function buildMenuContents(activeTab: string): Record<string, string> {
 	const contents: Record<string, string> = {
-		header: '╭───────  Smokeless  ───────╮',
+		header: centerLine('╭───  Smokeless  ───╮', 437),
 	};
 	for (let i = 0; i < MENU_ITEMS.length; i++) {
 		const item = MENU_ITEMS[i]!;
-		// ">" marks the page the user is currently on — independent of the
-		// scroll cursor (border). Both can be on different items at once.
 		const activeIndicator = item.tab === activeTab ? '>  ' : '    ';
 		contents[`item-${i}`] = `  ${activeIndicator}${item.label}  •  ${item.description}`;
 	}

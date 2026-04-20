@@ -1,4 +1,5 @@
 import { TextContainerProperty } from '@evenrealities/even_hub_sdk';
+import { getTextWidth } from '@evenrealities/pretext';
 import type { HudHistoryDaySummary } from '../domain/types';
 import { formatDayLabel, formatHudLastSmoke, formatLongDate, formatTime } from '../lib/time';
 import { HUD_CREATE_TEXT_LIMIT } from './constants';
@@ -137,6 +138,42 @@ function formatGap(later: Date, earlier: Date): string {
 
 export function formatHomeLastSmoke(date: Date | null, now: Date): string {
 	return date ? formatHudLastSmoke(date, now) : 'none yet';
+}
+
+const SPACE_WIDTH = getTextWidth(' ') || 5;
+
+// Leave a small cushion so rounding / kerning can never push a line past the
+// inner width — LVGL wraps aggressively and even 1 px over drops to a new line.
+const WRAP_SAFETY_PX = 4;
+
+/** Returns spaces whose rendered width is <= targetPx (floor, never overflows). */
+function spacesForPx(targetPx: number): string {
+	if (targetPx <= 0) return '';
+	const count = Math.floor(targetPx / SPACE_WIDTH);
+	return count > 0 ? ' '.repeat(count) : '';
+}
+
+/** Left-aligns text in a fixed pixel-width cell, padding the right with spaces. */
+export function padToWidth(text: string, widthPx: number): string {
+	const gap = widthPx - getTextWidth(text) - WRAP_SAFETY_PX;
+	return gap <= 0 ? text : `${text}${spacesForPx(gap)}`;
+}
+
+/** Centers a single line of text within an inner pixel width using space padding. */
+export function centerLine(text: string, innerWidthPx: number): string {
+	const w = getTextWidth(text);
+	const leftPx = Math.max(0, (innerWidthPx - WRAP_SAFETY_PX - w) / 2);
+	return `${spacesForPx(leftPx)}${text}`;
+}
+
+/**
+ * Aligns a two-column row: `left` on the left edge, `right` on the right edge.
+ * Uses the non-monospaced font metrics so columns align per-pixel.
+ */
+export function alignRow(left: string, right: string, innerWidthPx: number): string {
+	const available = innerWidthPx - WRAP_SAFETY_PX - getTextWidth(left) - getTextWidth(right);
+	if (available <= 0) return `${left} ${right}`;
+	return `${left}${spacesForPx(available)}${right}`;
 }
 
 export function shortClockTime(date: Date | null): string {

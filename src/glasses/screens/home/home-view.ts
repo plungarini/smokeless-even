@@ -5,8 +5,12 @@ import { startHomeTimer, stopHomeTimer } from '../../home-timer';
 import { scheduleRender } from '../../render-loop';
 import type { Router, View, ViewKey } from '../../router';
 import type { HudLayoutDescriptor } from '../../types';
-import { truncate } from '../../utils';
+import { alignRow, centerLine, truncate } from '../../utils';
 import { ROOT_LAYOUT, buildFooter, buildHeader } from '../shared-shell';
+
+// body container: width 576, paddingLength 15, borderWidth 1
+// inner width = 576 - 2*(15+1) = 544
+const BODY_INNER_WIDTH_PX = 544;
 
 type VisualMode = 'idle' | 'logging' | 'success' | 'error';
 
@@ -16,12 +20,12 @@ interface VisualState {
 	todayCount: number | null;
 }
 
-const STATUS_SPACING = '\n                               ';
-const BODY_SPACING = '                              ';
-const VALUE_PAD = 28;
+function header(text: string): string {
+	return centerLine(`--   ${text}   --`, BODY_INNER_WIDTH_PX);
+}
 
-function padValue(value: string | number): string {
-	return `${value}`.padStart(VALUE_PAD, ' ');
+function row(label: string, value: string | number): string {
+	return alignRow(`• ${label}`, `${value}`, BODY_INNER_WIDTH_PX);
 }
 
 function formatSmokeFreeClock(lastSmokeAt: Date | null, now: Date): string {
@@ -59,15 +63,15 @@ export class HomeView implements View {
 		let body: string;
 		const mode = this.visual.mode;
 		if (mode === 'logging') {
-			body = `${STATUS_SPACING}--     Logging smoke...     --\n\n${BODY_SPACING}• Today:    ${padValue('...')}\n${BODY_SPACING}• Last:${padValue('--:--:--')}`;
+			body = `\n${header('Logging smoke...')}\n\n${row('Today', '...')}\n${row('Last', '--:--:--')}`;
 		} else if (mode === 'success') {
 			const today = this.visual.todayCount ?? state.todayCount;
-			body = `${STATUS_SPACING}--       Smoke logged       --\n\n${BODY_SPACING}• Today:    ${padValue(today)}\n${BODY_SPACING}• Last:${padValue(timerLabel)}`;
+			body = `\n${header('Smoke logged')}\n\n${row('Today', today)}\n${row('Last', timerLabel)}`;
 		} else if (mode === 'error') {
 			const message = truncate(this.visual.message ?? 'Please try again.', 30);
-			body = `${STATUS_SPACING}--   Could not log smoke    --\n\n${message}\n${BODY_SPACING}• Last:${padValue(timerLabel)}`;
+			body = `\n${header('Could not log smoke')}\n\n${centerLine(message, BODY_INNER_WIDTH_PX)}\n${row('Last', timerLabel)}`;
 		} else {
-			body = `${STATUS_SPACING}--     Tap to add a Log     --\n\n${BODY_SPACING}• Today:    ${padValue(state.todayCount)}\n${BODY_SPACING}• Last:${padValue(timerLabel)}`;
+			body = `\n${header('Tap to add a Log')}\n\n${row('Today', state.todayCount)}\n${row('Last', timerLabel)}`;
 		}
 
 		return {

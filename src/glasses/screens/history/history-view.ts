@@ -6,7 +6,11 @@ import type { HudHistoryDaySummary } from '../../../domain/types';
 import { formatDurationClock } from '../../../lib/time';
 import type { Router, View, ViewKey } from '../../router';
 import type { HudLayoutDescriptor } from '../../types';
+import { alignRow, centerLine } from '../../utils';
 import { ROOT_LAYOUT, buildFooter, buildHeader } from '../shared-shell';
+
+// body container: 576 wide, paddingLength 15, borderWidth 1 → inner = 544px
+const BODY_INNER_WIDTH_PX = 544;
 
 export class HistoryView implements View {
 	readonly key: ViewKey = 'history';
@@ -54,16 +58,18 @@ export class HistoryView implements View {
 }
 
 function buildHistoryBody(selectedDayKey: string | null, selectedDay: HudHistoryDaySummary | null): string {
-	const padValue = (val: string | number) => `${val}`.padStart(14, ' ');
+	const row = (label: string, value: string | number) =>
+		alignRow(`- ${label}`, `${value}`, BODY_INNER_WIDTH_PX);
 	const displayDate = selectedDay?.date ?? (selectedDayKey ? parseDayKey(selectedDayKey) : new Date());
+	const footer = centerLine('Scroll days  •  Click today', BODY_INNER_WIDTH_PX);
 
 	if (!selectedDay) {
-		return `${formatHistoryDay(displayDate)}\n\n- Total smoked:    ${padValue(0)}\n- Avg interval: ${padValue('--:--:--')}\n\nScroll days  •  Click today`;
+		return `${centerLine(formatHistoryDay(displayDate), BODY_INNER_WIDTH_PX)}\n\n${row('Total smoked', 0)}\n${row('Avg interval', '--:--:--')}\n\n${footer}`;
 	}
 
 	const weightedInterval = computeWeightedIntervalForDay(selectedDay.entries);
 	const averageIntervalLabel = weightedInterval === null ? '--:--:--' : formatDurationClock(weightedInterval);
-	return `${formatHistoryDay(selectedDay.date)}\n\n- Total smoked:    ${padValue(selectedDay.count)}\n- Avg interval: ${padValue(averageIntervalLabel)}\n\nScroll days  •  Click today`;
+	return `${centerLine(formatHistoryDay(selectedDay.date), BODY_INNER_WIDTH_PX)}\n\n${row('Total smoked', selectedDay.count)}\n${row('Avg interval', averageIntervalLabel)}\n\n${footer}`;
 }
 
 function formatHistoryDay(date: Date): string {

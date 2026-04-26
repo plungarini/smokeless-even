@@ -1,6 +1,6 @@
 import { OsEventTypeList, type EvenAppBridge, type EvenHubEvent } from '@evenrealities/even_hub_sdk';
 import { appStore } from '../../../app/store';
-import { HUD_HEIGHT } from '../../constants';
+import { HUD_HEIGHT, HUD_WIDTH } from '../../constants';
 import { scheduleRender } from '../../render-loop';
 import type { Router, View, ViewKey } from '../../router';
 import type { HudLayoutDescriptor } from '../../types';
@@ -40,9 +40,9 @@ function buildMenuLayout(selectedIndex: number): HudLayoutDescriptor {
 			{
 				containerID: 1,
 				containerName: 'header',
-				xPosition: 67,
+				xPosition: 0,
 				yPosition: 8,
-				width: 445,
+				width: HUD_WIDTH,
 				height: 43,
 				paddingLength: 4,
 			},
@@ -68,7 +68,7 @@ function buildMenuLayout(selectedIndex: number): HudLayoutDescriptor {
 
 function buildMenuContents(activeTab: string): Record<string, string> {
 	const contents: Record<string, string> = {
-		header: centerLine('╭───  Smokeless  ───╮', 437),
+		header: centerLine('╭───────    Smokeless    ───────╮', HUD_WIDTH),
 	};
 	for (let i = 0; i < MENU_ITEMS.length; i++) {
 		const item = MENU_ITEMS[i]!;
@@ -88,7 +88,7 @@ export class MenuView implements View {
 	private router: Router | null = null;
 	private selectedIndex = 0;
 
-	constructor(private readonly bridge: EvenAppBridge) {}
+	constructor(private readonly bridge: EvenAppBridge) { }
 
 	setRouter(router: Router): void {
 		this.router = router;

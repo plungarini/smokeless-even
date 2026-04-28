@@ -15,14 +15,19 @@
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import {
 	type Auth,
-	browserLocalPersistence,
 	browserPopupRedirectResolver,
 	getAuth,
+	inMemoryPersistence,
 	initializeAuth,
 	onAuthStateChanged,
 	type User,
 } from 'firebase/auth';
-import { type Firestore, getFirestore, initializeFirestore } from 'firebase/firestore';
+import {
+	type Firestore,
+	getFirestore,
+	initializeFirestore,
+	memoryLocalCache,
+} from 'firebase/firestore';
 import { type Functions, getFunctions } from 'firebase/functions';
 import { env } from '../config/env';
 
@@ -41,8 +46,11 @@ export function getFirebaseAuth(): Auth {
 	if (authInstance) return authInstance;
 	const app = ensureApp();
 	try {
+		// Use in-memory persistence because browser IndexedDB is wiped on
+		// every WebView restart inside Even Hub. We manage our own durable
+		// session via Bridge Local Storage + Cloud Function custom tokens.
 		authInstance = initializeAuth(app, {
-			persistence: browserLocalPersistence,
+			persistence: inMemoryPersistence,
 			popupRedirectResolver: browserPopupRedirectResolver,
 		});
 	} catch {
@@ -55,7 +63,12 @@ export function getFirebaseDb(): Firestore {
 	if (firestoreInstance) return firestoreInstance;
 	const app = ensureApp();
 	try {
-		firestoreInstance = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+		// Force memory-only cache so Firestore never touches IndexedDB,
+		// which throws AbortError inside the Even Hub WebView.
+		firestoreInstance = initializeFirestore(app, {
+			localCache: memoryLocalCache(),
+			experimentalAutoDetectLongPolling: true,
+		});
 	} catch {
 		firestoreInstance = getFirestore(app);
 	}

@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase-admin/firestore';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 import { SESSION_TTL_MS } from '../config';
 import { generateSessionToken, hashSessionToken } from '../lib/code';
@@ -8,11 +8,16 @@ import { googleSessionRef } from '../repositories/refs';
 import '../config';
 
 /**
- * Rotating session-token exchange. The WebView presents the session token
- * stored in Bridge Local Storage; we verify it, mint a fresh custom token
- * to log the user back in, and issue a new session token (the old one is
- * immediately invalidated). This keeps Google-mode users signed in for the
- * long haul without re-doing Google Sign-In.
+ * Rotating session-token exchange with a two-token grace window.
+ *
+ * The WebView presents the session token stored in Bridge Local Storage.
+ * We verify it, mint a fresh custom token, and issue a new session token.
+ * The old token is kept as a "previous" token for exactly one more exchange,
+ * so that if the app/WebView crashes after we rotate but before the client
+ * persists the new token, the client can recover on the next boot without
+ * forcing a full re-authentication.
+ *
+ * Backward-compatible with legacy docs that only have `sessionTokenHash`.
  *
  * Callable without Firebase auth — the whole point is to re-auth.
  */
@@ -33,20 +38,34 @@ export const exchangeGoogleSessionToken = onCall(async (request) => {
 		if (data.firebaseUid !== firebaseUid) {
 			throw new HttpsError('permission-denied', 'Session UID mismatch.');
 		}
-		if (data.sessionTokenHash !== presentedHash) {
+
+		const expiresAtMs = (data.expiresAt as Timestamp).toMillis();
+		if (expiresAtMs <= Date.now()) {
+			tx.delete(ref);
+			throw new HttpsError('failed-precondition', 'Session expired. Sign in again.');
+		}
+
+		// Resolve hashes with backward compatibility for legacy `sessionTokenHash`.
+		const currentHash =
+			(data.currentTokenHash as string | undefined) ||
+			(data.sessionTokenHash as string | undefined) ||
+			'';
+		const previousHash = (data.previousTokenHash as string | undefined) || '';
+
+		if (presentedHash !== currentHash && presentedHash !== previousHash) {
 			// Potential token leak — nuke the session.
 			tx.delete(ref);
 			throw new HttpsError('permission-denied', 'Session token invalid.');
 		}
-		const expiresAtMs = (data.expiresAt as Timestamp).toMillis();
-		if (expiresAtMs <= Date.now()) {
-			tx.delete(ref);
-			throw new HttpsError('deadline-exceeded', 'Session expired. Sign in again.');
-		}
+
+		// Token is valid (current or previous) and not expired — rotate.
 		tx.update(ref, {
-			sessionTokenHash: hashSessionToken(nextToken),
+			currentTokenHash: hashSessionToken(nextToken),
+			previousTokenHash: currentHash,
 			expiresAt: nextExpiresAt,
 			rotatedAt: Timestamp.now(),
+			// Clean up legacy single-hash field if present.
+			...(data.sessionTokenHash !== undefined ? { sessionTokenHash: FieldValue.delete() } : {}),
 		});
 	});
 

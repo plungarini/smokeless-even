@@ -49,9 +49,12 @@ export const exchangeHandoffCode = onCall(async (request) => {
 	const expiresAt = Timestamp.fromMillis(Date.now() + SESSION_TTL_MS);
 
 	// Persist the HASHED token only — the plaintext never hits Firestore.
+	// Use the new two-token schema so the first exchange already supports
+	// the grace-recovery window.
 	await googleSessionRef(firebaseUid).set({
 		firebaseUid,
-		sessionTokenHash: hashSessionToken(sessionToken),
+		currentTokenHash: hashSessionToken(sessionToken),
+		previousTokenHash: '',
 		expiresAt,
 		rotatedAt: Timestamp.now(),
 	});

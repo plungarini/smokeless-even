@@ -14,7 +14,6 @@ import {
 	serverTimestamp,
 	setDoc,
 	startAfter,
-	updateDoc,
 	where,
 	writeBatch,
 } from 'firebase/firestore';
@@ -396,6 +395,12 @@ export function subscribeToTodayCount(uid: string, onValue: (count: number) => v
 	);
 }
 
+export async function fetchLastLogEntry(uid: string): Promise<SmokeLogEntry | null> {
+	const snapshot = await getDocs(query(logsRef(uid), orderBy('timestamp', 'desc'), limit(1)));
+	if (snapshot.empty) return null;
+	return mapLogSnapshot(snapshot.docs[0]!);
+}
+
 export async function fetchAllLogEntries(uid: string): Promise<SmokeLogEntry[]> {
 	const entries: SmokeLogEntry[] = [];
 	let cursor: QueryDocumentSnapshot | null = null;
@@ -513,34 +518,102 @@ export async function mergeUserData(
 	await deleteAllUserData(sourceUid);
 }
 
-export async function addSmokeEntry(uid: string, timestamp = new Date()): Promise<string> {
-	const entries = await fetchAllLogEntries(uid);
-	const previous =
-		[...entries]
-			.filter((entry) => entry.timestamp.getTime() <= timestamp.getTime())
-			.sort((left, right) => right.timestamp.getTime() - left.timestamp.getTime())[0] ?? null;
-	const logDoc = doc(logsRef(uid));
-	await setDoc(logDoc, {
-		timestamp,
-		intervalSincePrevious: previous
-			? Math.max(0, Math.round((timestamp.getTime() - previous.timestamp.getTime()) / 1000))
-			: null,
-	});
+/**
+ * Incrementally update user metrics after a single log add/delete.
+ * Only fetches today's entries (typically 0-20) instead of the entire
+ * history, so it runs in O(today_count) instead of O(total_count).
+ */
+async function updateUserMetricsFast(
+	uid: string,
+	newTimestamp: Date,
+	newInterval: number | null,
+): Promise<void> {
+	const now = new Date();
+	const dayStart = startOfDay(now);
+	const newEntryIsToday = newTimestamp >= dayStart;
 
-	const next =
-		[...entries]
-			.filter((entry) => entry.timestamp.getTime() > timestamp.getTime())
-			.sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime())[0] ?? null;
-	if (next) {
-		await updateDoc(doc(getFirebaseDb(), 'users', uid, 'logs', next.id), {
-			intervalSincePrevious: Math.max(0, Math.round((next.timestamp.getTime() - timestamp.getTime()) / 1000)),
-		});
+	// Fetch user doc + today's entries in parallel.
+	const [userDocSnap, todaySnap] = await Promise.all([
+		getDoc(userRef(uid)),
+		newEntryIsToday
+			? getDocs(query(logsRef(uid), where('timestamp', '>=', dayStart), orderBy('timestamp', 'asc')))
+			: Promise.resolve(null),
+	]);
+
+	const data = userDocSnap.exists() ? userDocSnap.data()! : {};
+	const currentLongest = Number(data.longestEverCessation ?? 0);
+
+	let newLongest = currentLongest;
+	if (newInterval !== null && newInterval > currentLongest) {
+		newLongest = newInterval;
 	}
 
-	await updateUserMetrics(
-		uid,
-		rebuildIntervals([...entries, { id: logDoc.id, timestamp, intervalSincePrevious: null }]),
-	);
+	let newTodayMax: { value: number; lastUpdated: Date } | null = null;
+	if (newEntryIsToday && todaySnap) {
+		const todayEntries = todaySnap.docs.map(mapLogSnapshot);
+		newTodayMax = buildTodayMaxCessation(todayEntries, now);
+	}
+
+	const currentTodayMax = (data as Record<string, unknown>).todayMaxCessation;
+	const currentTodayMaxValue =
+		currentTodayMax && typeof currentTodayMax === 'object' && 'value' in currentTodayMax
+			? Number((currentTodayMax as Record<string, unknown>).value ?? 0)
+			: 0;
+	const newTodayMaxValue = newTodayMax?.value ?? 0;
+
+	const shouldUpdateLongest = newLongest !== currentLongest;
+	const shouldUpdateToday = newEntryIsToday && newTodayMaxValue !== currentTodayMaxValue;
+
+	if (shouldUpdateLongest || shouldUpdateToday) {
+		await setDoc(
+			userRef(uid),
+			{
+				...(shouldUpdateLongest ? { longestEverCessation: newLongest } : {}),
+				...(shouldUpdateToday ? { todayMaxCessation: newTodayMax } : {}),
+				updatedAt: serverTimestamp(),
+			},
+			{ merge: true },
+		);
+	}
+}
+
+export async function addSmokeEntry(uid: string, timestamp = new Date()): Promise<string> {
+	// Fast targeted queries: only fetch the immediate neighbours instead of
+	// the entire log history. This turns an O(n) operation into O(1).
+	const [previousSnap, nextSnap] = await Promise.all([
+		getDocs(query(logsRef(uid), where('timestamp', '<=', timestamp), orderBy('timestamp', 'desc'), limit(1))),
+		getDocs(query(logsRef(uid), where('timestamp', '>', timestamp), orderBy('timestamp', 'asc'), limit(1))),
+	]);
+
+	const previous = previousSnap.empty ? null : mapLogSnapshot(previousSnap.docs[0]!);
+	const next = nextSnap.empty ? null : mapLogSnapshot(nextSnap.docs[0]!);
+
+	const intervalSincePrevious = previous
+		? Math.max(0, Math.round((timestamp.getTime() - previous.timestamp.getTime()) / 1000))
+		: null;
+
+	const logDoc = doc(logsRef(uid));
+
+	// Batch both writes in a single round-trip.
+	const batch = writeBatch(getFirebaseDb());
+	batch.set(logDoc, { timestamp, intervalSincePrevious });
+	if (next) {
+		batch.update(doc(getFirebaseDb(), 'users', uid, 'logs', next.id), {
+			intervalSincePrevious: Math.max(
+				0,
+				Math.round((next.timestamp.getTime() - timestamp.getTime()) / 1000),
+			),
+		});
+	}
+	await batch.commit();
+
+	// Recompute metrics in the background so the UI returns immediately.
+	// If this fails the log is still safely written; metrics will be stale
+	// until the next add/delete corrects them.
+	void updateUserMetricsFast(uid, timestamp, intervalSincePrevious).catch((err) => {
+		console.warn('[firestore] background metrics update failed', err);
+	});
+
 	return logDoc.id;
 }
 

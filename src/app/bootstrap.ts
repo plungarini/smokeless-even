@@ -11,12 +11,14 @@ import {
 } from '../services/auth';
 import {
 	ensureCanonicalUserData,
+	fetchLastLogEntry,
 	fetchUserDocument,
 	subscribeToTodayCount,
 	subscribeToUserDocument,
 	upsertAuthProviderFields,
 } from '../services/db.service';
-import { refreshLogs } from './refresh-logs';
+// refreshLogs is no longer called on startup — stats/history are fetched
+// on-demand when the user navigates to those tabs.
 import {
 	readStoredAuthMode,
 	writeStoredAuthMode,
@@ -82,6 +84,15 @@ export async function resetAuthMode(): Promise<void> {
 	bootstrapPromise = null;
 }
 
+/** Firebase auth init can hang when IndexedDB is wiped or slow in the WebView.
+ * Cap the wait so we can fall back to our stored-session Cloud Function path. */
+async function waitForExistingSessionWithTimeout(timeoutMs = 2500): Promise<AuthAccountInfo | null> {
+	return Promise.race([
+		waitForExistingSession(),
+		new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs)),
+	]);
+}
+
 async function runBootstrap(): Promise<void> {
 	try {
 		const bridge = await waitForEvenAppBridge();
@@ -136,17 +147,32 @@ async function runBootstrap(): Promise<void> {
 				isAnonymous: false,
 			};
 		} else {
-			// Google mode: rely on Firebase-persisted session first; fall back
-			// to the Smokeless-managed re-auth (custom token minted from a
-			// stored session pointer) before asking the user to re-sign-in.
-			const existing = await waitForExistingSession();
-			if (existing) {
-				activeAccount = existing;
+			// Google mode: Bridge Local Storage is the ONLY durable persistence
+			// inside the Even Hub WebView (IndexedDB is wiped on restart).
+			// We therefore try our Cloud Function re-auth path FIRST. Only if
+			// there is no Bridge token do we fall back to the flaky IndexedDB
+			// path as a last resort.
+			const reauthResult = await tryReauthWithStoredGoogleSession();
+			if (reauthResult.ok) {
+				activeAccount = getCurrentAccountInfo();
+			} else if (reauthResult.reason === 'network') {
+				// The Bridge token is still present but we couldn't reach the
+				// server (flaky connection, CF cold start, etc.). Tell the user
+				// to check their connection rather than forcing a re-auth.
+				appStore.setPhase(
+					'blocked',
+					'Could not connect to Google. Check your connection and try again.',
+					'google-session:network',
+				);
+				return;
 			} else {
-				const reauthed = await tryReauthWithStoredGoogleSession();
-				if (!reauthed) {
-					// No session recoverable — kick back to onboarding so the
-					// UI can re-invite the user through the GitHub Pages flow.
+				// Bridge token missing, expired, or definitively rejected.
+				// Try IndexedDB as a last-ditch fallback (rare case where Bridge
+				// was wiped but IndexedDB miraculously survived).
+				const existing = await waitForExistingSessionWithTimeout(2000);
+				if (existing) {
+					activeAccount = existing;
+				} else {
 					appStore.setPhase(
 						'blocked',
 						'Your Google session expired. Sign in again to continue.',
@@ -154,7 +180,6 @@ async function runBootstrap(): Promise<void> {
 					);
 					return;
 				}
-				activeAccount = getCurrentAccountInfo();
 			}
 			if (!activeAccount) {
 				appStore.setPhase('blocked', 'Could not read Google session.', 'google-session:missing');
@@ -163,12 +188,16 @@ async function runBootstrap(): Promise<void> {
 			canonicalUid = activeAccount.uid;
 		}
 
-		const [existingDocument] = await Promise.all([
+		// Only block on reads that provide display data for the home screen.
+		// Firestore writes (ensureCanonicalUserData, upsertAuthProviderFields)
+		// are non-critical metadata updates — run them in the background so
+		// the UI surfaces immediately.
+		const [existingDocument, lastEntry] = await Promise.all([
 			fetchUserDocument(canonicalUid),
-			ensureCanonicalUserData(canonicalUid, normalized),
-			upsertAuthProviderFields(canonicalUid, activeAccount),
+			fetchLastLogEntry(canonicalUid),
 		]);
 
+		appStore.setLastSmokeAt(lastEntry?.timestamp ?? null);
 		appStore.setAccountInfo(activeAccount);
 		appStore.setCanonicalUid(canonicalUid);
 		appStore.setUserDocument(existingDocument ?? buildMinimalDocument(normalized));
@@ -180,7 +209,13 @@ async function runBootstrap(): Promise<void> {
 		appStore.setBootstrapError(null);
 		appStore.setPhase('ready');
 
-		await refreshLogs(canonicalUid);
+		// Non-blocking metadata writes and log refresh.
+		void Promise.all([
+			ensureCanonicalUserData(canonicalUid, normalized),
+			upsertAuthProviderFields(canonicalUid, activeAccount),
+		]).catch((error) => {
+			console.warn('[Smokeless] background user-data write failed', error);
+		});
 	} catch (error) {
 		console.error('[Smokeless] bootstrap failed', error);
 		appStore.setPhase('blocked', 'Smokeless could not finish startup. Please restart the app.');

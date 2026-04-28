@@ -61,6 +61,44 @@ export function computeWeightedDailyAverage(
 }
 
 /**
+ * Period-aware weighted daily average.
+ *
+ * Only counts days WITHIN the selected period that actually have data
+ * (empty days before the user's first log in the period are ignored).
+ * More recent days are weighted higher via exponential decay.
+ *
+ * Always returns "cigarettes per day" regardless of period.
+ */
+export function computeWeightedDailyAverageForPeriod(
+	dailyStats: Record<string, number>,
+	periodStart: Date,
+	now = new Date(),
+): number {
+	const todayKey = toDayKey(now);
+	const periodStartDay = startOfDay(periodStart);
+
+	const samples: Array<{ value: number; weight: number }> = [];
+
+	for (const [dayKey, count] of Object.entries(dailyStats)) {
+		if (count <= 0 || dayKey === todayKey) continue;
+		const day = parseDayKey(dayKey);
+		if (day < periodStartDay) continue;
+		// Don't look at days after "now" either.
+		if (day > now) continue;
+
+		const daysAgo = diffCalendarDays(now, day);
+		if (daysAgo <= 0) continue;
+
+		samples.push({
+			value: count,
+			weight: Math.exp(-DECAY_LAMBDA * daysAgo),
+		});
+	}
+
+	return computeWeightedMean(samples) ?? 0;
+}
+
+/**
  * Sleep-aware weighted average interval for a bounded period (week/month/year).
  *
  * Unlike `computeSleepAwareInterval` this includes today's gaps and weights

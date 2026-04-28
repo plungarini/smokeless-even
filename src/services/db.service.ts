@@ -62,6 +62,10 @@ export async function fetchAllLogEntries(uid: string): Promise<SmokeLogEntry[]> 
 	return mode() === 'local' ? localRepo.fetchAllLogEntries(uid) : firestoreRepo.fetchAllLogEntries(uid);
 }
 
+export async function fetchLastLogEntry(uid: string): Promise<SmokeLogEntry | null> {
+	return mode() === 'local' ? localRepo.fetchLastLogEntry(uid) : firestoreRepo.fetchLastLogEntry(uid);
+}
+
 export async function ensureCanonicalUserData(uid: string, evenUser: EvenUserInfo): Promise<void> {
 	return mode() === 'local'
 		? localRepo.ensureCanonicalUserData(uid, evenUser)

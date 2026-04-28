@@ -11,8 +11,10 @@ export const LINK_SITE_URL = process.env.LINK_SITE_URL ?? 'https://plungarini.gi
 export const HANDOFF_TTL_MS = 15 * 60 * 1000;
 
 // Session tokens persist the user's Google-mode login across WebView
-// restarts. 30-day rolling TTL — rotated on every exchange.
-export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+// restarts. 365-day rolling TTL — rotated on every exchange.
+// This is effectively "infinite" for a smoking-tracker app; the only
+// hard logout is an explicit sign-out or a token leak detection.
+export const SESSION_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
 export const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 export const CODE_LENGTH = 8;

@@ -1,7 +1,8 @@
-import { Card } from 'even-toolkit/web';
+import { Button, Card } from 'even-toolkit/web';
 import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { appStore } from './app/store';
-import { resetAuthMode, startBootstrap } from './app/bootstrap';
+import { completeOnboarding, resetAuthMode, startBootstrap } from './app/bootstrap';
+import { refreshLogs } from './app/refresh-logs';
 import { useAppSelector } from './app/hooks/useAppSelector';
 import { useClock } from './app/hooks/useClock';
 import { useCountBump } from './app/hooks/useCountBump';
@@ -12,11 +13,11 @@ import { formatShortDate, getHistoryEntriesForDay, monthStart } from './features
 import {
 	buildStatsSeries,
 	formatStatsIntervalLabel,
-	getAverageCigsAcrossNonEmptyBuckets,
 	getPeriodComparisonLabel,
+	getSelectedPeriodRange,
 	getSelectedPeriodTotal,
 } from './features/smokeless/lib/stats-series';
-import { computeWeightedIntervalForPeriod } from './domain/calculations';
+import { computeWeightedDailyAverageForPeriod, computeWeightedIntervalForPeriod } from './domain/calculations';
 import { AddSmokeModal } from './features/smokeless/ui/components/AddSmokeModal';
 import { BottomTabBar } from './features/smokeless/ui/components/BottomTabBar';
 import { FullScreenState } from './features/smokeless/ui/components/FullScreenState';
@@ -65,7 +66,23 @@ export default function App() {
 	const historyMonth = useAppSelector((s) => s.historyMonth);
 	const mutating = useAppSelector((s) => s.mutating);
 	const optimisticLastSmokeAt = useAppSelector((s) => s.optimisticLastSmokeAt);
+	const lastSmokeAtState = useAppSelector((s) => s.lastSmokeAt);
 	const hudSnapshot = useAppSelector(selectHudSnapshot);
+
+	// ── On-demand stats/history fetching ──────────────────────────────
+	// We no longer preload all logs on startup (that blocked the home
+	// screen for seconds). Instead, fetch the full log history the first
+	// time the user opens Stats or History.
+	useEffect(() => {
+		if (!canonicalUid) return;
+		if (tab !== 'stats' && tab !== 'history') return;
+		if (allSmokeEntries.length > 0) return;
+		appStore.setHistoryLoading(true);
+		void refreshLogs(canonicalUid).catch((error) => {
+			console.error('[Smokeless] on-demand refreshLogs failed', error);
+			appStore.setHistoryLoading(false);
+		});
+	}, [tab, canonicalUid, allSmokeEntries.length]);
 
 	// ── Hooks that own their own React state ──────────────────────────
 	const { toast, push: pushToast, dismiss: dismissToast } = useToast();
@@ -80,7 +97,7 @@ export default function App() {
 	const [modalEntryTime, setModalEntryTime] = useState(() => toTimeInputValue(new Date()));
 
 	// ── Derived display values ────────────────────────────────────────
-	const lastSmokeAt = optimisticLastSmokeAt ?? allSmokeEntries[allSmokeEntries.length - 1]?.timestamp ?? null;
+	const lastSmokeAt = optimisticLastSmokeAt ?? lastSmokeAtState ?? allSmokeEntries[allSmokeEntries.length - 1]?.timestamp ?? null;
 	const weightedAverage = hudSnapshot.home.weightedAverage;
 	const statsSeries = useMemo(
 		() => buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now),
@@ -93,7 +110,10 @@ export default function App() {
 		[selectedStatsBucketKey, statsSeries],
 	);
 	const displayedStatsTotal = selectedStatsBucket?.count ?? selectedPeriodTotal;
-	const statsAverageCigs = useMemo(() => getAverageCigsAcrossNonEmptyBuckets(statsSeries), [statsSeries]);
+	const statsAverageCigs = useMemo(() => {
+		const { start } = getSelectedPeriodRange(statsPeriod, now);
+		return computeWeightedDailyAverageForPeriod(dailyStats, start, now);
+	}, [dailyStats, statsPeriod, now]);
 	const statsAverageIntervalLabel = useMemo(() => {
 		const periodStart = statsSeries[0]?.start;
 		const periodEnd = statsSeries[statsSeries.length - 1]?.end;
@@ -173,6 +193,22 @@ export default function App() {
 									</p>
 								</div>
 							) : null}
+							<div className="mt-2 flex flex-col gap-3">
+								<Button
+									variant="highlight"
+									className="w-full rounded-[20px] !text-black"
+									onClick={() => void resetAuthMode()}
+								>
+									Sign in again
+								</Button>
+								<Button
+									variant="secondary"
+									className="w-full rounded-[20px]"
+									onClick={() => void completeOnboarding('local')}
+								>
+									Continue without account
+								</Button>
+							</div>
 						</div>
 					</Card>
 				</div>

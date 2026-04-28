@@ -73,9 +73,9 @@ export class HudSession {
 			// Session takeover: the bridge already has a page (from a prior
 			// module-instance before a full reload, or a stale app container).
 			// Fall back to rebuild — the SDK accepts this and replaces the
-			// layout with ours.
-			console.error(
-				'[HUD-SESSION] createStartUpPage failed, attempting rebuild fallback',
+			// layout with ours. This is expected after a WebView refresh.
+			console.warn(
+				'[HUD-SESSION] createStartUpPage returned invalid (page already exists), attempting rebuild fallback',
 				layoutDiagnostic(next, { sdkResult: created }),
 			);
 			try {

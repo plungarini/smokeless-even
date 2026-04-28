@@ -13,8 +13,6 @@
 			"name": "network"
 		}
 	],
-	"supported_languages": [
-		"en"
-	],
-	"version": "0.5.4"
+	"supported_languages": ["en"],
+	"version": "0.5.5"
 }

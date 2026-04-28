@@ -13,8 +13,8 @@ import { formatShortDate, getHistoryEntriesForDay, monthStart } from './features
 import {
 	buildStatsSeries,
 	formatStatsIntervalLabel,
-	getAverageCigsAcrossNonEmptyBuckets,
 	getPeriodComparisonLabel,
+	getSelectedPeriodAverageCigs,
 	getSelectedPeriodTotal,
 } from './features/smokeless/lib/stats-series';
 import { computeWeightedIntervalForPeriod } from './domain/calculations';
@@ -110,7 +110,10 @@ export default function App() {
 		[selectedStatsBucketKey, statsSeries],
 	);
 	const displayedStatsTotal = selectedStatsBucket?.count ?? selectedPeriodTotal;
-	const statsAverageCigs = useMemo(() => getAverageCigsAcrossNonEmptyBuckets(statsSeries), [statsSeries]);
+	const statsAverageCigs = useMemo(
+		() => getSelectedPeriodAverageCigs(statsPeriod, selectedPeriodTotal, now),
+		[statsPeriod, selectedPeriodTotal, now],
+	);
 	const statsAverageIntervalLabel = useMemo(() => {
 		const periodStart = statsSeries[0]?.start;
 		const periodEnd = statsSeries[statsSeries.length - 1]?.end;

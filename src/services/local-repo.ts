@@ -282,6 +282,11 @@ export function subscribeToTodayCount(uid: string, onValue: (count: number) => v
 	return unsub;
 }
 
+export async function fetchLastLogEntry(uid: string): Promise<SmokeLogEntry | null> {
+	const entries = await fetchAllLogEntries(uid);
+	return entries[entries.length - 1] ?? null;
+}
+
 export async function fetchAllLogEntries(uid: string): Promise<SmokeLogEntry[]> {
 	const stored = await readLogs(uid);
 	return stored.map(toEntry).sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());

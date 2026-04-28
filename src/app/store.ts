@@ -55,6 +55,9 @@ export interface AppState {
 
 	// Time
 	today: string; // dayKey, only bumps at midnight
+
+	// Fast-path last smoke (hydrated before full logs load)
+	lastSmokeAt: Date | null;
 }
 
 const initialState: AppState = {
@@ -86,6 +89,7 @@ const initialState: AppState = {
 	hudPendingAction: null,
 
 	today: toDayKey(new Date()),
+	lastSmokeAt: null,
 };
 
 type Listener = () => void;
@@ -295,6 +299,11 @@ export class AppStore {
 			// Re-derive todayCount from dailyStats for the new day.
 			todayCount: this.state.dailyStats[dayKey] ?? 0,
 		});
+	}
+
+	setLastSmokeAt(at: Date | null): void {
+		if (this.state.lastSmokeAt === at) return;
+		this.commit({ ...this.state, lastSmokeAt: at });
 	}
 
 	// ── Async actions ─────────────────────────────────────────────────

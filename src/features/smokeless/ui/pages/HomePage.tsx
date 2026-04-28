@@ -43,15 +43,32 @@ export function HomePage({
 					</div>
 
 					<div className="mt-2 flex items-end justify-between gap-4">
-						<button
-							type="button"
-							className={plusFabClass}
-							disabled={mutating}
-							onClick={onAddSmoke}
-							aria-label="Log smoke"
-						>
-							<IcEditAdd className="size-17 translate-y-0.75" />
-						</button>
+						<div className="flex flex-col items-center gap-2">
+							<button
+								type="button"
+								className={`${plusFabClass} ${mutating ? 'opacity-40' : ''}`}
+								disabled={mutating}
+								onClick={onAddSmoke}
+								aria-label={mutating ? 'Logging smoke…' : 'Log smoke'}
+							>
+								{mutating ? (
+									<svg
+										className="size-8 animate-spin"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										strokeWidth="2"
+									>
+										<path d="M21 12a9 9 0 1 1-6.219-8.56" />
+									</svg>
+								) : (
+									<IcEditAdd className="size-17 translate-y-0.75" />
+								)}
+							</button>
+							{mutating && (
+								<span className="text-[11px] font-medium text-text-dim">Saving…</span>
+							)}
+						</div>
 						<div className="text-right">
 							<div className="text-detail uppercase tracking-[0.34em] text-text-dim">Smoked today</div>
 							<div

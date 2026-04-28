@@ -25,7 +25,7 @@ function endOfDay(date: Date): Date {
 	return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
 }
 
-function getSelectedPeriodRange(period: StatsPeriod, now: Date): { start: Date; end: Date } {
+export function getSelectedPeriodRange(period: StatsPeriod, now: Date): { start: Date; end: Date } {
 	if (period === 'week') {
 		return {
 			start: startOfWeek(now),

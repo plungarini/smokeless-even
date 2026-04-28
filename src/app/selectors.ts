@@ -1,4 +1,4 @@
-import { computeWeightedDailyAverage, computeWeightedIntervalForPeriod } from '../domain/calculations';
+import { computeWeightedDailyAverage, computeWeightedDailyAverageForPeriod, computeWeightedIntervalForPeriod } from '../domain/calculations';
 import type {
 	HudHistoryDaySummary,
 	HudSnapshot,
@@ -8,7 +8,6 @@ import type {
 import {
 	buildStatsSeries,
 	formatStatsIntervalLabel,
-	getAverageCigsAcrossNonEmptyBuckets,
 	getPeriodComparisonLabel,
 	getSelectedPeriodTotal,
 } from '../features/smokeless/lib/stats-series';
@@ -47,7 +46,7 @@ export const selectWeightedAverage = memoize<AppState, unknown, number>(
 const buildHudSummary = (
 	period: HudStatsPeriod,
 	state: AppState,
-	weightedAverage: number,
+	globalWeightedAverage: number,
 	referenceNow: Date,
 ): HudStatsSummary => {
 	const series = buildStatsSeries(period, state.dailyStats, state.monthlyStats, referenceNow);
@@ -60,11 +59,17 @@ const buildHudSummary = (
 			? state.allSmokeEntries.filter((e) => e.timestamp >= periodStart && e.timestamp <= periodEnd)
 			: state.allSmokeEntries;
 
+	// Period-aware weighted daily average — only counts days WITHIN the
+	// selected period that have data, with exponential decay weighting.
+	const periodWeightedAverage = periodStart
+		? computeWeightedDailyAverageForPeriod(state.dailyStats, periodStart, referenceNow)
+		: globalWeightedAverage;
+
 	return {
 		period,
 		totalSmoked,
-		comparisonLabel: getPeriodComparisonLabel(period, totalSmoked, weightedAverage, referenceNow),
-		weightedAverage: getAverageCigsAcrossNonEmptyBuckets(series),
+		comparisonLabel: getPeriodComparisonLabel(period, totalSmoked, globalWeightedAverage, referenceNow),
+		weightedAverage: periodWeightedAverage,
 		averageIntervalLabel: formatStatsIntervalLabel(
 			computeWeightedIntervalForPeriod(periodEntries, referenceNow),
 			{ padHours: true },

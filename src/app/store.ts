@@ -167,6 +167,7 @@ export class AppStore {
 
 	setAllEntries(entries: SmokeLogEntry[], daily: Record<string, number>, monthly: Record<string, number>, groups: HistoryDayGroup[]): void {
 		const todayKey = this.state.today;
+		const lastEntry = entries[entries.length - 1];
 		this.commit({
 			...this.state,
 			allSmokeEntries: entries,
@@ -176,6 +177,7 @@ export class AppStore {
 			todayCount: daily[todayKey] ?? 0,
 			historyHasMore: false,
 			optimisticLastSmokeAt: null,
+			lastSmokeAt: lastEntry?.timestamp ?? null,
 		});
 	}
 
@@ -278,14 +280,20 @@ export class AppStore {
 			...this.state,
 			todayCount: this.state.todayCount + 1,
 			optimisticLastSmokeAt: at,
+			lastSmokeAt: at,
 		});
 	}
 
-	rollbackOptimisticSmoke(prevTodayCount: number, prevOptimistic: Date | null): void {
+	rollbackOptimisticSmoke(
+		prevTodayCount: number,
+		prevOptimistic: Date | null,
+		prevLastSmokeAt: Date | null,
+	): void {
 		this.commit({
 			...this.state,
 			todayCount: prevTodayCount,
 			optimisticLastSmokeAt: prevOptimistic,
+			lastSmokeAt: prevLastSmokeAt,
 		});
 	}
 
@@ -331,6 +339,7 @@ export class AppStore {
 		this.setHudPendingAction('logSmoke');
 		const snapshotTodayCount = todayCount;
 		const snapshotOptimistic = optimisticLastSmokeAt;
+		const snapshotLastSmokeAt = this.state.lastSmokeAt;
 		const optimisticNow = new Date();
 		this.applyOptimisticSmoke(optimisticNow);
 
@@ -340,7 +349,7 @@ export class AppStore {
 			return { ok: true, todayCount: snapshotTodayCount + 1, loggedAt: optimisticNow };
 		} catch (error) {
 			console.error('[Smokeless] add smoke failed', error);
-			this.rollbackOptimisticSmoke(snapshotTodayCount, snapshotOptimistic);
+			this.rollbackOptimisticSmoke(snapshotTodayCount, snapshotOptimistic, snapshotLastSmokeAt);
 			return { ok: false, errorMessage: 'Could not log smoke.' };
 		} finally {
 			this.smokeInFlight = false;

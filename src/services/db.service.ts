@@ -35,6 +35,7 @@ export {
 	deriveStatsFromLogs,
 	deriveHistoryGroupsFromLogs,
 	getHistoryEntriesForMonth,
+	rebuildIntervals,
 } from './firestore';
 
 export type HistoryCursor = unknown;

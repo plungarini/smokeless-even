@@ -16,9 +16,11 @@ import {
 	addSmokeEntry as dbAddSmoke,
 	deleteAllUserData as dbDeleteAll,
 	deleteLogEntry as dbDeleteEntry,
+	deriveHistoryGroupsFromLogs,
+	deriveStatsFromLogs,
 	exportLogs as dbExportLogs,
+	rebuildIntervals,
 } from '../services/db.service';
-import { refreshLogs } from './refresh-logs';
 
 export interface AppState {
 	// Phase / bootstrap status
@@ -167,6 +169,7 @@ export class AppStore {
 
 	setAllEntries(entries: SmokeLogEntry[], daily: Record<string, number>, monthly: Record<string, number>, groups: HistoryDayGroup[]): void {
 		const todayKey = this.state.today;
+		const lastEntry = entries[entries.length - 1];
 		this.commit({
 			...this.state,
 			allSmokeEntries: entries,
@@ -176,6 +179,7 @@ export class AppStore {
 			todayCount: daily[todayKey] ?? 0,
 			historyHasMore: false,
 			optimisticLastSmokeAt: null,
+			lastSmokeAt: lastEntry?.timestamp ?? null,
 		});
 	}
 
@@ -278,14 +282,20 @@ export class AppStore {
 			...this.state,
 			todayCount: this.state.todayCount + 1,
 			optimisticLastSmokeAt: at,
+			lastSmokeAt: at,
 		});
 	}
 
-	rollbackOptimisticSmoke(prevTodayCount: number, prevOptimistic: Date | null): void {
+	rollbackOptimisticSmoke(
+		prevTodayCount: number,
+		prevOptimistic: Date | null,
+		prevLastSmokeAt: Date | null,
+	): void {
 		this.commit({
 			...this.state,
 			todayCount: prevTodayCount,
 			optimisticLastSmokeAt: prevOptimistic,
+			lastSmokeAt: prevLastSmokeAt,
 		});
 	}
 
@@ -331,16 +341,17 @@ export class AppStore {
 		this.setHudPendingAction('logSmoke');
 		const snapshotTodayCount = todayCount;
 		const snapshotOptimistic = optimisticLastSmokeAt;
+		const snapshotLastSmokeAt = this.state.lastSmokeAt;
 		const optimisticNow = new Date();
 		this.applyOptimisticSmoke(optimisticNow);
 
 		try {
-			await dbAddSmoke(canonicalUid, optimisticNow);
-			await this.refreshLogsFromFirestore();
+			const logId = await dbAddSmoke(canonicalUid, optimisticNow);
+			this.applyIncrementalAdd({ id: logId, timestamp: optimisticNow, intervalSincePrevious: null });
 			return { ok: true, todayCount: snapshotTodayCount + 1, loggedAt: optimisticNow };
 		} catch (error) {
 			console.error('[Smokeless] add smoke failed', error);
-			this.rollbackOptimisticSmoke(snapshotTodayCount, snapshotOptimistic);
+			this.rollbackOptimisticSmoke(snapshotTodayCount, snapshotOptimistic, snapshotLastSmokeAt);
 			return { ok: false, errorMessage: 'Could not log smoke.' };
 		} finally {
 			this.smokeInFlight = false;
@@ -355,8 +366,8 @@ export class AppStore {
 		this.setMutating(true);
 		try {
 			const entryDate = combineDateAndTime(dateInputValue, timeInputValue);
-			await dbAddSmoke(canonicalUid, entryDate);
-			await this.refreshLogsFromFirestore();
+			const logId = await dbAddSmoke(canonicalUid, entryDate);
+			this.applyIncrementalAdd({ id: logId, timestamp: entryDate, intervalSincePrevious: null });
 			this.setHistoryDay(dateInputValue);
 			return true;
 		} catch (error) {
@@ -368,12 +379,12 @@ export class AppStore {
 	}
 
 	async deleteEntry(id: string): Promise<boolean> {
-		const { canonicalUid } = this.state;
-		if (!canonicalUid) return false;
+		const { canonicalUid, mutating } = this.state;
+		if (!canonicalUid || mutating) return false;
 		this.setMutating(true);
 		try {
 			await dbDeleteEntry(canonicalUid, id);
-			await this.refreshLogsFromFirestore();
+			this.applyIncrementalDelete(id);
 			return true;
 		} catch (error) {
 			console.error('[Smokeless] delete entry failed', error);
@@ -420,10 +431,29 @@ export class AppStore {
 		}
 	}
 
-	private async refreshLogsFromFirestore(): Promise<void> {
-		const { canonicalUid } = this.state;
-		if (!canonicalUid) return;
-		await refreshLogs(canonicalUid);
+	// ── Incremental state updates (avoid full Firestore re-fetch) ──────
+
+	private applyIncrementalAdd(entry: SmokeLogEntry): void {
+		const entries = [...this.state.allSmokeEntries, entry].sort(
+			(left, right) => left.timestamp.getTime() - right.timestamp.getTime(),
+		);
+		// Rebuild intervals so the new entry and its successor have correct
+		// intervalSincePrevious values (History page and any interval-based
+		// displays stay accurate without a full Firestore re-fetch).
+		const withIntervals = rebuildIntervals(entries);
+		const { daily, monthly } = deriveStatsFromLogs(withIntervals);
+		const groups = deriveHistoryGroupsFromLogs(withIntervals);
+		this.setAllEntries(withIntervals, daily, monthly, groups);
+	}
+
+	private applyIncrementalDelete(entryId: string): void {
+		const entries = this.state.allSmokeEntries.filter((e) => e.id !== entryId);
+		// Rebuild intervals so the entry that followed the deleted one gets
+		// its intervalSincePrevious updated correctly.
+		const withIntervals = rebuildIntervals(entries);
+		const { daily, monthly } = deriveStatsFromLogs(withIntervals);
+		const groups = deriveHistoryGroupsFromLogs(withIntervals);
+		this.setAllEntries(withIntervals, daily, monthly, groups);
 	}
 
 	// ── Full reset (used by rebootForUid) ─────────────────────────────

@@ -1,128 +1,71 @@
 # Smokeless
 
-Smokeless is an Even Hub app for tracking cigarettes, running a quit program, and showing a glanceable HUD on Even Realities G2 glasses.
+**A cigarette tracker and quit companion for Even Realities Glasses glasses.**
 
-## What It Includes
+Smokeless lets you log cigarettes, monitor your smoking patterns, and track your progress toward quitting — all from your glasses. A quick tap on the frame records a smoke instantly, while the companion phone UI gives you rich stats, history, and settings.
 
-- Firebase anonymous auth with automatic Even account linking
-- Cross-device Google account linking via pairing codes, Firebase Functions, and a dedicated GitHub Pages linker site
-- Firestore-backed `users` documents with a single `logs` subcollection owned by the canonical Firebase Auth UID
-- Onboarding for baseline smoking data and quit-program setup
-- Home, statistics, history, and program/settings web views
-- A direct-SDK HUD with glance, confirm-log, and daily-summary states
-- Server-side account merge into the canonical Google-backed Firebase account
+## What It Does
 
-## Setup
+Smokeless is built for smokers who want to cut down or quit. It replaces mental tallying with a frictionless, always-available log. Every cigarette is timestamped so you can see exactly how long it has been since your last one, view daily and long-term trends, and celebrate your longest smoke-free stretches.
 
-### 1. Install dependencies
+Because it runs on G2 glasses, you can log a cigarette the moment you finish it — no need to unlock your phone or open an app.
+
+## Key Features
+
+- **Instant Glass Logging** — Single-tap the glasses frame to record a cigarette. Double-tap opens the HUD menu.
+- **Live Cessation Timer** — A real-time clock shows how long it has been since your last smoke, right on the glasses display.
+- **Cessation Records** — Tracks today's longest smoke-free period and your all-time personal best.
+- **Rich Statistics** — Weighted daily averages, week/month/year breakdowns, and trend comparisons on the phone UI.
+- **History Calendar** — Browse any day, add backdated entries, or delete mistakes.
+- **Two Sync Modes**
+  - _Local_: Data stays on the device via Bridge Local Storage. No account needed.
+  - _Google_: Cross-device sync via Firebase Auth and Firestore. Secure pairing-code handoff lets you link from your phone browser without typing passwords inside the Even WebView.
+- **Discreet & Fast** — Optimised for the 576 × 288 px 4-bit greyscale G2 display; the HUD is glanceable and distraction-free.
+
+## How It Works / User Flow
+
+1. **Onboarding** — On first launch, choose _Local_ (device-only) or _Google_ (cloud sync). Google sign-in uses a temporary pairing code and a secure external linker page, so you never enter credentials inside the WebView.
+2. **Home** — The glasses HUD shows today's count and a live timer since your last cigarette. The phone WebView mirrors this with larger visuals and your longest cessation records.
+3. **Log a Smoke** — Tap the glasses frame once. The HUD briefly confirms the log, then returns to the timer. You can also log from the phone UI or add a past entry via History.
+4. **Menu** — Double-tap the frame to open the glasses menu, then scroll and click to switch between Home, Stats, and History views.
+5. **Stats & History** — Open these on the phone for detailed charts, calendar browsing, and data export.
+
+## Tech Stack
+
+| Layer          | Tech                                                                                     |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| Glasses HUD    | `@evenrealities/even_hub_sdk`, `@evenrealities/pretext`, pure TypeScript                 |
+| Phone UI       | React 19, Vite, TypeScript, Tailwind CSS v4, `even-toolkit`                              |
+| State          | Shared `AppStore` singleton (no framework); Bridge Local Storage for durable persistence |
+| Backend        | Firebase Auth, Firestore, Cloud Functions                                                |
+| Image encoding | `upng-js`                                                                                |
+| Dev tools      | `@evenrealities/evenhub-cli`, `@evenrealities/evenhub-simulator`                         |
+
+## Getting Started
 
 ```bash
 cd apps/smokeless
 npm install
 npm --prefix functions install
-```
 
-### 2. Configure the web app
+# Copy and fill in your Firebase config
+cp .env.example .env
+cp functions/.env.example functions/.env
 
-Copy `.env.example` to `.env` and fill in the Firebase client config:
-
-- `VITE_FIREBASE_*`
-- `VITE_FIREBASE_FUNCTIONS_REGION`
-- `VITE_GOOGLE_LINK_URL`
-
-Copy `functions/.env.example` to `functions/.env` and set:
-
-- `GOOGLE_LINK_URL`
-
-### 3. Run the app
-
-```bash
-cd apps/smokeless
+# Start the dev server
 npm run dev
-```
 
-### 4. Optional: run the Google linker site locally
-
-```bash
-npm run dev:link-site
-```
-
-### 5. Open on glasses
-
-```bash
+# Generate a QR code to scan with the Even App
 npm run qr
+
+# Package for distribution
+npm run pack
 ```
 
-### 6. Deploy backend and rules
+## Why Smokeless?
 
-```bash
-firebase deploy --only functions,firestore:rules --project <your-firebase-project-id>
-```
+Most habit trackers live on your phone, which means friction, distraction, and forgotten logs. Smokeless puts the interaction on your glasses — the one place that is already with you when you step outside for a smoke. By making logging instant and invisible, it turns a chore into a reflex, giving you honest data and a clear picture of your habit so you can actually change it.
 
-### 6a. Grant custom-token signing permission
+---
 
-Smokeless uses Firebase custom tokens to switch the Even WebView from the anonymous Firebase UID onto the merged Google UID after background migration. The Functions runtime must be allowed to sign custom tokens.
-
-After deploying Functions, check the Functions logs for the `smokeless auth signer identity` line. It prints the service-account identity that the Admin SDK is using for token signing.
-
-Grant that identity `Service Account Token Creator` on the signing service account, or the Google-link handoff will get stuck in `ready_to_switch` with an IAM `signBlob` error.
-
-Typical gcloud command shape:
-
-```bash
-gcloud iam service-accounts add-iam-policy-binding <SIGNING_SERVICE_ACCOUNT_EMAIL> \
-  --member="serviceAccount:<FUNCTIONS_RUNTIME_SERVICE_ACCOUNT_EMAIL>" \
-  --role="roles/iam.serviceAccountTokenCreator"
-```
-
-If you see `custom-token-mint-failed` in a `googleLinkSessions/{sessionId}` document or in Function logs, this IAM step is still missing.
-
-### 7. GitHub Pages linker deployment
-
-The repo includes `.github/workflows/deploy-link-site.yml`, which builds and deploys the dedicated linker site from `develop`.
-
-Configure these repository secrets before enabling the workflow:
-
-- `VITE_FIREBASE_API_KEY`
-- `VITE_FIREBASE_AUTH_DOMAIN`
-- `VITE_FIREBASE_PROJECT_ID`
-- `VITE_FIREBASE_STORAGE_BUCKET`
-- `VITE_FIREBASE_MESSAGING_SENDER_ID`
-- `VITE_FIREBASE_APP_ID`
-- `VITE_FIREBASE_FUNCTIONS_REGION`
-
-## Data Model
-
-The app writes the following Firestore structure:
-
-```text
-users/{uid}
-users/{uid}/logs/{logId}
-googleLinkSessions/{sessionId}
-```
-
-The `uid` is the canonical Firebase Auth UID for the active account. The user document is nested and iOS-aligned, with:
-
-- `preferences`
-- `onboarding`
-- `providers.google`
-- `providers.even`
-- `longestEverCessation`
-- `todayMaxCessation`
-
-If Google is linked later:
-
-- the app creates a 15-minute pairing code tied to the current anonymous Firebase UID
-- the user completes Google auth on the GitHub Pages linker site
-- Firebase Functions merge the anonymous data into the Google-backed Firebase UID first
-- the Even app then switches onto that canonical Google UID with a Firebase custom token
-- only after the app is actually running on the Google UID does cleanup delete the old anonymous source user
-- provider metadata is stored under `providers.google`
-
-## Notes
-
-- Smoke events are stored only in `users/{uid}/logs`, with each log containing `timestamp` and `intervalSincePrevious`.
-- Stats, history, and latest-smoke data are derived from logs at read time; there is no `stats` subcollection and no soft-delete tombstones.
-- Firestore security rules live in `firestore.rules`. Users can access only their own `users/{uid}` data and can read only their own `googleLinkSessions/{sessionId}` documents.
-- Google sign-in must be enabled in Firebase Auth, and only the GitHub Pages linker origin needs to be listed in Firebase authorized domains.
-- The main Even app no longer uses Firebase Auth redirect linking inside the Even WebView.
+_Built for the Even Realities Glasses platform._

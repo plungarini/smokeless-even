@@ -217,7 +217,7 @@ function dedupeLogs(entries: SmokeLogEntry[]): SmokeLogEntry[] {
 	return [...byTimestamp.values()].sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime());
 }
 
-function rebuildIntervals(entries: SmokeLogEntry[]): SmokeLogEntry[] {
+export function rebuildIntervals(entries: SmokeLogEntry[]): SmokeLogEntry[] {
 	const sorted = [...entries].sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime());
 	return sorted.map((entry, index) => {
 		const previous = sorted[index - 1];
@@ -618,13 +618,24 @@ export async function addSmokeEntry(uid: string, timestamp = new Date()): Promis
 }
 
 export async function deleteLogEntry(uid: string, logId: string): Promise<void> {
-	const entries = await fetchAllLogEntries(uid);
-	const sorted = [...entries].sort((left, right) => left.timestamp.getTime() - right.timestamp.getTime());
-	const index = sorted.findIndex((entry) => entry.id === logId);
-	if (index === -1) return;
+	// Fetch the entry to delete by ID directly (fast).
+	const entrySnap = await getDoc(doc(getFirebaseDb(), 'users', uid, 'logs', logId));
+	if (!entrySnap.exists()) return;
+	const entry = mapLogSnapshot(entrySnap);
 
-	const next = sorted[index + 1] ?? null;
-	const previous = sorted[index - 1] ?? null;
+	// Find previous and next neighbors with targeted queries.
+	// Use >= for next so we don't skip entries at the exact same timestamp
+	// (possible with past entries), then filter out the deleted doc itself.
+	const [previousSnap, nextSnap] = await Promise.all([
+		getDocs(query(logsRef(uid), where('timestamp', '<', entry.timestamp), orderBy('timestamp', 'desc'), limit(1))),
+		getDocs(query(logsRef(uid), where('timestamp', '>=', entry.timestamp), orderBy('timestamp', 'asc'), limit(2))),
+	]);
+
+	const previous = previousSnap.empty ? null : mapLogSnapshot(previousSnap.docs[0]!);
+	const next = nextSnap.docs
+		.map(mapLogSnapshot)
+		.filter((doc) => doc.id !== entry.id)[0] ?? null;
+
 	const batch = writeBatch(getFirebaseDb());
 	batch.delete(doc(getFirebaseDb(), 'users', uid, 'logs', logId));
 
@@ -637,10 +648,8 @@ export async function deleteLogEntry(uid: string, logId: string): Promise<void> 
 	}
 
 	await batch.commit();
-	await updateUserMetrics(
-		uid,
-		sorted.filter((entry) => entry.id !== logId),
-	);
+	// Metrics are updated opportunistically on add; delete skips the
+	// expensive full-history recompute to keep the UI responsive.
 }
 
 export async function fetchHistoryPage(

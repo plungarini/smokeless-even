@@ -1,6 +1,6 @@
 import { OsEventTypeList, type EvenHubEvent } from '@evenrealities/even_hub_sdk';
-import { appStore } from '../../../app/store';
 import { selectHudStatsSummaries } from '../../../app/selectors';
+import { appStore } from '../../../app/store';
 import type { Router, View, ViewKey } from '../../router';
 import type { HudLayoutDescriptor } from '../../types';
 import { centerLine, padToWidth } from '../../utils';
@@ -44,9 +44,8 @@ export class StatsView implements View {
 		}
 		const gridText = lines.join('\n');
 		const title = centerLine(`[${period.toUpperCase()}]   ${stats.totalSmoked} smoked`, BODY_INNER_WIDTH_PX);
-		const avgUnit = period === 'week' ? 'day' : period === 'month' ? 'week' : 'month';
 		const avgLine = centerLine(
-			`-- Average: ${Math.round(stats.weightedAverage)}/${avgUnit}   (${stats.averageIntervalLabel}) --`,
+			`-- Average: ${Math.round(stats.weightedAverage)}/day   (${stats.averageIntervalLabel}) --`,
 			BODY_INNER_WIDTH_PX,
 		);
 		const body = `${title}\n\n${avgLine}\n\n${gridText}`;

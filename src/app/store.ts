@@ -48,8 +48,7 @@ export interface AppState {
 	selectedHistoryDay: string;
 	historyMonth: Date;
 
-	// Optimistic / pending
-	optimisticLastSmokeAt: Date | null;
+	// Pending action flags
 	mutating: boolean;
 	hudPendingAction: HudPendingAction;
 
@@ -86,7 +85,6 @@ const initialState: AppState = {
 	selectedHistoryDay: toDayKey(new Date()),
 	historyMonth: monthStart(new Date()),
 
-	optimisticLastSmokeAt: null,
 	mutating: false,
 	hudPendingAction: null,
 
@@ -269,7 +267,7 @@ export class AppStore {
 		this.commit({ ...this.state, historyMonth: monthStart(month) });
 	}
 
-	// ── Optimistic / mutation flags ───────────────────────────────────
+	// ── Mutation flags ───────────────────────────────────────────────
 
 	setMutating(mutating: boolean): void {
 		if (this.state.mutating === mutating) return;
@@ -279,32 +277,6 @@ export class AppStore {
 	setHudPendingAction(action: HudPendingAction): void {
 		if (this.state.hudPendingAction === action) return;
 		this.commit({ ...this.state, hudPendingAction: action });
-	}
-
-	setOptimisticLastSmokeAt(at: Date | null): void {
-		this.commit({ ...this.state, optimisticLastSmokeAt: at });
-	}
-
-	applyOptimisticSmoke(at: Date): void {
-		this.commit({
-			...this.state,
-			todayCount: this.state.todayCount + 1,
-			optimisticLastSmokeAt: at,
-			lastSmokeAt: at,
-		});
-	}
-
-	rollbackOptimisticSmoke(
-		prevTodayCount: number,
-		prevOptimistic: Date | null,
-		prevLastSmokeAt: Date | null,
-	): void {
-		this.commit({
-			...this.state,
-			todayCount: prevTodayCount,
-			optimisticLastSmokeAt: prevOptimistic,
-			lastSmokeAt: prevLastSmokeAt,
-		});
 	}
 
 	// ── Time ──────────────────────────────────────────────────────────
@@ -327,16 +299,12 @@ export class AppStore {
 	// ── Async actions ─────────────────────────────────────────────────
 	//
 	// These are the canonical action entry points for both React and glasses.
-	// They own the optimistic-update + Firestore-write + refresh cycle.
+	// These are the canonical action entry points for both React and glasses.
 
 	private smokeInFlight = false;
 
-	/**
-	 * Log a smoke with optimistic count bump. Deduplicated via `smokeInFlight`
-	 * so rapid double-clicks are safe.
-	 */
 	async logSmoke(): Promise<LogSmokeResult> {
-		const { canonicalUid, mutating, todayCount, optimisticLastSmokeAt } = this.state;
+		const { canonicalUid, mutating } = this.state;
 		if (!canonicalUid) {
 			return { ok: false, errorMessage: 'Smokeless is still syncing your account.' };
 		}
@@ -347,19 +315,14 @@ export class AppStore {
 		this.smokeInFlight = true;
 		this.setMutating(true);
 		this.setHudPendingAction('logSmoke');
-		const snapshotTodayCount = todayCount;
-		const snapshotOptimistic = optimisticLastSmokeAt;
-		const snapshotLastSmokeAt = this.state.lastSmokeAt;
-		const optimisticNow = new Date();
-		this.applyOptimisticSmoke(optimisticNow);
+		const now = new Date();
 
 		try {
-			const logId = await dbAddSmoke(canonicalUid, optimisticNow);
-			this.applyIncrementalAdd({ id: logId, timestamp: optimisticNow, intervalSincePrevious: null });
-			return { ok: true, todayCount: snapshotTodayCount + 1, loggedAt: optimisticNow };
+			const logId = await dbAddSmoke(canonicalUid, now);
+			this.applyIncrementalAdd({ id: logId, timestamp: now, intervalSincePrevious: null });
+			return { ok: true, loggedAt: now };
 		} catch (error) {
 			console.error('[Smokeless] add smoke failed', error);
-			this.rollbackOptimisticSmoke(snapshotTodayCount, snapshotOptimistic, snapshotLastSmokeAt);
 			return { ok: false, errorMessage: 'Could not log smoke.' };
 		} finally {
 			this.smokeInFlight = false;
@@ -435,7 +398,6 @@ export class AppStore {
 				monthDayKeys: [],
 				todayCount: 0,
 				userDocument: null,
-				optimisticLastSmokeAt: null,
 			});
 			return true;
 		} catch (error) {
@@ -478,7 +440,6 @@ export class AppStore {
 			dailyStats: nextDaily,
 			monthlyStats: nextMonthly,
 			historyDayEntries: nextHistoryDayEntries,
-			optimisticLastSmokeAt: null,
 			lastSmokeAt: entry.timestamp,
 		});
 	}
@@ -499,7 +460,6 @@ export class AppStore {
 			return;
 		}
 
-		const isTodayEntry = toDayKey(entry.timestamp) === this.state.today;
 		const dayKey = toDayKey(entry.timestamp);
 		const monthKey = toMonthKey(entry.timestamp);
 
@@ -508,14 +468,13 @@ export class AppStore {
 			todayEntries: nextToday,
 			dailyStats: {
 				...this.state.dailyStats,
-				[dayKey]: Math.max(0, (this.state.dailyStats[dayKey] ?? 1) - 1),
+				[dayKey]: Math.max(0, (this.state.dailyStats[dayKey] ?? 0) - 1),
 			},
 			monthlyStats: {
 				...this.state.monthlyStats,
-				[monthKey]: Math.max(0, (this.state.monthlyStats[monthKey] ?? 1) - 1),
+				[monthKey]: Math.max(0, (this.state.monthlyStats[monthKey] ?? 0) - 1),
 			},
 			historyDayEntries: nextHistory,
-			todayCount: isTodayEntry ? Math.max(0, this.state.todayCount - 1) : this.state.todayCount,
 		});
 	}
 
@@ -541,7 +500,6 @@ function parseDayKeyLocal(dayKey: string): Date {
 
 export interface LogSmokeResult {
 	ok: boolean;
-	todayCount?: number;
 	loggedAt?: Date;
 	errorMessage?: string;
 }

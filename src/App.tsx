@@ -72,7 +72,6 @@ export default function App() {
 	const selectedHistoryDay = useAppSelector((s) => s.selectedHistoryDay);
 	const historyMonth = useAppSelector((s) => s.historyMonth);
 	const mutating = useAppSelector((s) => s.mutating);
-	const optimisticLastSmokeAt = useAppSelector((s) => s.optimisticLastSmokeAt);
 	const lastSmokeAtState = useAppSelector((s) => s.lastSmokeAt);
 	const hudSnapshot = useAppSelector(selectHudSnapshot);
 
@@ -138,7 +137,7 @@ export default function App() {
 	}, [tab, selectedHistoryDay, canonicalUid]);
 
 	// ── Derived display values ────────────────────────────────────────
-	const lastSmokeAt = optimisticLastSmokeAt ?? lastSmokeAtState ?? todayEntries[todayEntries.length - 1]?.timestamp ?? null;
+	const lastSmokeAt = lastSmokeAtState ?? todayEntries[todayEntries.length - 1]?.timestamp ?? null;
 	const weightedAverage = hudSnapshot.home.weightedAverage;
 	const statsSeries = useMemo(
 		() => buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now),

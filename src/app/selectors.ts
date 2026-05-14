@@ -97,9 +97,9 @@ export const selectHudStatsSummaries = memoize<AppState, unknown, Record<HudStat
 	},
 );
 
-/** Last smoke time including optimistic update and fast-path hydration. */
+/** Last smoke time. Falls back to the most recent today entry when lastSmokeAt is null. */
 export function selectLastSmokeAt(state: AppState): Date | null {
-	return state.optimisticLastSmokeAt ?? state.lastSmokeAt ?? state.todayEntries[state.todayEntries.length - 1]?.timestamp ?? null;
+	return state.lastSmokeAt ?? state.todayEntries[state.todayEntries.length - 1]?.timestamp ?? null;
 }
 
 /** The HudSnapshot the glasses views consume. */

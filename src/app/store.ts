@@ -431,7 +431,7 @@ export class AppStore {
 
 		const nextHistoryDayEntries =
 			dayKey === this.state.selectedHistoryDay
-				? [...this.state.historyDayEntries, entry].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+				? [...this.state.historyDayEntries, entry].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 				: this.state.historyDayEntries;
 
 		this.commit({

@@ -791,7 +791,7 @@ export async function fetchEntriesForDay(uid: string, dayKey: string): Promise<S
 	const dayStart = parseDayKey(dayKey);
 	const dayEnd = addDays(dayStart, 1);
 	const snapshot = await getDocs(
-		query(logsRef(uid), where('timestamp', '>=', dayStart), where('timestamp', '<', dayEnd), orderBy('timestamp', 'asc')),
+		query(logsRef(uid), where('timestamp', '>=', dayStart), where('timestamp', '<', dayEnd), orderBy('timestamp', 'desc')),
 	);
 	return snapshot.docs.map(mapLogSnapshot);
 }

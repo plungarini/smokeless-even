@@ -423,7 +423,9 @@ export async function fetchMonthlyCounts(uid: string, monthsBack = 18): Promise<
 
 export async function fetchEntriesForDay(uid: string, dayKey: string): Promise<SmokeLogEntry[]> {
 	const entries = await fetchAllLogEntries(uid);
-	return entries.filter((e) => toDayKey(e.timestamp) === dayKey);
+	return entries
+		.filter((e) => toDayKey(e.timestamp) === dayKey)
+		.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 }
 
 export async function fetchMonthDayKeys(uid: string, monthDate: Date): Promise<string[]> {

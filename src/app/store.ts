@@ -478,7 +478,6 @@ export class AppStore {
 			dailyStats: nextDaily,
 			monthlyStats: nextMonthly,
 			historyDayEntries: nextHistoryDayEntries,
-			todayCount: this.state.todayCount + 1,
 			optimisticLastSmokeAt: null,
 			lastSmokeAt: entry.timestamp,
 		});

@@ -741,6 +741,75 @@ export function deriveHistoryGroupsFromLogs(entries: SmokeLogEntry[]): HistoryDa
 	return buildHistoryGroups(entries);
 }
 
+// ── Targeted page-specific queries ──────────────────────────────────
+
+export async function fetchTodayEntries(uid: string): Promise<SmokeLogEntry[]> {
+	const now = new Date();
+	const dayStart = startOfDay(now);
+	const snapshot = await getDocs(
+		query(logsRef(uid), where('timestamp', '>=', dayStart), orderBy('timestamp', 'asc')),
+	);
+	return snapshot.docs.map(mapLogSnapshot);
+}
+
+export async function fetchEntriesInRange(uid: string, from: Date, to: Date): Promise<SmokeLogEntry[]> {
+	const snapshot = await getDocs(
+		query(logsRef(uid), where('timestamp', '>=', from), where('timestamp', '<=', to), orderBy('timestamp', 'asc')),
+	);
+	return snapshot.docs.map(mapLogSnapshot);
+}
+
+export async function fetchDailyCounts(uid: string, daysBack = 365): Promise<Record<string, number>> {
+	const start = addDays(new Date(), -daysBack);
+	const snapshot = await getDocs(
+		query(logsRef(uid), where('timestamp', '>=', start), orderBy('timestamp', 'asc')),
+	);
+	const counts: Record<string, number> = {};
+	for (const doc of snapshot.docs) {
+		const entry = mapLogSnapshot(doc);
+		const key = toDayKey(entry.timestamp);
+		counts[key] = (counts[key] ?? 0) + 1;
+	}
+	return counts;
+}
+
+export async function fetchMonthlyCounts(uid: string, monthsBack = 18): Promise<Record<string, number>> {
+	const start = new Date(new Date().getFullYear(), new Date().getMonth() - (monthsBack - 1), 1);
+	const snapshot = await getDocs(
+		query(logsRef(uid), where('timestamp', '>=', start), orderBy('timestamp', 'asc')),
+	);
+	const counts: Record<string, number> = {};
+	for (const doc of snapshot.docs) {
+		const entry = mapLogSnapshot(doc);
+		const key = toMonthKey(entry.timestamp);
+		counts[key] = (counts[key] ?? 0) + 1;
+	}
+	return counts;
+}
+
+export async function fetchEntriesForDay(uid: string, dayKey: string): Promise<SmokeLogEntry[]> {
+	const dayStart = parseDayKey(dayKey);
+	const dayEnd = addDays(dayStart, 1);
+	const snapshot = await getDocs(
+		query(logsRef(uid), where('timestamp', '>=', dayStart), where('timestamp', '<', dayEnd), orderBy('timestamp', 'asc')),
+	);
+	return snapshot.docs.map(mapLogSnapshot);
+}
+
+export async function fetchMonthDayKeys(uid: string, monthDate: Date): Promise<string[]> {
+	const monthStartDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+	const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1);
+	const snapshot = await getDocs(
+		query(logsRef(uid), where('timestamp', '>=', monthStartDate), where('timestamp', '<', monthEnd), orderBy('timestamp', 'asc')),
+	);
+	const seen = new Set<string>();
+	for (const doc of snapshot.docs) {
+		const entry = mapLogSnapshot(doc);
+		seen.add(toDayKey(entry.timestamp));
+	}
+	return [...seen];
+}
+
 export async function fetchDailyStats(uid: string, days = 365): Promise<Record<string, number>> {
 	const entries = await fetchAllLogEntries(uid);
 	const start = addDays(new Date(), -(days - 1));

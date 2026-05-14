@@ -2,14 +2,20 @@ import { Button, Card } from 'even-toolkit/web';
 import { startTransition, useCallback, useEffect, useMemo, useState } from 'react';
 import { appStore } from './app/store';
 import { completeOnboarding, resetAuthMode, startBootstrap } from './app/bootstrap';
-import { refreshLogs } from './app/refresh-logs';
 import { useAppSelector } from './app/hooks/useAppSelector';
 import { useClock } from './app/hooks/useClock';
 import { useCountBump } from './app/hooks/useCountBump';
 import { useSmokeActions } from './app/hooks/useSmokeActions';
 import { useToast } from './app/hooks/useToast';
 import { selectHudSnapshot } from './app/selectors';
-import { formatShortDate, getHistoryEntriesForDay, monthStart } from './features/smokeless/lib/history-calendar';
+import { formatShortDate, monthStart } from './features/smokeless/lib/history-calendar';
+import {
+	fetchDailyCounts,
+	fetchEntriesForDay,
+	fetchEntriesInRange,
+	fetchMonthDayKeys,
+	fetchMonthlyCounts,
+} from './services/db.service';
 import {
 	buildStatsSeries,
 	formatStatsIntervalLabel,
@@ -54,11 +60,12 @@ export default function App() {
 	const authMode = useAppSelector((s) => s.authMode);
 	const userDocument = useAppSelector((s) => s.userDocument);
 	const todayCount = useAppSelector((s) => s.todayCount);
-	const allSmokeEntries = useAppSelector((s) => s.allSmokeEntries);
+	const todayEntries = useAppSelector((s) => s.todayEntries);
 	const dailyStats = useAppSelector((s) => s.dailyStats);
 	const monthlyStats = useAppSelector((s) => s.monthlyStats);
-	const historyGroups = useAppSelector((s) => s.historyGroups);
-	const historyHasMore = useAppSelector((s) => s.historyHasMore);
+	const statsPeriodEntries = useAppSelector((s) => s.statsPeriodEntries);
+	const historyDayEntries = useAppSelector((s) => s.historyDayEntries);
+	const monthDayKeys = useAppSelector((s) => s.monthDayKeys);
 	const historyLoading = useAppSelector((s) => s.historyLoading);
 	const tab = useAppSelector((s) => s.tab);
 	const statsPeriod = useAppSelector((s) => s.statsPeriod);
@@ -68,21 +75,6 @@ export default function App() {
 	const optimisticLastSmokeAt = useAppSelector((s) => s.optimisticLastSmokeAt);
 	const lastSmokeAtState = useAppSelector((s) => s.lastSmokeAt);
 	const hudSnapshot = useAppSelector(selectHudSnapshot);
-
-	// ── On-demand stats/history fetching ──────────────────────────────
-	// We no longer preload all logs on startup (that blocked the home
-	// screen for seconds). Instead, fetch the full log history the first
-	// time the user opens Stats or History.
-	useEffect(() => {
-		if (!canonicalUid) return;
-		if (tab !== 'stats' && tab !== 'history') return;
-		if (allSmokeEntries.length > 0) return;
-		appStore.setHistoryLoading(true);
-		void refreshLogs(canonicalUid).catch((error) => {
-			console.error('[Smokeless] on-demand refreshLogs failed', error);
-			appStore.setHistoryLoading(false);
-		});
-	}, [tab, canonicalUid, allSmokeEntries.length]);
 
 	// ── Hooks that own their own React state ──────────────────────────
 	const { toast, push: pushToast, dismiss: dismissToast } = useToast();
@@ -96,8 +88,57 @@ export default function App() {
 	const [modalEntryDate, setModalEntryDate] = useState(() => toDateInputValue(new Date()));
 	const [modalEntryTime, setModalEntryTime] = useState(() => toTimeInputValue(new Date()));
 
+	// ── Targeted page-specific fetching ───────────────────────────────
+	// Stats: fetch all stats data when tab becomes stats or period changes.
+	// dailyStats (for weighted average) and monthlyStats (for yearly view)
+	// are fetched once per stats visit; period entries are re-fetched on
+	// every period change.
+	const referenceDate = useMemo(() => parseDayKey(toDayKey(now)), [now]);
+	useEffect(() => {
+		if (!canonicalUid || tab !== 'stats') return;
+		appStore.setStatsPeriodLoading(true);
+		const { start, end } = getSelectedPeriodRange(statsPeriod, referenceDate);
+		void Promise.all([
+			fetchEntriesInRange(canonicalUid, start, end),
+			fetchDailyCounts(canonicalUid),
+			fetchMonthlyCounts(canonicalUid),
+		])
+			.then(([entries, daily, monthly]) => {
+				appStore.setStatsPeriodEntries(entries);
+				appStore.setDailyStats(daily);
+				appStore.setMonthlyStats(monthly);
+			})
+			.catch((error) => {
+				console.error('[Smokeless] stats period fetch failed', error);
+				appStore.setStatsPeriodLoading(false);
+			});
+	}, [tab, statsPeriod, canonicalUid, referenceDate]);
+
+	// History: fetch month day keys when tab becomes history or month changes.
+	useEffect(() => {
+		if (!canonicalUid || tab !== 'history') return;
+		void fetchMonthDayKeys(canonicalUid, historyMonth)
+			.then((keys) => appStore.setMonthDayKeys(keys))
+			.catch((error) => console.error('[Smokeless] month day keys fetch failed', error));
+	}, [tab, historyMonth, canonicalUid]);
+
+	// History: fetch entries for selected day when tab becomes history or day changes.
+	useEffect(() => {
+		if (!canonicalUid || tab !== 'history' || !selectedHistoryDay) return;
+		appStore.setHistoryLoading(true);
+		void fetchEntriesForDay(canonicalUid, selectedHistoryDay)
+			.then((entries) => {
+				appStore.setHistoryDayEntries(entries);
+				appStore.setHistoryLoading(false);
+			})
+			.catch((error) => {
+				console.error('[Smokeless] history day entries fetch failed', error);
+				appStore.setHistoryLoading(false);
+			});
+	}, [tab, selectedHistoryDay, canonicalUid]);
+
 	// ── Derived display values ────────────────────────────────────────
-	const lastSmokeAt = optimisticLastSmokeAt ?? lastSmokeAtState ?? allSmokeEntries[allSmokeEntries.length - 1]?.timestamp ?? null;
+	const lastSmokeAt = optimisticLastSmokeAt ?? lastSmokeAtState ?? todayEntries[todayEntries.length - 1]?.timestamp ?? null;
 	const weightedAverage = hudSnapshot.home.weightedAverage;
 	const statsSeries = useMemo(
 		() => buildStatsSeries(statsPeriod, dailyStats, monthlyStats, now),
@@ -115,14 +156,9 @@ export default function App() {
 		return computeWeightedDailyAverageForPeriod(dailyStats, start, now);
 	}, [dailyStats, statsPeriod, now]);
 	const statsAverageIntervalLabel = useMemo(() => {
-		const periodStart = statsSeries[0]?.start;
-		const periodEnd = statsSeries[statsSeries.length - 1]?.end;
-		const periodEntries =
-			periodStart && periodEnd
-				? allSmokeEntries.filter((e) => e.timestamp >= periodStart && e.timestamp <= periodEnd)
-				: allSmokeEntries;
-		return formatStatsIntervalLabel(computeWeightedIntervalForPeriod(periodEntries, now));
-	}, [allSmokeEntries, statsSeries, now]);
+		const entries = statsPeriodEntries.length > 0 ? statsPeriodEntries : todayEntries;
+		return formatStatsIntervalLabel(computeWeightedIntervalForPeriod(entries, now));
+	}, [statsPeriodEntries, todayEntries, now]);
 	const statsTotalLabel = selectedStatsBucket
 		? selectedStatsBucket.label
 		: statsPeriod === 'week'
@@ -130,8 +166,8 @@ export default function App() {
 			: statsPeriod === 'month'
 				? 'This month'
 				: 'This year';
-	const selectedHistoryEntries = getHistoryEntriesForDay(historyGroups, selectedHistoryDay);
-	const historyDaysWithEntries = new Set(historyGroups.map((group) => group.dayKey));
+	const selectedHistoryEntries = historyDayEntries;
+	const historyDaysWithEntries = useMemo(() => new Set(monthDayKeys), [monthDayKeys]);
 	const timerLabel = formatTimerClock(lastSmokeAt, now);
 
 	const timeSinceLastSmokeSeconds = lastSmokeAt
@@ -262,15 +298,15 @@ export default function App() {
 											historyDaysWithEntries={historyDaysWithEntries}
 											selectedHistoryEntries={selectedHistoryEntries}
 											historyLoading={historyLoading}
-											historyHasMore={historyHasMore}
-											onHistoryMonthChange={(date) => appStore.setHistoryMonth(date)}
+											onHistoryMonthChange={(date) => {
+												appStore.setHistoryMonth(date);
+											}}
 											onHistoryDaySelect={(dayKey, date) => {
 												appStore.setHistoryDay(dayKey);
 												appStore.setHistoryMonth(monthStart(date));
 											}}
 											onOpenHistoryModal={openHistoryModal}
 											onDeleteEntry={(entry) => void smokeActions.deleteEntry(entry)}
-											onLoadMore={async () => false}
 										/>
 									) : null}
 

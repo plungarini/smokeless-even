@@ -384,6 +384,59 @@ export async function fetchHistoryPage(
 	return { groups, cursor: null, hasMore: false };
 }
 
+// ── Targeted page-specific queries ──────────────────────────────────
+
+export async function fetchTodayEntries(uid: string): Promise<SmokeLogEntry[]> {
+	const entries = await fetchAllLogEntries(uid);
+	const todayKey = toDayKey(new Date());
+	return entries.filter((e) => toDayKey(e.timestamp) === todayKey);
+}
+
+export async function fetchEntriesInRange(uid: string, from: Date, to: Date): Promise<SmokeLogEntry[]> {
+	const entries = await fetchAllLogEntries(uid);
+	return entries.filter((e) => e.timestamp >= from && e.timestamp <= to);
+}
+
+export async function fetchDailyCounts(uid: string, daysBack = 365): Promise<Record<string, number>> {
+	const entries = await fetchAllLogEntries(uid);
+	const start = addDays(new Date(), -daysBack);
+	const counts: Record<string, number> = {};
+	for (const entry of entries) {
+		if (entry.timestamp < start) continue;
+		const key = toDayKey(entry.timestamp);
+		counts[key] = (counts[key] ?? 0) + 1;
+	}
+	return counts;
+}
+
+export async function fetchMonthlyCounts(uid: string, monthsBack = 18): Promise<Record<string, number>> {
+	const entries = await fetchAllLogEntries(uid);
+	const start = new Date(new Date().getFullYear(), new Date().getMonth() - (monthsBack - 1), 1);
+	const counts: Record<string, number> = {};
+	for (const entry of entries) {
+		if (entry.timestamp < start) continue;
+		const key = toMonthKey(entry.timestamp);
+		counts[key] = (counts[key] ?? 0) + 1;
+	}
+	return counts;
+}
+
+export async function fetchEntriesForDay(uid: string, dayKey: string): Promise<SmokeLogEntry[]> {
+	const entries = await fetchAllLogEntries(uid);
+	return entries.filter((e) => toDayKey(e.timestamp) === dayKey);
+}
+
+export async function fetchMonthDayKeys(uid: string, monthDate: Date): Promise<string[]> {
+	const entries = await fetchAllLogEntries(uid);
+	const prefix = toMonthKey(monthDate);
+	const seen = new Set<string>();
+	for (const entry of entries) {
+		const key = toDayKey(entry.timestamp);
+		if (key.startsWith(prefix)) seen.add(key);
+	}
+	return [...seen];
+}
+
 export async function fetchDailyStats(uid: string, days = 365): Promise<Record<string, number>> {
 	const entries = await fetchAllLogEntries(uid);
 	const start = addDays(new Date(), -(days - 1));

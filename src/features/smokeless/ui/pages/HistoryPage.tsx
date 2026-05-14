@@ -1,4 +1,4 @@
-import { Button, Card, Loading } from 'even-toolkit/web';
+import { Card, Loading } from 'even-toolkit/web';
 import { IcEditAdd, IcEditCross } from 'even-toolkit/web/icons/svg-icons';
 import type { SmokeLogEntry } from '../../../../domain/types';
 import { formatLongDate, formatTime, toDayKey } from '../../../../lib/time';
@@ -16,24 +16,20 @@ export function HistoryPage({
 	historyDaysWithEntries,
 	selectedHistoryEntries,
 	historyLoading,
-	historyHasMore,
 	onHistoryMonthChange,
 	onHistoryDaySelect,
 	onOpenHistoryModal,
 	onDeleteEntry,
-	onLoadMore,
 }: {
 	historyMonth: Date;
 	selectedHistoryDay: string;
 	historyDaysWithEntries: Set<string>;
 	selectedHistoryEntries: SmokeLogEntry[];
 	historyLoading: boolean;
-	historyHasMore: boolean;
 	onHistoryMonthChange: (nextMonth: Date) => void;
 	onHistoryDaySelect: (dayKey: string, date: Date) => void;
 	onOpenHistoryModal: () => void;
 	onDeleteEntry: (entry: SmokeLogEntry) => void;
-	onLoadMore: () => void;
 }) {
 	const calendarDays = buildCalendarDays(historyMonth);
 	const selectedHistoryDate = new Date(`${selectedHistoryDay}T00:00:00`);
@@ -147,12 +143,6 @@ export function HistoryPage({
 				<Card padding="default" className={`${glassCardClass} rounded-[28px]`}>
 					<Loading size={18} />
 				</Card>
-			) : null}
-
-			{historyHasMore ? (
-				<Button variant="secondary" className="rounded-[20px]" disabled={historyLoading} onClick={onLoadMore}>
-					Load more history
-				</Button>
 			) : null}
 		</div>
 	);

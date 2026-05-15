@@ -10,12 +10,16 @@ import type {
 import type { AuthMode } from '../services/auth-mode';
 import { monthStart } from '../features/smokeless/lib/history-calendar';
 import type { AppTab } from '../features/smokeless/ui/types';
-import { combineDateAndTime, toDayKey, toMonthKey } from '../lib/time';
+import { combineDateAndTime, toDayKey } from '../lib/time';
 import {
 	addSmokeEntry as dbAddSmoke,
 	deleteAllUserData as dbDeleteAll,
 	deleteLogEntry as dbDeleteEntry,
 	exportLogs as dbExportLogs,
+	fetchEntriesForDay,
+	fetchLastLogEntry,
+	fetchMonthDayKeys,
+	fetchTodayEntries,
 } from '../services/db.service';
 
 export interface AppState {
@@ -318,8 +322,8 @@ export class AppStore {
 		const now = new Date();
 
 		try {
-			const logId = await dbAddSmoke(canonicalUid, now);
-			this.applyIncrementalAdd({ id: logId, timestamp: now, intervalSincePrevious: null });
+			await dbAddSmoke(canonicalUid, now);
+			await this.refreshAfterMutation(canonicalUid);
 			return { ok: true, loggedAt: now };
 		} catch (error) {
 			console.error('[Smokeless] add smoke failed', error);
@@ -332,20 +336,14 @@ export class AppStore {
 	}
 
 	async addPastEntry(dateInputValue: string, timeInputValue: string): Promise<boolean> {
-		const { canonicalUid, mutating, selectedHistoryDay } = this.state;
+		const { canonicalUid, mutating } = this.state;
 		if (!canonicalUid || mutating) return false;
 		this.setMutating(true);
 		try {
 			const entryDate = combineDateAndTime(dateInputValue, timeInputValue);
-			const logId = await dbAddSmoke(canonicalUid, entryDate);
-			const entry: SmokeLogEntry = { id: logId, timestamp: entryDate, intervalSincePrevious: null };
-			this.applyIncrementalAdd(entry);
+			await dbAddSmoke(canonicalUid, entryDate);
 			this.setHistoryDay(dateInputValue);
-			// If the new day differs from the old selection, seed historyDayEntries
-			// so the UI shows the entry immediately (re-fetched by App.tsx on next render).
-			if (dateInputValue !== selectedHistoryDay) {
-				this.commit({ ...this.state, historyDayEntries: [entry] });
-			}
+			await this.refreshAfterMutation(canonicalUid, dateInputValue);
 			return true;
 		} catch (error) {
 			console.error('[Smokeless] add past entry failed', error);
@@ -361,7 +359,7 @@ export class AppStore {
 		this.setMutating(true);
 		try {
 			await dbDeleteEntry(canonicalUid, id);
-			this.applyIncrementalDelete(id);
+			await this.refreshAfterMutation(canonicalUid);
 			return true;
 		} catch (error) {
 			console.error('[Smokeless] delete entry failed', error);
@@ -408,73 +406,36 @@ export class AppStore {
 		}
 	}
 
-	// ── Incremental state updates ─────────────────────────────────────
+	// ── Re-fetch from DB after mutation ───────────────────────────────
+	// Every write (add, delete) re-fetches fresh data from the database.
+	// No session-based incremental state — the DB is the single source of
+	// truth. The Firestore onSnapshot listener handles todayCount updates.
 
-	private applyIncrementalAdd(entry: SmokeLogEntry): void {
-		const todayKey = this.state.today;
-		const dayKey = toDayKey(entry.timestamp);
-		const monthKey = toMonthKey(entry.timestamp);
+	private async refreshAfterMutation(uid: string, extraDayKey?: string): Promise<void> {
+		const { tab, selectedHistoryDay, historyMonth } = this.state;
+		const targetDayKey = extraDayKey ?? selectedHistoryDay;
 
-		const nextTodayEntries =
-			dayKey === todayKey
-				? [...this.state.todayEntries, entry].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-				: this.state.todayEntries;
+		const [todayEntries, lastEntry] = await Promise.all([
+			fetchTodayEntries(uid),
+			fetchLastLogEntry(uid),
+		]);
 
-		const nextDaily = {
-			...this.state.dailyStats,
-			[dayKey]: (this.state.dailyStats[dayKey] ?? 0) + 1,
-		};
-		const nextMonthly = {
-			...this.state.monthlyStats,
-			[monthKey]: (this.state.monthlyStats[monthKey] ?? 0) + 1,
-		};
+		let historyDayEntries = this.state.historyDayEntries;
+		let monthDayKeys = this.state.monthDayKeys;
 
-		const nextHistoryDayEntries =
-			dayKey === this.state.selectedHistoryDay
-				? [...this.state.historyDayEntries, entry].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-				: this.state.historyDayEntries;
-
-		this.commit({
-			...this.state,
-			todayEntries: nextTodayEntries,
-			dailyStats: nextDaily,
-			monthlyStats: nextMonthly,
-			historyDayEntries: nextHistoryDayEntries,
-			lastSmokeAt: entry.timestamp,
-		});
-	}
-
-	private applyIncrementalDelete(entryId: string): void {
-		const entry = this.state.todayEntries.find((e) => e.id === entryId)
-			?? this.state.historyDayEntries.find((e) => e.id === entryId);
-
-		const nextToday = this.state.todayEntries.filter((e) => e.id !== entryId);
-		const nextHistory = this.state.historyDayEntries.filter((e) => e.id !== entryId);
-
-		if (!entry) {
-			this.commit({
-				...this.state,
-				todayEntries: nextToday,
-				historyDayEntries: nextHistory,
-			});
-			return;
+		if (tab === 'history' && targetDayKey) {
+			[historyDayEntries, monthDayKeys] = await Promise.all([
+				fetchEntriesForDay(uid, targetDayKey),
+				fetchMonthDayKeys(uid, historyMonth),
+			]);
 		}
 
-		const dayKey = toDayKey(entry.timestamp);
-		const monthKey = toMonthKey(entry.timestamp);
-
 		this.commit({
 			...this.state,
-			todayEntries: nextToday,
-			dailyStats: {
-				...this.state.dailyStats,
-				[dayKey]: Math.max(0, (this.state.dailyStats[dayKey] ?? 0) - 1),
-			},
-			monthlyStats: {
-				...this.state.monthlyStats,
-				[monthKey]: Math.max(0, (this.state.monthlyStats[monthKey] ?? 0) - 1),
-			},
-			historyDayEntries: nextHistory,
+			todayEntries,
+			lastSmokeAt: lastEntry?.timestamp ?? null,
+			historyDayEntries,
+			monthDayKeys,
 		});
 	}
 

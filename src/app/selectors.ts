@@ -52,15 +52,15 @@ const buildHudSummary = (
 	const series = buildStatsSeries(period, state.dailyStats, state.monthlyStats, referenceNow);
 	const totalSmoked = getSelectedPeriodTotal(period, state.dailyStats, state.monthlyStats, referenceNow);
 
-	const periodStart = series[0]?.start;
-	const periodEnd = series[series.length - 1]?.end;
+	// Use statsPeriodEntries if available (fetched on-demand), fall back to todayEntries.
 	const periodEntries =
-		periodStart && periodEnd
-			? state.allSmokeEntries.filter((e) => e.timestamp >= periodStart && e.timestamp <= periodEnd)
-			: state.allSmokeEntries;
+		state.statsPeriodEntries.length > 0
+			? state.statsPeriodEntries
+			: state.todayEntries;
 
 	// Period-aware weighted daily average — only counts days WITHIN the
 	// selected period that have data, with exponential decay weighting.
+	const periodStart = series[0]?.start;
 	const periodWeightedAverage = periodStart
 		? computeWeightedDailyAverageForPeriod(state.dailyStats, periodStart, referenceNow)
 		: globalWeightedAverage;
@@ -82,7 +82,7 @@ export const selectHudStatsSummaries = memoize<AppState, unknown, Record<HudStat
 	(s) => [
 		dictIdentity(s.dailyStats),
 		dictIdentity(s.monthlyStats),
-		s.allSmokeEntries,
+		s.statsPeriodEntries,
 		s.today,
 		s.userDocument?.createdAt?.getTime() ?? '',
 	].join('|'),
@@ -97,9 +97,9 @@ export const selectHudStatsSummaries = memoize<AppState, unknown, Record<HudStat
 	},
 );
 
-/** Last smoke time including optimistic update and fast-path hydration. */
+/** Last smoke time. Falls back to the most recent today entry when lastSmokeAt is null. */
 export function selectLastSmokeAt(state: AppState): Date | null {
-	return state.optimisticLastSmokeAt ?? state.lastSmokeAt ?? state.allSmokeEntries[state.allSmokeEntries.length - 1]?.timestamp ?? null;
+	return state.lastSmokeAt ?? state.todayEntries[state.todayEntries.length - 1]?.timestamp ?? null;
 }
 
 /** The HudSnapshot the glasses views consume. */
@@ -112,48 +112,57 @@ export const selectHudSnapshot = memoize<AppState, unknown, HudSnapshot>(
 		selectWeightedAverage(s),
 		dictIdentity(s.dailyStats),
 		dictIdentity(s.monthlyStats),
-		s.historyGroups,
-		s.historyHasMore,
+		s.historyDayEntries,
+		s.monthDayKeys,
 		s.historyLoading,
 		s.hudPendingAction,
 		s.today,
 	].join('|'),
-	(s) => ({
-		phase: s.phase,
-		statusMessage: s.statusMessage,
-		home: {
-			todayCount: s.todayCount,
-			lastSmokeAt: selectLastSmokeAt(s),
-			dailyTarget: null,
-			weightedAverage: selectWeightedAverage(s),
-		},
-		stats: selectHudStatsSummaries(s),
-		history: {
-			days: s.historyGroups.map((group) => ({
-				dayKey: group.dayKey,
-				date: group.date,
-				count: group.count,
-				entries: group.entries,
-			})),
-			hasMore: s.historyHasMore,
-			loading: s.historyLoading || s.hudPendingAction === 'loadMoreHistory',
-		},
-		pendingAction: s.hudPendingAction,
-	}),
+	(s) => {
+		const selectedDay: HudHistoryDaySummary | null = s.selectedHistoryDay
+			? {
+					dayKey: s.selectedHistoryDay,
+					date: parseDayKey(s.selectedHistoryDay),
+					count: s.historyDayEntries.length,
+					entries: s.historyDayEntries,
+				}
+			: null;
+		return {
+			phase: s.phase,
+			statusMessage: s.statusMessage,
+			home: {
+				todayCount: s.todayCount,
+				lastSmokeAt: selectLastSmokeAt(s),
+				dailyTarget: null,
+				weightedAverage: selectWeightedAverage(s),
+			},
+			stats: selectHudStatsSummaries(s),
+			history: {
+				days: selectedDay ? [selectedDay] : [],
+				hasMore: false,
+				loading: s.historyLoading,
+			},
+			pendingAction: s.hudPendingAction,
+		};
+	},
 );
 
 /** The currently-selected history day, or null if the selection has no entries. */
 export function selectActiveHistoryDay(state: AppState): HudHistoryDaySummary | null {
-	if (!state.selectedHistoryDay) {
-		return state.historyGroups[0] ?? null;
-	}
-	return state.historyGroups.find((group) => group.dayKey === state.selectedHistoryDay) ?? null;
+	if (!state.selectedHistoryDay) return null;
+	if (state.historyDayEntries.length === 0) return null;
+	return {
+		dayKey: state.selectedHistoryDay,
+		date: parseDayKey(state.selectedHistoryDay),
+		count: state.historyDayEntries.length,
+		entries: state.historyDayEntries,
+	};
 }
 
 /** Set of dayKeys in history that have at least one entry (for calendar rendering). */
 export const selectHistoryDaysWithEntries = memoize<AppState, unknown, Set<string>>(
-	(s) => s.historyGroups,
-	(s) => new Set(s.historyGroups.map((group) => group.dayKey)),
+	(s) => s.monthDayKeys,
+	(s) => new Set(s.monthDayKeys),
 );
 
 // ── helpers ──────────────────────────────────────────────────────────

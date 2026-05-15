@@ -1,7 +1,6 @@
 import type {
 	AuthAccountInfo,
 	EvenUserInfo,
-	HistoryDayGroup,
 	HudPendingAction,
 	HudPhase,
 	HudStatsPeriod,
@@ -16,10 +15,11 @@ import {
 	addSmokeEntry as dbAddSmoke,
 	deleteAllUserData as dbDeleteAll,
 	deleteLogEntry as dbDeleteEntry,
-	deriveHistoryGroupsFromLogs,
-	deriveStatsFromLogs,
 	exportLogs as dbExportLogs,
-	rebuildIntervals,
+	fetchEntriesForDay,
+	fetchLastLogEntry,
+	fetchMonthDayKeys,
+	fetchTodayEntries,
 } from '../services/db.service';
 
 export interface AppState {
@@ -35,12 +35,14 @@ export interface AppState {
 	userDocument: UserDocument | null;
 	authMode: AuthMode | null;
 
-	// Data
-	allSmokeEntries: SmokeLogEntry[];
+	// Data — page-specific, no allSmokeEntries
+	todayEntries: SmokeLogEntry[];
 	dailyStats: Record<string, number>;
 	monthlyStats: Record<string, number>;
-	historyGroups: HistoryDayGroup[];
-	historyHasMore: boolean;
+	statsPeriodEntries: SmokeLogEntry[];
+	statsPeriodLoading: boolean;
+	historyDayEntries: SmokeLogEntry[];
+	monthDayKeys: string[];
 	historyLoading: boolean;
 	todayCount: number;
 
@@ -50,8 +52,7 @@ export interface AppState {
 	selectedHistoryDay: string;
 	historyMonth: Date;
 
-	// Optimistic / pending
-	optimisticLastSmokeAt: Date | null;
+	// Pending action flags
 	mutating: boolean;
 	hudPendingAction: HudPendingAction;
 
@@ -73,11 +74,13 @@ const initialState: AppState = {
 	userDocument: null,
 	authMode: null,
 
-	allSmokeEntries: [],
+	todayEntries: [],
 	dailyStats: {},
 	monthlyStats: {},
-	historyGroups: [],
-	historyHasMore: false,
+	statsPeriodEntries: [],
+	statsPeriodLoading: false,
+	historyDayEntries: [],
+	monthDayKeys: [],
 	historyLoading: false,
 	todayCount: 0,
 
@@ -86,7 +89,6 @@ const initialState: AppState = {
 	selectedHistoryDay: toDayKey(new Date()),
 	historyMonth: monthStart(new Date()),
 
-	optimisticLastSmokeAt: null,
 	mutating: false,
 	hudPendingAction: null,
 
@@ -165,22 +167,35 @@ export class AppStore {
 		this.commit({ ...this.state, authMode: mode });
 	}
 
-	// ── Data ──────────────────────────────────────────────────────────
+	// ── Data — page-specific setters ──────────────────────────────────
 
-	setAllEntries(entries: SmokeLogEntry[], daily: Record<string, number>, monthly: Record<string, number>, groups: HistoryDayGroup[]): void {
-		const todayKey = this.state.today;
-		const lastEntry = entries[entries.length - 1];
-		this.commit({
-			...this.state,
-			allSmokeEntries: entries,
-			dailyStats: daily,
-			monthlyStats: monthly,
-			historyGroups: groups,
-			todayCount: daily[todayKey] ?? 0,
-			historyHasMore: false,
-			optimisticLastSmokeAt: null,
-			lastSmokeAt: lastEntry?.timestamp ?? null,
-		});
+	setTodayEntries(entries: SmokeLogEntry[]): void {
+		this.commit({ ...this.state, todayEntries: entries });
+	}
+
+	setDailyStats(stats: Record<string, number>): void {
+		this.commit({ ...this.state, dailyStats: stats });
+	}
+
+	setMonthlyStats(stats: Record<string, number>): void {
+		this.commit({ ...this.state, monthlyStats: stats });
+	}
+
+	setStatsPeriodEntries(entries: SmokeLogEntry[]): void {
+		this.commit({ ...this.state, statsPeriodEntries: entries, statsPeriodLoading: false });
+	}
+
+	setStatsPeriodLoading(loading: boolean): void {
+		if (this.state.statsPeriodLoading === loading) return;
+		this.commit({ ...this.state, statsPeriodLoading: loading });
+	}
+
+	setHistoryDayEntries(entries: SmokeLogEntry[]): void {
+		this.commit({ ...this.state, historyDayEntries: entries });
+	}
+
+	setMonthDayKeys(keys: string[]): void {
+		this.commit({ ...this.state, monthDayKeys: keys });
 	}
 
 	setTodayCount(count: number): void {
@@ -190,11 +205,6 @@ export class AppStore {
 	setHistoryLoading(loading: boolean): void {
 		if (this.state.historyLoading === loading) return;
 		this.commit({ ...this.state, historyLoading: loading });
-	}
-
-	setHistoryHasMore(hasMore: boolean): void {
-		if (this.state.historyHasMore === hasMore) return;
-		this.commit({ ...this.state, historyHasMore: hasMore });
 	}
 
 	// ── UX navigation ─────────────────────────────────────────────────
@@ -261,7 +271,7 @@ export class AppStore {
 		this.commit({ ...this.state, historyMonth: monthStart(month) });
 	}
 
-	// ── Optimistic / mutation flags ───────────────────────────────────
+	// ── Mutation flags ───────────────────────────────────────────────
 
 	setMutating(mutating: boolean): void {
 		if (this.state.mutating === mutating) return;
@@ -271,32 +281,6 @@ export class AppStore {
 	setHudPendingAction(action: HudPendingAction): void {
 		if (this.state.hudPendingAction === action) return;
 		this.commit({ ...this.state, hudPendingAction: action });
-	}
-
-	setOptimisticLastSmokeAt(at: Date | null): void {
-		this.commit({ ...this.state, optimisticLastSmokeAt: at });
-	}
-
-	applyOptimisticSmoke(at: Date): void {
-		this.commit({
-			...this.state,
-			todayCount: this.state.todayCount + 1,
-			optimisticLastSmokeAt: at,
-			lastSmokeAt: at,
-		});
-	}
-
-	rollbackOptimisticSmoke(
-		prevTodayCount: number,
-		prevOptimistic: Date | null,
-		prevLastSmokeAt: Date | null,
-	): void {
-		this.commit({
-			...this.state,
-			todayCount: prevTodayCount,
-			optimisticLastSmokeAt: prevOptimistic,
-			lastSmokeAt: prevLastSmokeAt,
-		});
 	}
 
 	// ── Time ──────────────────────────────────────────────────────────
@@ -319,16 +303,12 @@ export class AppStore {
 	// ── Async actions ─────────────────────────────────────────────────
 	//
 	// These are the canonical action entry points for both React and glasses.
-	// They own the optimistic-update + Firestore-write + refresh cycle.
+	// These are the canonical action entry points for both React and glasses.
 
 	private smokeInFlight = false;
 
-	/**
-	 * Log a smoke with optimistic count bump. Deduplicated via `smokeInFlight`
-	 * so rapid double-clicks are safe.
-	 */
 	async logSmoke(): Promise<LogSmokeResult> {
-		const { canonicalUid, mutating, todayCount, optimisticLastSmokeAt } = this.state;
+		const { canonicalUid, mutating } = this.state;
 		if (!canonicalUid) {
 			return { ok: false, errorMessage: 'Smokeless is still syncing your account.' };
 		}
@@ -339,19 +319,14 @@ export class AppStore {
 		this.smokeInFlight = true;
 		this.setMutating(true);
 		this.setHudPendingAction('logSmoke');
-		const snapshotTodayCount = todayCount;
-		const snapshotOptimistic = optimisticLastSmokeAt;
-		const snapshotLastSmokeAt = this.state.lastSmokeAt;
-		const optimisticNow = new Date();
-		this.applyOptimisticSmoke(optimisticNow);
+		const now = new Date();
 
 		try {
-			const logId = await dbAddSmoke(canonicalUid, optimisticNow);
-			this.applyIncrementalAdd({ id: logId, timestamp: optimisticNow, intervalSincePrevious: null });
-			return { ok: true, todayCount: snapshotTodayCount + 1, loggedAt: optimisticNow };
+			await dbAddSmoke(canonicalUid, now);
+			await this.refreshAfterMutation(canonicalUid);
+			return { ok: true, loggedAt: now };
 		} catch (error) {
 			console.error('[Smokeless] add smoke failed', error);
-			this.rollbackOptimisticSmoke(snapshotTodayCount, snapshotOptimistic, snapshotLastSmokeAt);
 			return { ok: false, errorMessage: 'Could not log smoke.' };
 		} finally {
 			this.smokeInFlight = false;
@@ -366,9 +341,9 @@ export class AppStore {
 		this.setMutating(true);
 		try {
 			const entryDate = combineDateAndTime(dateInputValue, timeInputValue);
-			const logId = await dbAddSmoke(canonicalUid, entryDate);
-			this.applyIncrementalAdd({ id: logId, timestamp: entryDate, intervalSincePrevious: null });
+			await dbAddSmoke(canonicalUid, entryDate);
 			this.setHistoryDay(dateInputValue);
+			await this.refreshAfterMutation(canonicalUid, dateInputValue);
 			return true;
 		} catch (error) {
 			console.error('[Smokeless] add past entry failed', error);
@@ -384,7 +359,7 @@ export class AppStore {
 		this.setMutating(true);
 		try {
 			await dbDeleteEntry(canonicalUid, id);
-			this.applyIncrementalDelete(id);
+			await this.refreshAfterMutation(canonicalUid);
 			return true;
 		} catch (error) {
 			console.error('[Smokeless] delete entry failed', error);
@@ -413,14 +388,14 @@ export class AppStore {
 			await dbDeleteAll(canonicalUid);
 			this.commit({
 				...this.state,
+				todayEntries: [],
 				dailyStats: {},
 				monthlyStats: {},
-				historyGroups: [],
-				historyHasMore: false,
-				allSmokeEntries: [],
+				statsPeriodEntries: [],
+				historyDayEntries: [],
+				monthDayKeys: [],
 				todayCount: 0,
 				userDocument: null,
-				optimisticLastSmokeAt: null,
 			});
 			return true;
 		} catch (error) {
@@ -431,29 +406,37 @@ export class AppStore {
 		}
 	}
 
-	// ── Incremental state updates (avoid full Firestore re-fetch) ──────
+	// ── Re-fetch from DB after mutation ───────────────────────────────
+	// Every write (add, delete) re-fetches fresh data from the database.
+	// No session-based incremental state — the DB is the single source of
+	// truth. The Firestore onSnapshot listener handles todayCount updates.
 
-	private applyIncrementalAdd(entry: SmokeLogEntry): void {
-		const entries = [...this.state.allSmokeEntries, entry].sort(
-			(left, right) => left.timestamp.getTime() - right.timestamp.getTime(),
-		);
-		// Rebuild intervals so the new entry and its successor have correct
-		// intervalSincePrevious values (History page and any interval-based
-		// displays stay accurate without a full Firestore re-fetch).
-		const withIntervals = rebuildIntervals(entries);
-		const { daily, monthly } = deriveStatsFromLogs(withIntervals);
-		const groups = deriveHistoryGroupsFromLogs(withIntervals);
-		this.setAllEntries(withIntervals, daily, monthly, groups);
-	}
+	private async refreshAfterMutation(uid: string, extraDayKey?: string): Promise<void> {
+		const { tab, selectedHistoryDay, historyMonth } = this.state;
+		const targetDayKey = extraDayKey ?? selectedHistoryDay;
 
-	private applyIncrementalDelete(entryId: string): void {
-		const entries = this.state.allSmokeEntries.filter((e) => e.id !== entryId);
-		// Rebuild intervals so the entry that followed the deleted one gets
-		// its intervalSincePrevious updated correctly.
-		const withIntervals = rebuildIntervals(entries);
-		const { daily, monthly } = deriveStatsFromLogs(withIntervals);
-		const groups = deriveHistoryGroupsFromLogs(withIntervals);
-		this.setAllEntries(withIntervals, daily, monthly, groups);
+		const [todayEntries, lastEntry] = await Promise.all([
+			fetchTodayEntries(uid),
+			fetchLastLogEntry(uid),
+		]);
+
+		let historyDayEntries = this.state.historyDayEntries;
+		let monthDayKeys = this.state.monthDayKeys;
+
+		if (tab === 'history' && targetDayKey) {
+			[historyDayEntries, monthDayKeys] = await Promise.all([
+				fetchEntriesForDay(uid, targetDayKey),
+				fetchMonthDayKeys(uid, historyMonth),
+			]);
+		}
+
+		this.commit({
+			...this.state,
+			todayEntries,
+			lastSmokeAt: lastEntry?.timestamp ?? null,
+			historyDayEntries,
+			monthDayKeys,
+		});
 	}
 
 	// ── Full reset (used by rebootForUid) ─────────────────────────────
@@ -478,7 +461,6 @@ function parseDayKeyLocal(dayKey: string): Date {
 
 export interface LogSmokeResult {
 	ok: boolean;
-	todayCount?: number;
 	loggedAt?: Date;
 	errorMessage?: string;
 }

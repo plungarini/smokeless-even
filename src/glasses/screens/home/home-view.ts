@@ -115,7 +115,7 @@ export class HomeView implements View {
 					{
 						mode: 'success',
 						message: null,
-						todayCount: result.todayCount ?? appStore.getState().todayCount,
+						todayCount: appStore.getState().todayCount,
 					},
 					1500,
 				);

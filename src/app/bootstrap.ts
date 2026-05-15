@@ -17,8 +17,6 @@ import {
 	subscribeToUserDocument,
 	upsertAuthProviderFields,
 } from '../services/db.service';
-// refreshLogs is no longer called on startup — stats/history are fetched
-// on-demand when the user navigates to those tabs.
 import {
 	readStoredAuthMode,
 	writeStoredAuthMode,
@@ -209,7 +207,7 @@ async function runBootstrap(): Promise<void> {
 		appStore.setBootstrapError(null);
 		appStore.setPhase('ready');
 
-		// Non-blocking metadata writes and log refresh.
+		// Non-blocking metadata writes.
 		void Promise.all([
 			ensureCanonicalUserData(canonicalUid, normalized),
 			upsertAuthProviderFields(canonicalUid, activeAccount),

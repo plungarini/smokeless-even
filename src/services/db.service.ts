@@ -97,6 +97,36 @@ export async function exportLogs(uid: string) {
 	return mode() === 'local' ? localRepo.exportLogs(uid) : firestoreRepo.exportLogs(uid);
 }
 
+// ── Targeted page-specific queries ──────────────────────────────────
+
+export async function fetchTodayEntries(uid: string): Promise<SmokeLogEntry[]> {
+	return mode() === 'local' ? localRepo.fetchTodayEntries(uid) : firestoreRepo.fetchTodayEntries(uid);
+}
+
+export async function fetchEntriesInRange(uid: string, from: Date, to: Date): Promise<SmokeLogEntry[]> {
+	return mode() === 'local'
+		? localRepo.fetchEntriesInRange(uid, from, to)
+		: firestoreRepo.fetchEntriesInRange(uid, from, to);
+}
+
+export async function fetchDailyCounts(uid: string, daysBack = 365): Promise<Record<string, number>> {
+	return mode() === 'local' ? localRepo.fetchDailyCounts(uid, daysBack) : firestoreRepo.fetchDailyCounts(uid, daysBack);
+}
+
+export async function fetchMonthlyCounts(uid: string, monthsBack = 18): Promise<Record<string, number>> {
+	return mode() === 'local'
+		? localRepo.fetchMonthlyCounts(uid, monthsBack)
+		: firestoreRepo.fetchMonthlyCounts(uid, monthsBack);
+}
+
+export async function fetchEntriesForDay(uid: string, dayKey: string): Promise<SmokeLogEntry[]> {
+	return mode() === 'local' ? localRepo.fetchEntriesForDay(uid, dayKey) : firestoreRepo.fetchEntriesForDay(uid, dayKey);
+}
+
+export async function fetchMonthDayKeys(uid: string, monthDate: Date): Promise<string[]> {
+	return mode() === 'local' ? localRepo.fetchMonthDayKeys(uid, monthDate) : firestoreRepo.fetchMonthDayKeys(uid, monthDate);
+}
+
 export async function fetchHistoryPage(
 	uid: string,
 	cursor: HistoryCursor,
